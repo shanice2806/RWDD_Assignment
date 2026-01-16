@@ -1,5 +1,196 @@
-footer {
-  margin-top: 40px;
-  text-align: center;
-  color: #777;
+:root {
+  --color-background: #ffffff;       /* Clean white */
+  --color-section: #f7f9fa;          /* Light neutral gray */
+  --color-card: #ffffff;             /* White cards */
+
+  --color-primary: #1e3a34;          /* Deep forest green */
+  --color-secondary: #3ba99c;        /* Soft teal accent */
+  --color-text: #222222;             /* Dark gray text */
+  --color-muted: #6c757d;            /* Muted gray */
+
+  --color-link: var(--color-secondary);
+  --color-link-hover: #1e3a34;
+
+  --color-border: #e0e0e0;
+
+  --color-success: #2a4d3d;
+  --color-warning: #c97c1a;
+  --color-error: #b23a3a;
 }
+
+/* Global */
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: "Times New Roman", Times, serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+/* Header */
+header {
+  background-color: var(--color-primary);
+  color: #fff;
+  padding: 1rem 2rem;
+  text-align: center;
+}
+
+/* Navbar */
+nav {
+  background-color: var(--color-section);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  padding: 0.75rem;
+}
+nav a {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+nav a:hover {
+  color: var(--color-secondary);
+}
+
+/* Search Bar */
+.search-bar {
+  display: flex;
+  justify-content: center;
+  margin: 1rem;
+}
+.search-bar input {
+  width: 50%;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+}
+.search-bar button {
+  margin-left: 0.5rem;
+  background-color: var(--color-secondary);
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+}
+.search-bar button:hover {
+  background-color: var(--color-primary);
+}
+
+/* Section wrapper */
+.section-preview {
+  background-color: var(--color-section);
+  padding: 2rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  margin: 2rem;
+}
+
+/* Buttons */
+button, .btn {
+  background-color: var(--color-secondary);
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+button:hover, .btn:hover { background-color: var(--color-primary); }
+
+/* Links */
+a { color: var(--color-link); }
+a:hover { color: var(--color-link-hover); text-decoration: underline; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
+th { background-color: var(--color-primary); color: #fff; padding: 0.75rem; }
+td { border: 1px solid var(--color-border); padding: 0.75rem; }
+tr:nth-child(even) { background-color: var(--color-section); }
+
+/* Alerts */
+.alert-success, .alert-warning, .alert-error {
+  color: #fff; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;
+}
+.alert-success { background-color: var(--color-success); }
+.alert-warning { background-color: var(--color-warning); }
+.alert-error { background-color: var(--color-error); }
+
+/* Social Feed */
+.feed-card {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1.5rem 2rem;
+}
+
+/* Chat Box */
+.chat-box {
+  background-color: var(--color-section);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 2rem;
+}
+.chat-message { margin-bottom: 0.5rem; }
+.chat-message.friend { color: var(--color-primary); }
+.chat-message.user { color: var(--color-secondary); }
+
+/* Profile Page */
+.profile-card {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 2rem;
+  margin: 2rem;
+  text-align: center;
+}
+.profile-card img {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  border: 3px solid var(--color-secondary);
+  margin-bottom: 1rem;
+}
+.profile-card h2 { margin: 0.5rem 0; color: var(--color-primary); }
+.profile-stats {
+  display: flex; justify-content: space-around; margin: 1rem 0;
+}
+.profile-stats div {
+  background-color: var(--color-section);
+  border-radius: 6px;
+  padding: 1rem;
+  flex: 1;
+  margin: 0 0.5rem;
+}
+.badges { margin-top: 1.5rem; }
+.badge {
+  display: inline-block;
+  background-color: var(--color-secondary);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  margin: 0.25rem;
+  font-size: 0.9rem;
+}
+.friend-list { margin-top: 2rem; text-align: left; }
+.friend-list h3 { color: var(--color-primary); }
+.friend-list ul { list-style: none; padding: 0; }
+.friend-list li {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Footer */
+footer {
+  background-color: var(--color-section);
+  color: var(--color-text);
+  text-align: center;
+  padding: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+
+
+
