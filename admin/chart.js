@@ -1,35 +1,82 @@
-document.addEventListener("DOMContentLoaded", function () {
-  fetch('admin_chart.php')
-    .then(response => response.json())
-    .then(data => {
-      const labels = data.map(entry => entry.month);
-      const counts = data.map(entry => entry.total_logs);
+fetch('admin_chart.php')
+  .then(response => response.json())
+  .then(data => {
+    // Monthly Recycling Log Chart
+    const recyclingLabels = data.recycling_data.map(entry => entry.month);
+    const recyclingWeights = data.recycling_data.map(entry => entry.total_weight);
 
-      const ctx = document.getElementById('recyclingChart').getContext('2d');
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Total Recycling Logs',
-            data: counts,
-            backgroundColor: '#3ba99c',
-            borderColor: '#1e3a34',
-            borderWidth: 1
-          }]
+    const ctx1 = document.getElementById('recyclingChart').getContext('2d');
+    new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: recyclingLabels,
+        datasets: [{
+          label: 'Total Recycling Logs (kg)',
+          data: recyclingWeights,
+          backgroundColor: '#3ba99c',
+          borderColor: '#1e3a34',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'top' },
+          title: {
+            display: true,
+            text: 'Monthly Recycling Log (Total Weight in KG)'
+          }
         },
-        options: {
-          responsive: true,
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                stepSize: 1
-              }
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Weight (kg)'
             }
           }
         }
-      });
-    })
-    .catch(error => console.error('Error fetching chart data:', error));
-});
+      }
+    });
+
+    // Monthly Event Attendance Chart
+    const eventLabels = data.event_data.map(entry => entry.month);
+    const attendanceCounts = data.event_data.map(entry => entry.attendance_count);
+
+    const ctx2 = document.getElementById('eventAttendanceChart').getContext('2d');
+    new Chart(ctx2, {
+      type: 'bar',
+      data: {
+        labels: eventLabels,
+        datasets: [{
+          label: 'Event Attendance (Participants)',
+          data: attendanceCounts,
+          backgroundColor: '#c97c1a',
+          borderColor: '#1e3a34',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'top' },
+          title: {
+            display: true,
+            text: 'Monthly Event Attendance'
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Number of Attendees'
+            }
+          }
+        }
+      }
+    });
+  })
+  .catch(error => {
+    console.error('Error loading chart data:', error);
+  });
