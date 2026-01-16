@@ -26,6 +26,29 @@
   cursor: pointer;
 }
 
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  background-color: var(--color-secondary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-left: 10px;
+  padding: 0; /* important to neutralize default style.css padding */
+  box-sizing: border-box;
+}
+
+.icon-btn:hover {
+  background-color: var(--color-primary);
+}
+
+
+
 /* Main Dashboard Section */
 main.dashboard {
   padding: 20px;
@@ -101,3 +124,4 @@ main.dashboard {
   background-color: var(--color-card);
   box-shadow: 0 1px 5px rgba(0,0,0,0.1);
 }
+
