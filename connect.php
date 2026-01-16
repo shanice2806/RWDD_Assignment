@@ -5,7 +5,7 @@ $pass = "";
 $db = "RWDD_Assignment";
 
 $conn = new mysqli($host, $user, $pass, $db);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+if (!$conn) {
+    error_log("Database connection failed: " . mysqli_connect_error());
 }
 ?>
