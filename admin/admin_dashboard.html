@@ -4,23 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Dashboard</title>
- <link rel="stylesheet" href="/css/admin.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="../css/style.css" />
+ <link rel="stylesheet" href="../css/admin.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
   <!-- Sidebar/Navbar (simplified placeholder) -->
   <header class="top-bar">
+
     <div class="left">
       <button class="menu-toggle">☰</button>
       <span>Welcome! XXX</span>
     </div>
-    <input type="text" class="search-bar" placeholder="Search..."/>
+
+  <div class="search-container">
+    <input type="text" class="search-bar" placeholder="Search..." />
+    <button class="search-btn">🔍</button>
+  </div>
+
     <div class="icons">
-      <span>🔍</span>
-      <span>🏠</span>
-      <span>⎋</span>
-    </div>
+    <button class="icon-btn">🏠</button>
+    <button class="icon-btn">⎋</button>
+  </div>
+
   </header>
 
   <!-- Main Section -->
@@ -35,36 +42,42 @@
         <h3>1000</h3>
         <button>View All</button>
       </div>
+
       <div class="card">
         <div class="icon">♻️</div>
         <p>Total Recycling Log</p>
         <h3>1000</h3>
         <button>View All</button>
       </div>
+
       <div class="card">
         <div class="icon">📝</div>
         <p>Total Post</p>
         <h3>1000</h3>
         <button>View All</button>
       </div>
+
       <div class="card">
         <div class="icon">📅</div>
         <p>Total Events</p>
         <h3>1000</h3>
         <button>View All</button>
       </div>
+
       <div class="card">
         <div class="icon">🚩</div>
         <p>Total Flagged Log</p>
         <h3>1000</h3>
         <button>View All</button>
       </div>
+
       <div class="card">
         <div class="icon">⚠️</div>
         <p>Total Reported Content</p>
         <h3>1000</h3>
         <button>View All</button>
       </div>
+
     </div>
 
     <h2>Top 5 Users by Eco-Points</h2>
@@ -95,10 +108,12 @@
         <h4>Monthly Recycling Log Bar Chart</h4>
         <canvas id="recyclingChart"></canvas>
       </div>
+
       <div class="chart-box">
         <h4>Monthly Event Attendance Bar Chart</h4>
         <canvas id="eventChart"></canvas>
       </div>
+
     </div>
 
     <footer>© 2026 ReLife Hub</footer>
