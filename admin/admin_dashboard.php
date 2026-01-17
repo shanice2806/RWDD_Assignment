@@ -128,10 +128,10 @@ $total_reported_content = getCount($conn, "SELECT COUNT(*) as total_reported_con
 
     </main>
 
-    <!-- Page-specific scripts -->
+    <!-- chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
     <script src="chart.js"></script> 
 
-<?php include 'admin_footer.php'; // Include the new footer ?>
+<?php include 'admin_footer.php'; ?>
 </body>
 </html>

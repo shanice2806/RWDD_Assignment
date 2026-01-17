@@ -1,5 +1,5 @@
 body {
-  padding-top: 60px; /* Space for the fixed top bar */
+  padding-top: 60px;
 }
 
 .top-bar {
@@ -18,26 +18,6 @@ body {
   box-sizing: border-box;
 }
 
-/* ===============================
-   SIDEBAR BASE
-   =============================== */
-.admin-sidebar {
-  width: 260px;
-  background-color: var(--color-primary);
-  color: #fff;
-
-  position: fixed;
-  top: 60px; /* Start below the fixed top bar */
-  left: -260px;
-  height: calc(100vh - 60px); /* Full remaining height */
-
-  transition: left 0.3s ease;
-  z-index: 1100;
-
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
 
 .search-container {
   display: flex;
@@ -187,10 +167,36 @@ main.dashboard {
   color: #fff;
   padding: 12px;
 }
-.eco-table td {
+.eco-table th :last-child,
+.eco-table td :last-child
+ {
   padding: 12px;
   text-align: left;
   border-bottom: 1px solid var(--color-border);
+  min-width: 120px; 
+  text-align: center;
+  vertical-align: middle;
+}
+
+.action-btn {
+  display: block;
+  margin: 6px auto;
+  padding: 6px 10px;
+  width: 80px;        /* ✅ SAME WIDTH */
+  height: 36px;       /* ✅ SAME HEIGHT */
+  line-height: 36px;  
+
+  background-color: var(--color-secondary);
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.action-btn:hover {
+  background-color: var(--color-primary);
 }
 
 /* Chart Section */
@@ -264,14 +270,29 @@ textarea[readonly] {
 
 
 
-/* Open */
+/* SIDEBAR */
+.admin-sidebar {
+  width: 260px;
+  background-color: var(--color-primary);
+  color: #fff;
+
+  position: fixed;
+  top: 60px; /* Start below the fixed top bar */
+  left: -260px;
+  height: calc(100vh - 60px); /* Full remaining height */
+
+  transition: left 0.3s ease;
+  z-index: 1100;
+
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
 .admin-sidebar.open {
   left: 0;
 }
 
-/* ===============================
-   PROFILE
-   =============================== */
 .sidebar-profile {
   display: flex;
   align-items: center;
@@ -296,7 +317,7 @@ textarea[readonly] {
 .profile-text {
   display: flex;
   flex-direction: column;
-  
+
 }
 
 .profile-name {
@@ -310,9 +331,6 @@ textarea[readonly] {
   text-decoration: underline;
 }
 
-/* ===============================
-   MENU
-   =============================== */
 .sidebar-menu {
   display: flex;
   flex-direction: column;
@@ -345,9 +363,7 @@ textarea[readonly] {
   background-color: var(--color-primary);
 }
 
-/* ===============================
-   MAIN CONTENT SHIFT
-   =============================== */
+
 .main-content {
   margin-left: 0;
   padding: 20px;
@@ -362,3 +378,5 @@ textarea[readonly] {
 .menu-first {
   margin-top: 150px;
 }
+
+
