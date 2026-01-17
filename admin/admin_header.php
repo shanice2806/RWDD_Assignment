@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Admin Panel</title> 
+  <title><?= $page_title ?? 'Admin Panel' ?></title>
+
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/admin.css">
 </head>

@@ -2,7 +2,8 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 include "../connect.php";
-include 'admin_header.php'; // Include the new header
+$page_title = "Add Announcement";
+include 'admin_header.php'; 
 
 
 /* Handle form submission */

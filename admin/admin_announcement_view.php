@@ -1,7 +1,8 @@
 <?php
+<?php
 include "../connect.php";
-include 'admin_header.php'; // Single header include
-
+$page_title = "View Announcement";
+include "admin_header.php";
 /* Validate ID */
 if (!isset($_GET['id'])) {
     die("Announcement ID not provided.");

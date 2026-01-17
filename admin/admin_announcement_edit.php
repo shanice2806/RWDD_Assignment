@@ -1,6 +1,7 @@
 <?php
 
 include "../connect.php";
+$page_title = "Edit Announcement";
 include 'admin_header.php'; // Include the new header
 
 /* Validate ID */
