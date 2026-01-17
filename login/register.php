@@ -1,0 +1,145 @@
+<?php
+session_start();
+require_once "../connect.php"; // must define $conn
+
+$error = "";
+$success = "";
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+  $user_id = strtoupper(trim($_POST["user_id"] ?? ""));
+  $name    = trim($_POST["name"] ?? "");
+  $email   = trim($_POST["email"] ?? "");
+  $pass1   = $_POST["password"] ?? "";
+  $pass2   = $_POST["confirm_password"] ?? "";
+
+  if ($user_id === "" || $name === "" || $email === "" || $pass1 === "" || $pass2 === "") {
+    $error = "Please fill in all fields.";
+  } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $error = "Invalid email format.";
+  } elseif ($pass1 !== $pass2) {
+    $error = "Passwords do not match.";
+  } elseif (strlen($pass1) < 6) {
+    $error = "Password must be at least 6 characters.";
+  } else {
+    // duplicate check: TP or email
+    $check = "SELECT user_id FROM users WHERE user_id = ? OR email = ? LIMIT 1";
+    $stmt = mysqli_prepare($conn, $check);
+
+    if (!$stmt) {
+      $error = "SQL error: " . mysqli_error($conn);
+    } else {
+      mysqli_stmt_bind_param($stmt, "ss", $user_id, $email);
+      mysqli_stmt_execute($stmt);
+      $res = mysqli_stmt_get_result($stmt);
+
+      if (mysqli_fetch_assoc($res)) {
+        $error = "TP number or email already exists.";
+      } else {
+        $hashed = password_hash($pass1, PASSWORD_DEFAULT);
+
+        // your table defaults/required fields
+        $role = "User";
+        $eco_points = 0;
+        $badges = NULL;
+        $account_status = "Activated";
+        $created_at = date("Y-m-d H:i:s");
+        $last_login = NULL;
+        $profile_image = NULL;
+
+        $sql = "INSERT INTO users
+                  (user_id, name, email, role, password, eco_points, badges, created_at, account_status, last_login, profile_image)
+                VALUES
+                  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $ins = mysqli_prepare($conn, $sql);
+
+        if (!$ins) {
+          $error = "SQL error: " . mysqli_error($conn);
+        } else {
+          // types: user_id(s) name(s) email(s) role(s) password(s) eco_points(i) badges(s/NULL) created_at(s) status(s) last_login(s/NULL) profile_image(s/NULL)
+          mysqli_stmt_bind_param(
+            $ins,
+            "sssssisssss",
+            $user_id,
+            $name,
+            $email,
+            $role,
+            $hashed,
+            $eco_points,
+            $badges,
+            $created_at,
+            $account_status,
+            $last_login,
+            $profile_image
+          );
+
+          $ok = mysqli_stmt_execute($ins);
+
+          if ($ok) {
+            $success = "Account created successfully. You can login now.";
+          } else {
+            $error = "Register failed: " . mysqli_error($conn);
+          }
+          mysqli_stmt_close($ins);
+        }
+      }
+      mysqli_stmt_close($stmt);
+    }
+  }
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register</title>
+  <style>
+    body{font-family:Arial,sans-serif;background:#f5f6f8;margin:0}
+    .wrap{max-width:460px;margin:50px auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+    h1{margin:0 0 14px;font-size:22px}
+    label{display:block;margin:12px 0 6px;font-weight:600}
+    input{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px}
+    .btn{margin-top:16px;width:100%;padding:10px 12px;border:0;border-radius:10px;background:#16a34a;color:#fff;font-weight:700;cursor:pointer}
+    .msg{padding:10px 12px;border-radius:10px;margin:10px 0}
+    .error{background:#ffe8e8;color:#b00020}
+    .success{background:#e9ffef;color:#0b6b2b}
+    a{text-decoration:none;color:#1f6feb}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Create Account</h1>
+
+    <?php if ($error !== ""): ?>
+      <div class="msg error"><?php echo htmlspecialchars($error); ?></div>
+    <?php endif; ?>
+
+    <?php if ($success !== ""): ?>
+      <div class="msg success"><?php echo htmlspecialchars($success); ?></div>
+    <?php endif; ?>
+
+    <form method="POST">
+      <label for="user_id">TP Number</label>
+      <input id="user_id" name="user_id" type="text" placeholder="TP083586" required>
+
+      <label for="name">Full Name</label>
+      <input id="name" name="name" type="text" placeholder="Loo Yu Chai" required>
+
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" placeholder="you@example.com" required>
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" placeholder="Min 6 characters" required>
+
+      <label for="confirm_password">Confirm Password</label>
+      <input id="confirm_password" name="confirm_password" type="password" required>
+
+      <button class="btn" type="submit">Register</button>
+    </form>
+
+    <p style="margin-top:14px;font-size:14px;">
+      Already have an account? <a href="login.php">Login</a>
+    </p>
+  </div>
+</body>
+</html>

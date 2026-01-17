@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReLife Hub | Guest</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Small additions (still matches your theme) */
+    .nav-right {
+      margin-left: auto;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .nav-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      align-items: center;
+    }
+    .hero {
+      background: var(--color-section);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      margin: 2rem;
+      padding: 2rem;
+      text-align: center;
+    }
+    .hero h2 { color: var(--color-primary); margin-top: 0; }
+    .hero p { color: var(--color-muted); max-width: 850px; margin: 0.5rem auto 1.25rem; }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.5rem;
+      margin: 0 2rem 2rem;
+    }
+    @media (max-width: 900px) {
+      nav { justify-content: flex-start; overflow-x: auto; }
+      .grid-2 { grid-template-columns: 1fr; margin: 0 1rem 1.5rem; }
+      .hero, .section-preview, .feed-card, .chat-box, .profile-card { margin: 1rem; }
+      .search-bar input { width: 70%; }
+    }
+    .small-note { font-size: 0.9rem; color: var(--color-muted); }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <h1>ReLife Hub</h1>
+    <p>Eco • Modern • Sustainable</p>
+  </header>
+
+  <!-- Navbar (with Login on top-right) -->
+  <nav>
+    <div class="nav-container">
+      <a href="index.php">Home</a>
+      <a href="#events">Events</a>
+      <a href="#rewards">Rewards</a>
+      <a href="#community">Community</a>
+      <a href="#about">About</a>
+
+      <div class="nav-right">
+        <a class="btn" href="login/login.php">Login</a>
+        <a class="btn" href="login/register.php">Register</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Search bar -->
+  <div class="search-bar">
+    <input type="text" placeholder="Search ReLife Hub... (Guest Preview)">
+    <button type="button">Search</button>
+  </div>
+
+  <!-- Hero / Intro -->
+  <div class="hero">
+    <h2>Welcome, Guest 👋</h2>
+    <p>
+      ReLife Hub is a campus sustainability platform for recycling, upcycling, and eco-events.
+      You can explore a preview as a guest, but you need an account to submit recycling logs, earn Eco-Points, and redeem rewards.
+    </p>
+    <a class="btn" href="login/login.php">Sign In to Start</a>
+    <p class="small-note">Tip: Admin / Organizer dashboards will be available after login based on your role.</p>
+  </div>
+
+  <!-- Guest features preview -->
+  <div class="grid-2">
+    <div class="section-preview" id="community">
+      <h2>Community Preview</h2>
+      <p>See what others are doing — guest can view only.</p>
+
+      <div class="feed-card" style="margin: 1rem 0;">
+        <h3>Alice Tan</h3>
+        <p>Just recycled 3kg of paper today! 📚♻️</p>
+        <small>Likes: 5 | Comments: 2</small>
+      </div>
+
+      <div class="feed-card" style="margin: 1rem 0;">
+        <h3>Brian Lee</h3>
+        <p>Built a compost bin from old wood scraps 🌱✨</p>
+        <small>Likes: 8 | Comments: 4</small>
+      </div>
+
+      <div class="alert-warning" style="margin-top: 1rem;">
+        ⚠️ Guest mode: Posting and commenting requires login.
+      </div>
+    </div>
+
+    <div class="section-preview" id="events">
+      <h2>Upcoming Events (Preview)</h2>
+      <table>
+        <tr>
+          <th>Event</th>
+          <th>Date</th>
+          <th>Location</th>
+        </tr>
+        <tr>
+          <td>Campus Clean-up Drive</td>
+          <td>2026-02-07</td>
+          <td>School Gate</td>
+        </tr>
+        <tr>
+          <td>Upcycling Workshop</td>
+          <td>2026-02-15</td>
+          <td>Lab 3</td>
+        </tr>
+        <tr>
+          <td>E-waste Collection Day</td>
+          <td>2026-03-01</td>
+          <td>Atrium</td>
+        </tr>
+      </table>
+
+      <div class="alert-success">
+        ✅ Login to register and earn Eco-Points for attendance.
+      </div>
+    </div>
+  </div>
+
+  <!-- Rewards Preview -->
+  <div class="section-preview" id="rewards">
+    <h2>Rewards Preview</h2>
+    <p>These rewards can be redeemed using Eco-Points (login required).</p>
+
+    <table>
+      <tr>
+        <th>Reward</th>
+        <th>Points Needed</th>
+        <th>Status</th>
+      </tr>
+      <tr>
+        <td>Reusable Bottle</td>
+        <td>300</td>
+        <td>Available</td>
+      </tr>
+      <tr>
+        <td>Eco Tote Bag</td>
+        <td>200</td>
+        <td>Available</td>
+      </tr>
+      <tr>
+        <td>RM10 Voucher</td>
+        <td>500</td>
+        <td>Limited</td>
+      </tr>
+    </table>
+
+    <button type="button" onclick="window.location.href='login/login.php'">Login to Redeem</button>
+  </div>
+
+  <!-- About -->
+  <div class="section-preview" id="about">
+    <h2>About ReLife Hub</h2>
+    <p>
+      ReLife Hub encourages sustainable habits by combining recycling logs, community content,
+      and an Eco-Points reward system. Students can record recyclables, learn DIY upcycling,
+      and join eco-events to contribute to a greener campus.
+    </p>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2026 ReLife Hub | Designed for Eco-School Sustainability</p>
+    <p><a href="#">Privacy Policy</a> | <a href="#">Terms of Use</a> | <a href="#">Contact Us</a></p>
+  </footer>
+
+</body>
+</html>
