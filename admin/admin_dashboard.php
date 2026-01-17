@@ -1,9 +1,8 @@
- <?php
+<?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 include '../connect.php';
-include 'admin_header.php';
 
 function getCount($conn, $query, $label) {
     $result = $conn->query($query);
@@ -21,120 +20,118 @@ $total_flagged_log = getCount($conn, "SELECT COUNT(*) as total_flagged_log FROM 
 $total_reported_content = getCount($conn, "SELECT COUNT(*) as total_reported_content FROM post_reports", 'total_reported_content');
 ?>
 
-  
-  <!DOCTYPE html> 
-  <html lang="en"> 
-   <head> 
-   <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
-   <title>Admin Dashboard</title> 
-   <link rel="stylesheet" href="../css/style.css" /> 
-   <link rel="stylesheet" href="../css/admin.css" /> 
-   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
-   <script src="chart.js"></script> 
-  </head> 
-  <body> 
-  
-    <!-- Main Section --> 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <?php include 'admin_header.php'; ?>
+</head>
+<body>
+  <div class="main-content">
     <main class="dashboard">
 
-    <h2>Quick View</h2> 
+        <h2>Quick View</h2> 
 
-  <div class="card-grid">
-    <div class="card"> 
-    <div class="icon">👥</div> 
-    <p>Total User</p>
-    <h3><?php echo $total_users; ?></h3> 
-    <button>View All</button> 
-  </div> 
-  
-  <div class="card">
-    <div class="icon">♻️</div>
-    <p>Total Recycling Log</p> 
-    <h3><?php echo $total_recycling_log; ?></h3> 
-    <button>View All</button> 
-  </div> 
-  
-  <div class="card"> 
-    <div class="icon">📝</div> 
-    <p>Total Post</p> 
-    <h3><?php echo $total_post; ?></h3> 
-    <button>View All</button> 
-  </div> 
+        <div class="card-grid">
+            <div class="card"> 
+                <div class="icon">👥</div> 
+                <p>Total User</p>
+                <h3><?php echo $total_users; ?></h3> 
+                <button>View All</button> 
+            </div> 
+            
+            <div class="card">
+                <div class="icon">♻️</div>
+                <p>Total Recycling Log</p> 
+                <h3><?php echo $total_recycling_log; ?></h3> 
+                <button>View All</button> 
+            </div> 
+            
+            <div class="card"> 
+                <div class="icon">📝</div> 
+                <p>Total Post</p> 
+                <h3><?php echo $total_post; ?></h3> 
+                <button>View All</button> 
+            </div> 
 
-  <div class="card"> 
-    <div class="icon">📅</div> 
-    <p>Total Events</p> 
-    <h3><?php echo $total_events; ?></h3> 
-    <button>View All</button> 
-  </div> 
+            <div class="card"> 
+                <div class="icon">📅</div> 
+                <p>Total Events</p> 
+                <h3><?php echo $total_events; ?></h3> 
+                <button>View All</button> 
+            </div> 
 
-  <div class="card"> 
-    <div class="icon">🚩</div> 
-    <p>Total Flagged Log</p> 
-    <h3><?php echo $total_flagged_log; ?></h3> 
-    <button>View All</button> 
-  </div> 
-  
-  <div class="card"> 
-    <div class="icon">⚠️</div> 
-    <p>Total Reported Content</p> 
-    <h3><?php echo $total_reported_content; ?></h3> 
-    <button>View All</button>
-  </div> 
-</div>
+            <div class="card"> 
+                <div class="icon">🚩</div> 
+                <p>Total Flagged Log</p> 
+                <h3><?php echo $total_flagged_log; ?></h3> 
+                <button>View All</button> 
+            </div> 
+            
+            <div class="card"> 
+                <div class="icon">⚠️</div> 
+                <p>Total Reported Content</p> 
+                <h3><?php echo $total_reported_content; ?></h3> 
+                <button>View All</button>
+            </div> 
+        </div>
 
-<h2>Top 5 Users by Eco-Points</h2>
-    <table class="eco-table">
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Name</th>
-          <th>User ID</th>
-          <th>Total Points</th>
-          <th>Badges</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-  <?php
-  $top_users_query = "SELECT user_id, name, eco_points, badges FROM users ORDER BY eco_points DESC LIMIT 5";
-  $top_users_result = $conn->query($top_users_query);
+        <h2>Top 5 Users by Eco-Points</h2>
+        <table class="eco-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Name</th>
+                    <th>User ID</th>
+                    <th>Total Points</th>
+                    <th>Badges</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php
+            $top_users_query = "SELECT user_id, name, eco_points, badges FROM users ORDER BY eco_points DESC LIMIT 5";
+            $top_users_result = $conn->query($top_users_query);
 
-  if ($top_users_result && $top_users_result->num_rows > 0) {
-      $rank = 1;
-      while ($user = $top_users_result->fetch_assoc()) {
-          echo "<tr>";
-          echo "<td>" . $rank++ . "</td>";
-          echo "<td>" . htmlspecialchars($user['name']) . "</td>";
-          echo "<td>" . htmlspecialchars($user['user_id']) . "</td>";
-          echo "<td>" . htmlspecialchars($user['eco_points']) . "</td>";
-          echo "<td>" . htmlspecialchars($user['badges']) . "</td>";
-          echo "<td><a href='#'>View</a></td>";
-          echo "</tr>";
-      }
-  } else {
-      echo "<tr><td colspan='6'>No top users found.</td></tr>";
-  }
-  ?>
-      </tbody>
-    </table>
+            if ($top_users_result && $top_users_result->num_rows > 0) {
+                $rank = 1;
+                while ($user = $top_users_result->fetch_assoc()) {
+                    echo "<tr>";
+                    echo "<td>" . $rank++ . "</td>";
+                    echo "<td>" . htmlspecialchars($user['name']) . "</td>";
+                    echo "<td>" . htmlspecialchars($user['user_id']) . "</td>";
+                    echo "<td>" . htmlspecialchars($user['eco_points']) . "</td>";
+                    echo "<td>" . htmlspecialchars($user['badges']) . "</td>";
+                    echo "<td><a href='#'>View</a></td>";
+                    echo "</tr>";
+                }
+            } else {
+                echo "<tr><td colspan='6'>No top users found.</td></tr>";
+            }
+            ?>
+            </tbody>
+        </table>
 
-    <div class="chart-section">
-      <div class="chart-box">
-        <h4>Monthly Recycling Log Bar Chart</h4>
-        <canvas id="recyclingChart"></canvas>
-      </div>
-      
+        <div class="chart-section">
+            <div class="chart-box">
+                <h4>Monthly Recycling Log Bar Chart</h4>
+                <canvas id="recyclingChart"></canvas>
+            </div>
+            
+            <div class="chart-box">
+                <h4>Monthly Event Attendance Bar Chart</h4>
+                <canvas id="eventAttendanceChart"></canvas>
+            </div>
+        </div>
 
-      <div class="chart-box">
-        <h4>Monthly Event Attendance Bar Chart</h4>
-        <canvas id="eventAttendanceChart"></canvas>
-      </div>
+    </main>
 
-    </div>
+    <!-- Page-specific scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+    <script src="chart.js"></script> 
 
-    <footer>© 2026 ReLife Hub</footer>
-
-  </main>
+<?php include 'admin_footer.php'; // Include the new footer ?>
 </body>
 </html>

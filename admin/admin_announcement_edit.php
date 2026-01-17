@@ -1,7 +1,7 @@
 <?php
 
 include "../connect.php";
-include 'admin_header.php';
+include 'admin_header.php'; // Include the new header
 
 /* Validate ID */
 if (!isset($_GET['id'])) {
@@ -60,86 +60,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Edit Announcement</title>
+<div class="main-content">
+    <main class="dashboard">
 
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/admin.css">
-</head>
-<body>
-
-<main class="dashboard">
-
-    <!-- Title bar -->
-    <div class="page-title-bar">
-        <a href="admin_announcement.php?id=<?= urlencode($announcement_id) ?>" class="icon-btn back-btn">↩</a>
-        <h2><?= htmlspecialchars($announcement_id) ?></h2>
-    </div>
-
-    <!-- Edit Form -->
-    <form method="POST" class="section-preview" style="max-width:700px; margin:auto;">
-
-        <div class="form-group">
-            <label>Announcement ID :</label>
-            <input type="text" value="<?= htmlspecialchars($data['announcement_id']) ?>" readonly>
+        <!-- Title bar -->
+        <div class="page-title-bar">
+            <a href="admin_announcement.php?id=<?= urlencode($announcement_id) ?>" class="icon-btn back-btn">↩</a>
+            <h2><?= htmlspecialchars($announcement_id) ?></h2>
         </div>
 
-        <div class="form-group">
-            <label>Start Date :</label>
-            <input type="datetime-local" name="start_date"
-                   value="<?= date('Y-m-d\TH:i', strtotime($data['start_date'])) ?>" required>
-        </div>
+        <!-- Edit Form -->
+        <form method="POST" class="section-preview" style="max-width:700px; margin:auto;">
 
-        <div class="form-group">
-            <label>End Date :</label>
-            <input type="datetime-local" name="end_date"
-                   value="<?= date('Y-m-d\TH:i', strtotime($data['end_date'])) ?>" required>
-        </div>
+            <div class="form-group">
+                <label>Announcement ID :</label>
+                <input type="text" value="<?= htmlspecialchars($data['announcement_id']) ?>" readonly>
+            </div>
 
-        <div class="form-group">
-            <label>Status :</label>
-            <select name="is_active">
-                <option value="1" <?= $data['is_active'] ? 'selected' : '' ?>>Active</option>
-                <option value="0" <?= !$data['is_active'] ? 'selected' : '' ?>>Inactive</option>
-            </select>
-        </div>
+            <div class="form-group">
+                <label>Start Date :</label>
+                <input type="datetime-local" name="start_date"
+                    value="<?= date('Y-m-d\TH:i', strtotime($data['start_date'])) ?>" required>
+            </div>
 
-        <div class="form-group">
-            <label>Title :</label>
-            <input type="text" name="title" value="<?= htmlspecialchars($data['title']) ?>" required>
-        </div>
+            <div class="form-group">
+                <label>End Date :</label>
+                <input type="datetime-local" name="end_date"
+                    value="<?= date('Y-m-d\TH:i', strtotime($data['end_date'])) ?>" required>
+            </div>
 
-        <div class="form-group">
-            <label>Message :</label>
-            <textarea name="message" rows="4" required><?= htmlspecialchars($data['message']) ?></textarea>
-        </div>
+            <div class="form-group">
+                <label>Status :</label>
+                <select name="is_active">
+                    <option value="1" <?= $data['is_active'] ? 'selected' : '' ?>>Active</option>
+                    <option value="0" <?= !$data['is_active'] ? 'selected' : '' ?>>Inactive</option>
+                </select>
+            </div>
 
-        <div class="form-group">
-            <label>Created At :</label>
-            <input type="text" value="<?= htmlspecialchars($data['created_at']) ?>" readonly>
-        </div>
+            <div class="form-group">
+                <label>Title :</label>
+                <input type="text" name="title" value="<?= htmlspecialchars($data['title']) ?>" required>
+            </div>
 
-        <div class="form-group">
-            <label>Created By :</label>
-            <input type="text" value="<?= htmlspecialchars($data['created_by']) ?>" readonly>
-        </div>
+            <div class="form-group">
+                <label>Message :</label>
+                <textarea name="message" rows="4" required><?= htmlspecialchars($data['message']) ?></textarea>
+            </div>
 
-        <!-- Buttons -->
-        <div style="display:flex; justify-content:center; gap:20px; margin-top:20px;">
-            <a href="admin_announcement_view.php?id=<?= urlencode($announcement_id) ?>" class="btn">CANCEL</a>
-            <button type="submit" class="btn save-btn">SAVE</button>
-        </div>
+            <div class="form-group">
+                <label>Created At :</label>
+                <input type="text" value="<?= htmlspecialchars($data['created_at']) ?>" readonly>
+            </div>
 
-    </form>
+            <div class="form-group">
+                <label>Created By :</label>
+                <input type="text" value="<?= htmlspecialchars($data['created_by']) ?>" readonly>
+            </div>
 
-</main>
+            <!-- Buttons -->
+            <div style="display:flex; justify-content:center; gap:20px; margin-top:20px;">
+                <a href="admin_announcement_view.php?id=<?= urlencode($announcement_id) ?>" class="btn">CANCEL</a>
+                <button type="submit" class="btn save-btn">SAVE</button>
+            </div>
 
-<footer>
-    © 2026 ReLife Hub
-</footer>
+        </form>
+    </main>
 
-</body>
-</html>
+<?php include 'admin_footer.php'; ?>
