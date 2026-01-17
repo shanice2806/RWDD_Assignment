@@ -1,18 +1,16 @@
 <?php
 include "../connect.php";
-
-/* Page title */
 $page_title = "View User";
-
-/* Header opens <html> <body> <div class="main-content"> */
 include "admin_header.php";
 
+/* Validate ID */
 if (!isset($_GET['id'])) {
     die("User ID not provided.");
 }
 
 $user_id = $_GET['id'];
 
+/* Fetch user */
 $stmt = $conn->prepare("
     SELECT user_id, name, email, role, eco_points, badges,
            created_at, account_status, last_login, profile_image
@@ -30,79 +28,80 @@ if ($result->num_rows === 0) {
 $user = $result->fetch_assoc();
 ?>
 
-<!-- ⚠️ CONTENT MUST START HERE (INSIDE .main-content) -->
+<main class="dashboard">
 
-<div class="page-title-bar">
-  <a href="admin_manage_user.php" class="icon-btn back-btn">←</a>
-</div>
-
-<div class="profile-container">
-
-  <div class="profile-avatar-large">
-    <?php if (!empty($user['profile_image'])): ?>
-      <img src="../uploads/<?= htmlspecialchars($user['profile_image']) ?>" alt="Profile">
-    <?php else: ?>
-      👤
-    <?php endif; ?>
-  </div>
-
-  <div class="profile-actions">
-    <a href="admin_user_edit.php?id=<?= $user['user_id'] ?>" class="btn-primary">
-      Edit Profile
-    </a>
-  </div>
-
-  <div class="profile-form">
-
-    <div class="form-group">
-      <label>Name</label>
-      <input type="text" value="<?= htmlspecialchars($user['name']) ?>" readonly>
+    <!-- PAGE TITLE BAR -->
+    <div class="page-title-bar">
+        <a href="admin_manage_user.php" class="icon-btn back-btn">↩</a>
+        <h2><?= htmlspecialchars($user['user_id']) ?></h2>
     </div>
 
-    <div class="form-group">
-      <label>User ID</label>
-      <input type="text" value="<?= htmlspecialchars($user['user_id']) ?>" readonly>
+    <!-- PROFILE CARD -->
+    <div class="section-preview" style="max-width:700px; margin:auto;">
+
+        <!-- Avatar -->
+        <div class="profile-avatar-large" style="text-align:center; margin-bottom:15px;">
+            <?php if (!empty($user['profile_image'])): ?>
+                <img src="../uploads/<?= htmlspecialchars($user['profile_image']) ?>" alt="Profile">
+            <?php else: ?>
+                👤
+            <?php endif; ?>
+        </div>
+
+        <!-- Edit Button -->
+        <div style="text-align:center; margin-bottom:20px;">
+            <a href="admin_user_edit.php?id=<?= urlencode($user['user_id']) ?>" class="btn">
+                EDIT
+            </a>
+        </div>
+
+        <!-- User Details -->
+        <div class="form-group">
+            <label>Name</label>
+            <input type="text" value="<?= htmlspecialchars($user['name']) ?>" readonly>
+        </div>
+
+        <div class="form-group">
+            <label>User ID</label>
+            <input type="text" value="<?= htmlspecialchars($user['user_id']) ?>" readonly>
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input type="text" value="<?= htmlspecialchars($user['email']) ?>" readonly>
+        </div>
+
+        <div class="form-group">
+            <label>Role</label>
+            <input type="text" value="<?= htmlspecialchars($user['role']) ?>" readonly>
+        </div>
+
+        <div class="form-group">
+            <label>Eco Points</label>
+            <input type="text" value="<?= htmlspecialchars($user['eco_points']) ?>" readonly>
+        </div>
+
+        <div class="form-group">
+            <label>Badges</label>
+            <input type="text" value="<?= htmlspecialchars($user['badges']) ?>" readonly>
+        </div>
+
+        <div class="form-group">
+            <label>Last Login</label>
+            <input type="text" value="<?= htmlspecialchars($user['last_login']) ?>" readonly>
+        </div>
+
+        <div class="form-group">
+            <label>Account Created On</label>
+            <input type="text" value="<?= htmlspecialchars($user['created_at']) ?>" readonly>
+        </div>
+
+        <div class="form-group">
+            <label>Account Status</label>
+            <input type="text" value="<?= htmlspecialchars($user['account_status']) ?>" readonly>
+        </div>
+
     </div>
+</main>
 
-    <div class="form-group">
-      <label>Email</label>
-      <input type="text" value="<?= htmlspecialchars($user['email']) ?>" readonly>
-    </div>
-
-    <div class="form-group">
-      <label>Role</label>
-      <input type="text" value="<?= htmlspecialchars($user['role']) ?>" readonly>
-    </div>
-
-    <div class="form-group">
-      <label>Eco Points</label>
-      <input type="text" value="<?= htmlspecialchars($user['eco_points']) ?>" readonly>
-    </div>
-
-    <div class="form-group">
-      <label>Badges</label>
-      <input type="text" value="<?= htmlspecialchars($user['badges']) ?>" readonly>
-    </div>
-
-    <div class="form-group">
-      <label>Last Login</label>
-      <input type="text" value="<?= htmlspecialchars($user['last_login']) ?>" readonly>
-    </div>
-
-    <div class="form-group">
-      <label>Account Created On</label>
-      <input type="text" value="<?= htmlspecialchars($user['created_at']) ?>" readonly>
-    </div>
-
-    <div class="form-group">
-      <label>Account Status</label>
-      <input type="text" value="<?= htmlspecialchars($user['account_status']) ?>" readonly>
-    </div>
-
-  </div>
-</div>
-
-<?php
-/* Footer closes </div> </body> </html> */
-include "admin_footer.php";
-?>
+<?php include "admin_footer.php"; ?>

@@ -1,5 +1,4 @@
 <?php
-<?php
 include "../connect.php";
 $page_title = "View Announcement";
 include "admin_header.php";
