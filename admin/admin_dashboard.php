@@ -3,6 +3,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 include '../connect.php';
+include 'admin_header.php';
 
 function getCount($conn, $query, $label) {
     $result = $conn->query($query);
@@ -32,24 +33,7 @@ $total_reported_content = getCount($conn, "SELECT COUNT(*) as total_reported_con
    <script src="chart.js"></script> 
   </head> 
   <body> 
-    <!-- Sidebar/Navbar (simplified placeholder) --> 
-     <header class="top-bar"> 
-
-      <div class="left"> 
-        <button class="menu-toggle">☰</button>
-        <span>Welcome! XXX</span> 
-      </div> 
-      
-      <div class="search-container"> 
-        <input type="text" class="search-bar" placeholder="Search..." /> 
-        <button class="search-btn">🔍</button> 
-      </div>
-      
-      <div class="icons">   
-      <button class="icon-btn">🏠</button> 
-      <button class="icon-btn">⎋</button> 
-    </div> </header>
-
+  
     <!-- Main Section --> 
     <main class="dashboard">
 
