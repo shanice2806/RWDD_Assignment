@@ -10,7 +10,7 @@ $role = strtolower($_SESSION["role"] ?? "user");
 
 // adjust these paths to your project structure
 if ($role === "admin") {
-header("Location: admin/admin_dashboard.html");
+header("Location: admin/admin_dashboard.php");
 } elseif ($role === "event organizer" || $role === "event_organizer" || $role === "organizer") {
   header("Location: event organizer/organizer.php");
 } else {

@@ -51,7 +51,7 @@ $user = $result->fetch_assoc();
         <!-- Edit Button -->
         <div style="text-align:center; margin-bottom:20px;">
             <a href="admin_user_edit.php?id=<?= urlencode($user['user_id']) ?>" class="btn">
-                EDIT
+                EDIT PROFILE
             </a>
         </div>
 

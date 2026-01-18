@@ -1,0 +1,149 @@
+<?php
+include "../connect.php";
+$page_title = "Edit User";
+include "admin_header.php";
+
+/* =========================
+   VALIDATE USER ID
+   ========================= */
+if (!isset($_GET['id'])) {
+    header("Location: admin_manage_user.php");
+    exit;
+}
+
+$user_id = $_GET['id'];
+
+/* =========================
+   FETCH USER
+   ========================= */
+$stmt = $conn->prepare("
+    SELECT user_id, name, email, role, eco_points, badges,
+           created_at, account_status, last_login, profile_image
+    FROM users
+    WHERE user_id = ?
+");
+$stmt->bind_param("s", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows === 0) {
+    die("User not found.");
+}
+
+$user = $result->fetch_assoc();
+
+/* =========================
+   HANDLE UPDATE (ONLY ROLE & STATUS)
+   ========================= */
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $role           = $_POST['role'];
+    $account_status = $_POST['account_status'];
+
+    $update = $conn->prepare("
+        UPDATE users
+        SET role = ?, account_status = ?
+        WHERE user_id = ?
+    ");
+
+    $update->bind_param("sss", $role, $account_status, $user_id);
+    $update->execute();
+
+    header("Location: admin_user_view.php?id=" . urlencode($user_id));
+    exit;
+}
+?>
+
+<div class="main-content">
+<main class="dashboard">
+
+    <!-- PAGE TITLE BAR -->
+    <div class="page-title-bar">
+        <a href="admin_manage_user.php?id=<?= urlencode($user_id) ?>" class="icon-btn back-btn">↩</a>
+        <h2><?= htmlspecialchars($user_id) ?></h2>
+    </div>
+
+    <!-- EDIT FORM -->
+    <form method="POST" class="section-preview" style="max-width:700px; margin:auto;">
+
+        <!-- Profile Image -->
+        <div style="text-align:center; margin-bottom:20px;">
+            <?php if (!empty($user['profile_image'])): ?>
+                <img src="../<?= htmlspecialchars($user['profile_image']) ?>"
+                     style="width:120px; height:120px; border-radius:50%; object-fit:cover;">
+            <?php else: ?>
+                <div style="font-size:80px;">👤</div>
+            <?php endif; ?>
+        </div>
+
+        <!-- READ ONLY FIELDS -->
+        <div class="form-group">
+            <label>User ID :</label>
+            <input type="text" value="<?= htmlspecialchars($user['user_id']) ?>" readonly>
+        </div>
+
+        <div class="form-group">
+            <label>Name :</label>
+            <input type="text" value="<?= htmlspecialchars($user['name']) ?>" readonly>
+        </div>
+
+        <div class="form-group">
+            <label>Email :</label>
+            <input type="text" value="<?= htmlspecialchars($user['email']) ?>" readonly>
+        </div>
+
+        <div class="form-group">
+            <label>Eco Points :</label>
+            <input type="text" value="<?= htmlspecialchars($user['eco_points']) ?>" readonly>
+        </div>
+
+        <div class="form-group">
+            <label>Badges :</label>
+            <input type="text" value="<?= htmlspecialchars($user['badges']) ?>" readonly>
+        </div>
+
+        <div class="form-group">
+            <label>Created At :</label>
+            <input type="text" value="<?= htmlspecialchars($user['created_at']) ?>" readonly>
+        </div>
+
+        <div class="form-group">
+            <label>Last Login :</label>
+            <input type="text" value="<?= htmlspecialchars($user['last_login']) ?>" readonly>
+        </div>
+
+        <!-- EDITABLE FIELDS -->
+        <div class="form-group">
+            <label>Role :</label>
+            <select name="role">
+                <option value="Admin" <?= $user['role'] === 'Admin' ? 'selected' : '' ?>>Admin</option>
+                <option value="User" <?= $user['role'] === 'User' ? 'selected' : '' ?>>User</option>
+                <option value="Event Organizer" <?= $user['role'] === 'Event Organizer' ? 'selected' : '' ?>>
+                    Event Organizer
+                </option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Account Status :</label>
+            <select name="account_status">
+                <option value="Activated" <?= $user['account_status'] === 'Activated' ? 'selected' : '' ?>>
+                    Activated
+                </option>
+                <option value="Deactivated" <?= $user['account_status'] === 'Deactivated' ? 'selected' : '' ?>>
+                    Deactivated
+                </option>
+            </select>
+        </div>
+
+        <!-- BUTTONS -->
+        <div style="display:flex; justify-content:center; gap:20px; margin-top:25px;">
+            <a href="admin_user_view.php?id=<?= urlencode($user_id) ?>" class="btn">CANCEL</a>
+            <button type="submit" class="btn save-btn">UPDATE</button>
+        </div>
+
+    </form>
+</main>
+</div>
+
+<?php include "admin_footer.php"; ?>
