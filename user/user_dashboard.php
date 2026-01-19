@@ -2,25 +2,22 @@
 session_start();
 require_once "../connect.php";
 
-// Must login
+//login first
 if (!isset($_SESSION["user_id"])) {
   header("Location: ../login/login.php");
   exit();
 }
 
-// Only allow User role (optional but recommended)
-// If your role values are like "User", "Admin", "Event Organizer"
+// Only allow User(student,staff,teacher only not for admin or event organizer) role 
 $role = strtolower(trim($_SESSION["role"] ?? ""));
 if ($role === "admin") {
-  header("Location: ../admin/admin_dashboard.php"); // change if your admin dashboard name differs
+  header("Location: ../admin/admin_dashboard.php");
   exit();
 }
 
 $user_id = $_SESSION["user_id"];
 
-// --------------------
-// Fetch user profile
-// --------------------
+// take data from database
 $userSql = "SELECT user_id, name, email, role, eco_points, badges, created_at, account_status, last_login, profile_image
             FROM users
             WHERE user_id = ?
@@ -33,7 +30,6 @@ $user = mysqli_fetch_assoc($userRes);
 mysqli_stmt_close($userStmt);
 
 if (!$user) {
-  // Session exists but user removed from DB
   session_unset();
   session_destroy();
   header("Location: ../login/login.php");
@@ -43,9 +39,7 @@ if (!$user) {
 // Profile image fallback
 $profileImg = $user["profile_image"] ? "../" . $user["profile_image"] : "../images/profile.png";
 
-// --------------------
 // Stats: recycling logs
-// --------------------
 function getCount($conn, $sql, $user_id) {
   $stmt = mysqli_prepare($conn, $sql);
   mysqli_stmt_bind_param($stmt, "s", $user_id);
@@ -60,14 +54,10 @@ $totalLogs   = getCount($conn, "SELECT COUNT(*) AS c FROM recycling_log WHERE us
 $pendingLogs = getCount($conn, "SELECT COUNT(*) AS c FROM recycling_log WHERE user_id = ? AND status = 'pending'", $user_id);
 $validLogs   = getCount($conn, "SELECT COUNT(*) AS c FROM recycling_log WHERE user_id = ? AND status = 'valid'", $user_id);
 
-// --------------------
 // Stats: posts
-// --------------------
 $totalPosts  = getCount($conn, "SELECT COUNT(*) AS c FROM posts WHERE user_id = ?", $user_id);
 
-// --------------------
-// Recent activity lists (optional, nice for dashboard)
-// --------------------
+// Recent activity lists 
 $recentLogs = [];
 $logStmt = mysqli_prepare($conn, "SELECT rl.log_id,
        m.materials_name AS material_type,
@@ -89,11 +79,12 @@ if ($logStmt) {
 }
 
 $recentPosts = [];
-$postStmt = mysqli_prepare($conn, "SELECT post_id, title,post_created_at AS created_at
-                                  FROM posts
-                                  WHERE user_id = ?
-                                  ORDER BY post_created_at DESC
-                                  LIMIT 5");
+$postStmt = mysqli_prepare($conn, "SELECT post_id, title,post_created_at AS created_at 
+FROM posts WHERE user_id = ? 
+ORDER BY post_created_at 
+DESC LIMIT 5");
+
+
 if ($postStmt) {
   mysqli_stmt_bind_param($postStmt, "s", $user_id);
   mysqli_stmt_execute($postStmt);
@@ -122,31 +113,31 @@ $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_lo
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>User Dashboard | ReLife Hub</title>
 
-  <!-- Use ABSOLUTE path so it always loads -->
   <link rel="stylesheet" href="/RWDD_Assignment/css/style.css">
+  <link rel="stylesheet" href="/RWDD_Assignment/css/user.css">
+
 </head>
-<body>
+<body class="sidebar-collapsed">
+
+<button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
+
+<div class="user-layout">
+
+  <?php include __DIR__ . "/user_sidebar.php"; ?>
+
+  <div class="user-content">
 
 <header>
   <h1>ReLife Hub</h1>
   <p>Eco • Modern • Sustainable</p>
 </header>
 
-<nav>
-  <a href="dashboard.php">Home</a>
-  <a href="../events/events.php">Events</a>
-  <a href="../rewards/rewards.php">Rewards</a>
-  <a href="../profile/profile.php">Profile</a>
-  <a href="../friends/friends.php">Friends</a>
-  <a href="../login/logout.php" onclick="return confirm('Logout now?');">Logout</a>
-</nav>
 
 <div class="search-bar">
   <input type="text" placeholder="Search ReLife Hub...">
   <button type="button">Search</button>
 </div>
 
-<!-- Profile Summary -->
 <div class="profile-card">
   <img src="<?php echo htmlspecialchars($profileImg); ?>" alt="Profile Picture">
   <h2><?php echo htmlspecialchars($user["name"]); ?></h2>
@@ -183,7 +174,6 @@ $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_lo
   </div>
 </div>
 
-<!-- Status Overview -->
 <div class="section-preview">
   <h2>Recycling Status Overview</h2>
   <table>
@@ -203,7 +193,6 @@ $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_lo
   <a class="btn" href="../recycling/recycle_list.php" style="margin-left: 10px;">View My Logs</a>
 </div>
 
-<!-- Recent Activity -->
 <div class="section-preview">
   <h2>Recent Activity</h2>
 
@@ -251,10 +240,15 @@ $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_lo
   <a class="btn" href="../posts/post_list.php" style="margin-left: 10px;">View Community</a>
 </div>
 
+  </div>
+</div>
+
 <footer>
   <p>&copy; 2026 ReLife Hub | Designed for Eco-School Sustainability</p>
   <p><a href="#">Privacy Policy</a> | <a href="#">Terms of Use</a> | <a href="#">Contact Us</a></p>
 </footer>
+
+<script src="/RWDD_Assignment/user/user.js"></script>
 
 </body>
 </html>
