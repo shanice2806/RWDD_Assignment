@@ -8,7 +8,7 @@ if (!isset($_SESSION["user_id"])) {
   exit();
 }
 
-// Only allow User(student,staff,teacher only not for admin or event organizer) role 
+// Only allow User(student,staff,teacher only not for admin) role 
 $role = strtolower(trim($_SESSION["role"] ?? ""));
 if ($role === "admin") {
   header("Location: ../admin/admin_dashboard.php");
@@ -113,13 +113,16 @@ $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_lo
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>User Dashboard | ReLife Hub</title>
 
-  <link rel="stylesheet" href="/RWDD_Assignment/css/style.css">
-  <link rel="stylesheet" href="/RWDD_Assignment/css/user.css">
+
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/user.css">
 
 </head>
 <body class="sidebar-collapsed">
 
 <button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div> 
 
 <div class="user-layout">
 
@@ -139,12 +142,12 @@ $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_lo
 </div>
 
 <div class="profile-card">
-  <img src="<?php echo htmlspecialchars($profileImg); ?>" alt="Profile Picture">
-  <h2><?php echo htmlspecialchars($user["name"]); ?></h2>
+  <img src="<?php echo ($profileImg); ?>" alt="Profile Picture">
+  <h2>Welcome back, <?php echo ($user["name"]);  ?></h2>
   <p>
-    <?php echo htmlspecialchars($user["role"]); ?> | Joined <?php echo htmlspecialchars($joined); ?>
+    <?php echo ($user["role"]); ?> | Joined <?php echo ($joined); ?>
     <br>
-    <span style="color: var(--color-muted);">Last login: <?php echo htmlspecialchars($lastLogin); ?></span>
+    <span style="color: var(--color-muted);">Last login: <?php echo ($lastLogin); ?></span>
   </p>
 
   <div class="profile-stats">
@@ -168,7 +171,7 @@ $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_lo
       <div class="alert-warning">No badges yet. Start recycling to earn your first badge!</div>
     <?php else: ?>
       <?php foreach ($badges as $b): ?>
-        <span class="badge"><?php echo htmlspecialchars($b); ?></span>
+        <span class="badge"><?php echo ($b); ?></span>
       <?php endforeach; ?>
     <?php endif; ?>
   </div>
@@ -209,10 +212,10 @@ $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_lo
       </tr>
       <?php foreach ($recentLogs as $log): ?>
         <tr>
-          <td><?php echo htmlspecialchars($log["date"]); ?></td>
-          <td><?php echo htmlspecialchars($log["material_type"]); ?></td>
-          <td><?php echo htmlspecialchars($log["weight"]); ?></td>
-          <td><?php echo htmlspecialchars($log["status"]); ?></td>
+          <td><?php echo ($log["date"]); ?></td>
+          <td><?php echo ($log["material_type"]); ?></td>
+          <td><?php echo ($log["weight"]); ?></td>
+          <td><?php echo ($log["status"]); ?></td>
         </tr>
       <?php endforeach; ?>
     </table>
@@ -229,8 +232,8 @@ $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_lo
       </tr>
       <?php foreach ($recentPosts as $p): ?>
         <tr>
-          <td><?php echo htmlspecialchars($p["title"]); ?></td>
-          <td><?php echo htmlspecialchars($p["created_at"]); ?></td>
+          <td><?php echo ($p["title"]); ?></td>
+          <td><?php echo ($p["created_at"]); ?></td>
         </tr>
       <?php endforeach; ?>
     </table>
@@ -248,7 +251,7 @@ $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_lo
   <p><a href="#">Privacy Policy</a> | <a href="#">Terms of Use</a> | <a href="#">Contact Us</a></p>
 </footer>
 
-<script src="/RWDD_Assignment/user/user.js"></script>
+<script src="../user/user.js"></script>
 
 </body>
 </html>

@@ -14,10 +14,10 @@
 
   <div class="user-sidebar-menu">
     <a href="user_dashboard.php" class="user-menu-item active">🏠 Home</a>
-    <a href="../events/events.php" class="user-menu-item">📅 Events</a>
-    <a href="../rewards/rewards.php" class="user-menu-item">🏆 Rewards</a>
-    <a href="../profile/profile.php" class="user-menu-item">👤 Profile</a>
-    <a href="../friends/friends.php" class="user-menu-item">👥 Friends</a>
+    <a href="../user/user_event.php" class="user-menu-item">📅 Events</a>
+    <a href="../user/rewards.php" class="user-menu-item">🏆 Rewards</a>
+    <a href="../user/profile.php" class="user-menu-item">👤 Profile</a>
+    <a href="../user/friends.php" class="user-menu-item">👥 Friends</a>
 
     <a href="../login/logout.php"
        class="user-menu-item logout"

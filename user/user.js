@@ -1,15 +1,29 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const userSidebar = document.getElementById("userSidebar");
-  const userToggle  = document.getElementById("userSidebarToggle");
+  const sidebar   = document.getElementById("userSidebar");
+  const toggleBtn = document.getElementById("userSidebarToggle");
+  const overlay   = document.getElementById("sidebarOverlay");
 
-  // define the error
-  if (!userSidebar || !userToggle) {
-    console.error("Sidebar or toggle button not found");
+  if (!sidebar || !toggleBtn || !overlay) {
+    console.error("Sidebar / Toggle / Overlay not found");
     return;
   }
 
-  userToggle.addEventListener("click", () => {
-    userSidebar.classList.toggle("collapsed");
-    document.body.classList.toggle("sidebar-collapsed");
-  });
+  function openSidebar() {
+    sidebar.classList.remove("collapsed");
+    document.body.classList.remove("sidebar-collapsed");
+  }
+
+  function closeSidebar() {
+    sidebar.classList.add("collapsed");
+    document.body.classList.add("sidebar-collapsed");
+  }
+
+  function toggleSidebar() {
+    const isCollapsed = sidebar.classList.contains("collapsed");
+    if (isCollapsed) openSidebar();
+    else closeSidebar();
+  }
+
+  toggleBtn.addEventListener("click", toggleSidebar);
+  overlay.addEventListener("click", closeSidebar);
 });
