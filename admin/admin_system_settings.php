@@ -119,6 +119,40 @@ $data = $stmt->get_result();
     Apply
   </button>
 
+   <?php if ($view === 'materials'): ?>
+    <a href="admin_material_add.php"
+       style="
+         height:38px;
+         padding:0 16px;
+         display:inline-flex;
+         align-items:center;
+         justify-content:center;
+         border-radius:6px;
+         background-color: #3ba99c;
+         color:#fff;
+         font-weight:600;
+         text-decoration:none;
+       ">
+      + Add Material
+    </a>
+  <?php else: ?>
+    <a href="admin_content_category_add.php"
+       style="
+         height:38px;
+         padding:0 16px;
+         display:inline-flex;
+         align-items:center;
+         justify-content:center;
+         border-radius:6px;
+         background-color: #3ba99c;
+         color:#fff;
+         font-weight:600;
+         text-decoration:none;
+       ">
+      + Add Category
+    </a>
+  <?php endif; ?>
+
 </form>
 
 

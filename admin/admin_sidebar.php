@@ -16,7 +16,7 @@
     <a href="admin_event.php" class="menu-item">📅 Recycling Event</a>
     <a href="admin_rewards.php" class="menu-item">🏆 Eco-Points & Rewards</a>
     <a href="admin_announcement.php" class="menu-item">📢 Announcement</a>
-    <a href="admin_settings.php" class="menu-item">⚙️ System Settings</a>
+    <a href="admin_system_settings.php" class="menu-item">⚙️ System Settings</a>
   </nav>
 
 </aside>
