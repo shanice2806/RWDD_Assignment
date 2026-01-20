@@ -111,7 +111,7 @@ $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_lo
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Dashboard | ReLife Hub</title>
+  <title>User Profile | ReLife Hub</title>
 
 
   <link rel="stylesheet" href="../css/style.css">
@@ -160,6 +160,7 @@ $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_lo
 
 
 <div class="profile-card">
+  <h2>User Profile</h2>
   <p>
     <?php echo ($user["name"]); ?> | Joined <?php echo ($joined); ?>
     <br>
