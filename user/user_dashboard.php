@@ -209,8 +209,8 @@ $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_lo
     </tr>
   </table>
 
-  <a class="btn" href="../recycling/recycle_add.php">+ Add Recycling Log</a>
-  <a class="btn" href="../recycling/recycle_list.php" style="margin-left: 10px;">View My Logs</a>
+  <a class="btn" href="../user/user_recycle_add.php">+ Add Recycling Log</a>
+  <a class="btn" href="../user/user_recycle.php" style="margin-left: 10px;">View My Logs</a>
 </div>
 
 <div class="section-preview">

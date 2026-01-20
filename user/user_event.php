@@ -186,6 +186,28 @@ mysqli_stmt_bind_param($myListStmt, "s", $user_id);
 mysqli_stmt_execute($myListStmt);
 $myListRes = mysqli_stmt_get_result($myListStmt);
 mysqli_stmt_close($myListStmt);
+
+$myVolListStmt = mysqli_prepare($conn, "
+  SELECT 
+    e.event_id,
+    e.event_title,
+    e.event_date_time,
+    e.event_location,
+    v.volunteer_task
+  FROM volunteers v
+  JOIN events e ON e.event_id = v.event_id
+  WHERE v.user_id = ?
+  ORDER BY e.event_date_time DESC
+");
+
+$myVolListRes = null;
+if ($myVolListStmt) {
+  mysqli_stmt_bind_param($myVolListStmt, "s", $user_id);
+  mysqli_stmt_execute($myVolListStmt);
+  $myVolListRes = mysqli_stmt_get_result($myVolListStmt);
+  mysqli_stmt_close($myVolListStmt);
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -285,7 +307,7 @@ mysqli_stmt_close($myListStmt);
 
   <form method="POST" style="display:inline;" onsubmit="return confirm('Cancel volunteer request?');">
     <input type="hidden" name="cancel_volunteer_event_id" value="<?php echo htmlspecialchars($eventId); ?>">
-    <button type="submit" class="btn" style="margin-left:10px;background:#ef4444;">❌ Cancel Volunteer</button>
+    <button type="submit" class="btn" style="margin-top:10px;background:#ef4444;">❌ Cancel Volunteer</button>
   </form>
 <?php else: ?>
   <form method="POST" style="display:inline;">
@@ -336,6 +358,34 @@ mysqli_stmt_close($myListStmt);
 
   </div>
 </div>
+<!-- MY VOLUNTEER REGISTRATIONS -->
+<div class="section-preview">
+  <h2>My Volunteer Registrations</h2>
+
+  <table>
+    <tr>
+      <th>Event</th>
+      <th>Date & Time</th>
+      <th>Location</th>
+      <th>Task</th>
+    </tr>
+
+    <?php if ($myVolListRes && mysqli_num_rows($myVolListRes) > 0): ?>
+      <?php while ($vrow = mysqli_fetch_assoc($myVolListRes)): ?>
+        <tr>
+          <td><?php echo htmlspecialchars($vrow["event_title"]); ?></td>
+          <td><?php echo htmlspecialchars($vrow["event_date_time"]); ?></td>
+          <td><?php echo htmlspecialchars($vrow["event_location"]); ?></td>
+          <td><?php echo htmlspecialchars($vrow["volunteer_task"] ?? "Not assigned yet"); ?></td>
+
+        </tr>
+      <?php endwhile; ?>
+    <?php else: ?>
+      <tr><td colspan="4">No volunteer registrations yet.</td></tr>
+    <?php endif; ?>
+  </table>
+</div>
+
 
 <footer>
   <p>&copy; 2026 ReLife Hub</p>

@@ -93,6 +93,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Register</title>
+  <link rel="stylesheet" href="../css/style.css">
+
   <style>
     body{font-family:Arial,sans-serif;background:#f5f6f8;margin:0}
     .wrap{max-width:460px;margin:50px auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
@@ -141,5 +143,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       Already have an account? <a href="login.php">Login</a>
     </p>
   </div>
+  <div class="row" style="text-align:center;margin-top:10px;">
+  <a href="about.php">About ReLife Hub</a>
+</div>
+<footer>
+  <p>&copy; 2026 ReLife Hub</p>
+</footer>
 </body>
 </html>

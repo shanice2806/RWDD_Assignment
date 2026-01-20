@@ -82,20 +82,72 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login</title>
+  <link rel="stylesheet" href="../css/style.css">
   <style>
-    body{font-family:Arial,sans-serif;background:#f5f6f8;margin:0}
-    .wrap{max-width:420px;margin:60px auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
-    h1{margin:0 0 14px;font-size:22px}
-    label{display:block;margin:12px 0 6px;font-weight:600}
-    input{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px}
-    .btn{margin-top:16px;width:100%;padding:10px 12px;border:0;border-radius:10px;background:#1f6feb;color:#fff;font-weight:700;cursor:pointer}
-    .row{display:flex;justify-content:space-between;margin-top:14px;font-size:14px}
-    .error{background:#ffe8e8;color:#b00020;padding:10px 12px;border-radius:10px;margin:10px 0}
-    a{text-decoration:none;color:#1f6feb}
+    body{font-family:Arial,sans-serif;
+    background:#f5f6f8;
+    margin:0}
+
+    .wrap{max-width:420px;
+    margin:60px auto;
+    background:#fff;
+    padding:24px;
+    border-radius:12px;
+    box-shadow:0 6px 18px rgba(0,0,0,.08)}
+
+    h1{margin:0 0 14px;
+    font-size:22px}
+
+    label{display:block;
+    margin:12px 0 6px;
+    font-weight:600}
+
+    input{width:100%;
+    padding:10px 12px;
+    border:1px solid #ddd;
+    border-radius:10px}
+
+    .btn{margin-top:16px;
+    width:100%;
+    padding:10px 12px;
+    border:0;
+    border-radius:10px;
+    background:#1f6feb;
+    color:#fff;
+    font-weight:700;
+    cursor:pointer}
+
+    .row{display:flex;
+    justify-content:space-between;
+    margin-top:14px;
+    font-size:14px}
+
+    .error{background:#ffe8e8;
+    color:#b00020;
+    padding:10px 12px;
+    border-radius:10px;
+    margin:10px 0}
+
+    a{text-decoration:none;
+    color:#1f6feb}
+    
+    .login-top-img{
+    text-align:center;
+    margin-bottom:16px;}
+    .login-top-img img{
+    max-width:100%;
+    height:auto;
+    border-radius:10px;}
+
   </style>
 </head>
 <body>
   <div class="wrap">
+
+<div class="login-top-img">
+  <img src="../images/apu.png" alt="ReLife Hub">
+</div>
+
     <h1>Login</h1>
 
     <?php if ($error !== ""): ?>
@@ -117,5 +169,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       <a href="forgot_password.php">Forgot password?</a>
     </div>
   </div>
+
+<div class="row" style="justify-content:center;margin-top:10px;">
+  <a href="about.php">About ReLife Hub</a>
+</div>
+<footer>
+  <p>&copy; 2026 ReLife Hub</p>
+</footer>
+
 </body>
 </html>

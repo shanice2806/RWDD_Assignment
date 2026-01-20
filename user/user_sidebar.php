@@ -8,13 +8,9 @@
     <div class="user-profile-text">
       <strong><?php echo ($user["name"]); ?></strong>
 
-      <small class="user-role">
-        <?php echo ($user["role"]); ?>
-      </small>
-
 <?php $role = strtolower(trim($_SESSION["role"] ?? "")); ?>
 
-<?php if ($role === "organizer" || $role === "event organizer"): ?>
+<?php if ($role === "event organizer"): ?>
 
 <a href="/RWDD_Assignment/event organizer/switch_to_organizer.php"
    class="switch-role-btn">
@@ -33,6 +29,8 @@
     <a href="../user/rewards.php" class="user-menu-item">🏆 Rewards</a>
     <a href="../user/profile.php" class="user-menu-item">👤 Profile</a>
     <a href="../user/friends.php" class="user-menu-item">👥 Friends</a>
+    <a href="../user/user_recycle.php" class="user-menu-item">♻️ Recycle</a>
+
 
     <a href="../login/logout.php"
        class="user-menu-item logout"
