@@ -4,7 +4,7 @@
     <div class="profile-avatar">👤</div>
     <div class="profile-text">
       <strong>Kim Min-Gyu</strong>
-      <a href="admin_profile.php">View Profile</a>
+      <a href="view_profile.php">View Profile</a>
     </div>
   </div>
 
@@ -13,11 +13,10 @@
     <a href="admin_manage_user.php" class="menu-item">👤 Manage User</a>
     <a href="admin_recycling_log.php" class="menu-item">♻️ Recycling Log</a>
     <a href="admin_manage_post.php" class="menu-item">📝 Manage Post</a>
-    <a href="admin_recycling_event.php" class="menu-item">📅 Recycling Event</a>
+    <a href="admin_event.php" class="menu-item">📅 Recycling Event</a>
     <a href="admin_rewards.php" class="menu-item">🏆 Eco-Points & Rewards</a>
     <a href="admin_announcement.php" class="menu-item">📢 Announcement</a>
     <a href="admin_settings.php" class="menu-item">⚙️ System Settings</a>
-    <a href="admin_profile.php" class="menu-item">👥 View Profile</a>
   </nav>
 
 </aside>

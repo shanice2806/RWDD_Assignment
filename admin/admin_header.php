@@ -27,7 +27,7 @@ session_start();
 
   <div class="icons">
     <a href="admin_dashboard.php" class="icon-btn">🏠</a>
-    <a href="logout.php" class="icon-btn">⎋</a>
+    <a href="../guest.html" class="icon-btn">⎋</a>
   </div>
 </header>
 

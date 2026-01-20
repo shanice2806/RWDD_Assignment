@@ -1,3 +1,128 @@
+/* ===============================
+   RESPONSIVE DESIGN
+   =============================== */
+
+/* Tablets & small laptops */
+@media (max-width: 1024px) {
+
+  .chart-box {
+    min-width: 100%;
+  }
+
+  .sidebar-open .main-content {
+    margin-left: 0; /* Prevent squeeze on tablets */
+  }
+}
+
+/* Mobile devices */
+@media (max-width: 768px) {
+
+  /* Top Bar */
+  .top-bar {
+    padding: 10px 12px;
+    flex-wrap: wrap;
+  }
+
+  .search-container {
+    order: 3;
+    width: 100%;
+    margin-top: 10px;
+    justify-content: center;
+  }
+
+  .search-bar {
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .icons {
+    gap: 6px;
+  }
+
+  /* Announcement search */
+  .announcement-search-input {
+    width: 100%;
+    max-width: 260px;
+  }
+
+  .announcement-search-form {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Sidebar becomes overlay */
+  .admin-sidebar {
+    width: 240px;
+    left: -240px;
+    top: 60px;
+  }
+
+  .admin-sidebar.open {
+    left: 0;
+  }
+
+  .sidebar-open .main-content {
+    margin-left: 0;
+  }
+
+  /* Main content */
+  .main-content {
+    padding: 15px;
+  }
+
+  /* Cards */
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Tables become scrollable */
+  .eco-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Chart section stacks */
+  .chart-section {
+    flex-direction: column;
+  }
+
+  /* Profile page */
+  .profile-container {
+    padding: 0 15px;
+  }
+}
+
+
+
+/* Extra small phones */
+@media (max-width: 480px) {
+
+  .search-bar {
+    max-width: 220px;
+  }
+
+  .announcement-search-input {
+    max-width: 220px;
+  }
+
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .action-btn {
+    width: 70px;
+    height: 34px;
+    font-size: 12px;
+  }
+}
+
 body {
   padding-top: 60px;
 }
