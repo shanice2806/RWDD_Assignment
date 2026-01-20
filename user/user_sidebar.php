@@ -2,12 +2,27 @@
 
   <div class="user-sidebar-profile">
     <img class="user-profile-avatar"
-         src="<?php echo htmlspecialchars($profileImg); ?>"
+         src="<?php echo ($profileImg); ?>"
          alt="Profile">
 
     <div class="user-profile-text">
-      <strong><?php echo htmlspecialchars($user["name"]); ?></strong>
-      <small><?php echo htmlspecialchars($user["role"]); ?></small>
+      <strong><?php echo ($user["name"]); ?></strong>
+
+      <small class="user-role">
+        <?php echo ($user["role"]); ?>
+      </small>
+
+<?php $role = strtolower(trim($_SESSION["role"] ?? "")); ?>
+
+<?php if ($role === "organizer" || $role === "event organizer"): ?>
+
+<a href="/RWDD_Assignment/event organizer/switch_to_organizer.php"
+   class="switch-role-btn">
+  🔄 Switch to Event Organizer
+</a>
+
+<?php endif; ?>
+
       <a href="../profile/profile.php">View Profile</a>
     </div>
   </div>
@@ -24,6 +39,6 @@
        onclick="return confirm('Logout now?');">
       🚪 Logout
     </a>
-</div>
+  </div>
 
 </aside>

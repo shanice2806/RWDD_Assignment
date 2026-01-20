@@ -120,8 +120,6 @@ $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_lo
 </head>
 <body class="sidebar-collapsed">
 
-<button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
-
 <div class="sidebar-overlay" id="sidebarOverlay"></div> 
 
 <div class="user-layout">
@@ -130,22 +128,40 @@ $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_lo
 
   <div class="user-content">
 
-<header>
-  <h1>ReLife Hub</h1>
-  <p>Eco • Modern • Sustainable</p>
-</header>
+<div class="user-top-bar">
 
+  <div class="user-top-left">
+    <button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
 
-<div class="search-bar">
-  <input type="text" placeholder="Search ReLife Hub...">
-  <button type="button">Search</button>
+    <div class="user-top-user">
+      <img src="<?php echo ($profileImg); ?>"
+           class="user-top-avatar" alt="Avatar">
+      <span class="user-top-name">
+        <?php echo ($user["name"]); ?>
+      </span>
+    </div>
+  </div>
+
+  <div class="user-top-center">
+    <input class="user-top-search" type="text" placeholder="Search...">
+    <button class="user-top-search-btn" type="submit">Search</button>
+  </div>
+
+  <div class="user-top-right">
+        <span class="user-top-points">
+      🪙 <?php echo (int)$user["eco_points"]; ?> points
+        </span>
+    <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
+    <a class="user-top-btn" href="friends_add.php" title="Add Friend">👥</a>
+    <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
+  </div>
+
 </div>
 
+
 <div class="profile-card">
-  <img src="<?php echo ($profileImg); ?>" alt="Profile Picture">
-  <h2>Welcome back, <?php echo ($user["name"]);  ?></h2>
   <p>
-    <?php echo ($user["role"]); ?> | Joined <?php echo ($joined); ?>
+    <?php echo ($user["name"]); ?> | Joined <?php echo ($joined); ?>
     <br>
     <span style="color: var(--color-muted);">Last login: <?php echo ($lastLogin); ?></span>
   </p>
@@ -247,8 +263,7 @@ $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_lo
 </div>
 
 <footer>
-  <p>&copy; 2026 ReLife Hub | Designed for Eco-School Sustainability</p>
-  <p><a href="#">Privacy Policy</a> | <a href="#">Terms of Use</a> | <a href="#">Contact Us</a></p>
+  <p>&copy; 2026 ReLife Hub</p>
 </footer>
 
 <script src="../user/user.js"></script>
