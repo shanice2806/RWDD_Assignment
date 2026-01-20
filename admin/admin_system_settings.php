@@ -78,36 +78,49 @@ $data = $stmt->get_result();
     <!-- =====================
          FILTER FORM
          ===================== -->
-    <form method="GET" style="display:flex; gap:12px; flex-wrap:wrap; margin:20px 0;">
+   <form method="GET"
+      style="display:flex; gap:12px; flex-wrap:wrap; margin:20px 0;">
 
-      <!-- View Selector -->
-      <select name="view">
-        <option value="categories" <?= $view === 'categories' ? 'selected' : '' ?>>
-          Content Categories
-        </option>
-        <option value="materials" <?= $view === 'materials' ? 'selected' : '' ?>>
-          Materials
-        </option>
-      </select>
+  <!-- View -->
+  <select name="view">
+    <option value="categories" <?= $view === 'categories' ? 'selected' : '' ?>>
+      Content Categories
+    </option>
+    <option value="materials" <?= $view === 'materials' ? 'selected' : '' ?>>
+      Materials
+    </option>
+  </select>
 
-      <!-- Search -->
-      <input type="text"
-             name="search"
-             placeholder="Search by name"
-             value="<?= htmlspecialchars($search) ?>">
+  <!-- Search -->
+  <input type="text"
+         name="search"
+         placeholder="Search by name"
+         value="<?= htmlspecialchars($search) ?>">
 
-      <!-- Status Filter -->
-      <select name="status">
-        <option value="all" <?= $status === 'all' ? 'selected' : '' ?>>All Status</option>
-        <option value="active" <?= $status === 'active' ? 'selected' : '' ?>>Active</option>
-        <option value="inactive" <?= $status === 'inactive' ? 'selected' : '' ?>>Inactive</option>
-      </select>
+  <!-- Status -->
+  <select name="status">
+    <option value="all" <?= $status === 'all' ? 'selected' : '' ?>>All Status</option>
+    <option value="active" <?= $status === 'active' ? 'selected' : '' ?>>Active</option>
+    <option value="inactive" <?= $status === 'inactive' ? 'selected' : '' ?>>Inactive</option>
+  </select>
 
-      <button type="submit" class="action-btn"
-              style="display:flex;align-items:center;justify-content:center;">
-        Filter
-      </button>
-    </form>
+  <!-- Filter (SAME SIZE AS INPUTS) -->
+  <button type="submit"
+          style="
+            height: 38px;
+            padding: 0 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: #3ba99c;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+          ">
+    Apply
+  </button>
+
+</form>
+
 
     <!-- =====================
          TABLE
