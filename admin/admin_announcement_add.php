@@ -1,4 +1,5 @@
 <?php
+session_start();
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 include "../connect.php";
@@ -15,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $message    = $_POST['message'];
 
     /* Temporary static admin ID (replace with session later) */
-    $created_by = "TP00001";
+    $created_by =$_SESSION["user_id"];
 
     /* ===============================
        Determine is_active based on date

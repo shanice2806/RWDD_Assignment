@@ -1,3 +1,7 @@
+<?php 
+session_start();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +17,7 @@
 <header class="top-bar">
   <div class="left">
     <button class="menu-toggle" id="menuToggle">☰</button>
-    <span>Welcome! XXX</span>
+    <span>Welcome!  <?= htmlspecialchars($_SESSION['name'] ?? 'User') ?> </span>
   </div>
 
   <div class="search-container">
