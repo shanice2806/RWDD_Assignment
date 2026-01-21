@@ -9,25 +9,22 @@ include "admin_header.php";
 $table = $_GET['table'] ?? 'catalog';
 $search = trim($_GET['search'] ?? '');
 
-$status_filter = $_GET['status'] ?? '';      // catalog: 1/0 | redemptions: Approved/Pending/Rejected
+$status_filter = $_GET['status'] ?? '';
 $stock_filter  = $_GET['stock'] ?? '';
 $date_filter   = $_GET['date'] ?? '';
-$reward_filter = $_GET['reward_id'] ?? '';   // 🔥 for most redeemed reward filtering
+$reward_filter = $_GET['reward_id'] ?? '';
 
 $search_esc = $conn->real_escape_string($search);
 
 /* =====================
    ECO REWARD INSIGHTS
 ===================== */
-
-// Low stock (active only)
 $low_stock_items = $conn->query("
     SELECT COUNT(*) AS total
     FROM reward_catalog
     WHERE stock <= 10 AND is_active = 1
 ")->fetch_assoc()['total'];
 
-// Redeemed this month (Approved only)
 $total_redeemed_month = $conn->query("
     SELECT COUNT(*) AS total
     FROM reward_redemptions
@@ -36,12 +33,8 @@ $total_redeemed_month = $conn->query("
     AND YEAR(redemption_date_time) = YEAR(CURRENT_DATE())
 ")->fetch_assoc()['total'];
 
-// 🔥 Most redeemed reward (Approved only)
 $most_redeemed = $conn->query("
-    SELECT 
-        rr.reward_id,
-        rc.reward_name,
-        COUNT(rr.redemption_id) AS total
+    SELECT rr.reward_id, rc.reward_name, COUNT(rr.redemption_id) AS total
     FROM reward_redemptions rr
     JOIN reward_catalog rc ON rr.reward_id = rc.reward_id
     WHERE rr.status = 'Approved'
@@ -79,10 +72,8 @@ $most_redeemed_id   = $most_redeemed['reward_id'] ?? '';
     <div class="icon">🔥</div>
     <p>Most Redeemed Reward</p>
     <h3><?= htmlspecialchars($most_redeemed_name) ?></h3>
-
     <?php if ($most_redeemed_id): ?>
-      <button
-        onclick="location.href='admin_rewards.php?table=redemptions&status=Approved&reward_id=<?= $most_redeemed_id ?>'">
+      <button onclick="location.href='admin_rewards.php?table=redemptions&status=Approved&reward_id=<?= $most_redeemed_id ?>'">
         View Redemptions
       </button>
     <?php else: ?>
@@ -94,8 +85,7 @@ $most_redeemed_id   = $most_redeemed['reward_id'] ?? '';
     <div class="icon">🎁</div>
     <p>Redeemed This Month</p>
     <h3><?= $total_redeemed_month ?></h3>
-    <button
-      onclick="location.href='admin_rewards.php?table=redemptions&date=this_month&status=Approved'">
+    <button onclick="location.href='admin_rewards.php?table=redemptions&date=this_month&status=Approved'">
       View Log
     </button>
   </div>
@@ -116,24 +106,21 @@ $most_redeemed_id   = $most_redeemed['reward_id'] ?? '';
 </div>
 
 <!-- =====================
-     SEARCH & FILTER BAR
+     SEARCH + FILTER + ADD
 ===================== -->
 <div class="announcement-search-wrapper">
 <form method="GET" class="announcement-search-form">
 
   <input type="hidden" name="table" value="<?= $table ?>">
-
   <?php if ($reward_filter): ?>
     <input type="hidden" name="reward_id" value="<?= $reward_filter ?>">
   <?php endif; ?>
 
-  <input
-    type="text"
-    name="search"
-    value="<?= htmlspecialchars($search) ?>"
-    placeholder="<?= $table === 'catalog' ? 'Search reward name' : 'Search user ID' ?>"
-    class="announcement-search-input"
-  >
+  <input type="text"
+         name="search"
+         value="<?= htmlspecialchars($search) ?>"
+         placeholder="<?= $table === 'catalog' ? 'Search reward name' : 'Search user ID' ?>"
+         class="announcement-search-input">
 
   <?php if ($table === 'catalog'): ?>
     <select name="status" class="announcement-search-input">
@@ -167,6 +154,10 @@ $most_redeemed_id   = $most_redeemed['reward_id'] ?? '';
 
   <button type="submit" class="announcement-search-btn">🔍</button>
 
+  <?php if ($table === 'catalog'): ?>
+    <a href="admin_reward_add.php" class="announcement-search-btn">＋</a>
+  <?php endif; ?>
+
 </form>
 </div>
 
@@ -177,17 +168,9 @@ $most_redeemed_id   = $most_redeemed['reward_id'] ?? '';
 
 <?php
 $sql = "SELECT * FROM reward_catalog WHERE 1";
-
-if ($search !== '') {
-  $sql .= " AND reward_name LIKE '%$search_esc%'";
-}
-if ($status_filter !== '') {
-  $sql .= " AND is_active = '$status_filter'";
-}
-if ($stock_filter === 'low') {
-  $sql .= " AND stock <= 10";
-}
-
+if ($search !== '') $sql .= " AND reward_name LIKE '%$search_esc%'";
+if ($status_filter !== '') $sql .= " AND is_active = '$status_filter'";
+if ($stock_filter === 'low') $sql .= " AND stock <= 10";
 $sql .= " ORDER BY created_at DESC";
 $result = $conn->query($sql);
 ?>
@@ -198,7 +181,7 @@ $result = $conn->query($sql);
 <thead>
 <tr>
   <th>ID</th><th>Name</th><th>Description</th><th>Points</th>
-  <th>Stock</th><th>Status</th><th>Image</th><th>Created</th>
+  <th>Stock</th><th>Status</th><th>Image</th><th>Action</th>
 </tr>
 </thead>
 <tbody>
@@ -211,7 +194,9 @@ $result = $conn->query($sql);
   <td><?= $row['stock'] ?></td>
   <td><?= $row['is_active'] ? 'Active' : 'Inactive' ?></td>
   <td><img src="<?= $row['image_path'] ?>" width="60"></td>
-  <td><?= $row['created_at'] ?></td>
+  <td>
+    <a href="admin_reward_edit.php?id=<?= $row['reward_id'] ?>" class="action-btn">Edit</a>
+  </td>
 </tr>
 <?php endwhile; else: ?>
 <tr><td colspan="8">No rewards found.</td></tr>
@@ -228,16 +213,9 @@ $result = $conn->query($sql);
 
 <?php
 $sql = "SELECT * FROM reward_redemptions WHERE 1";
-
-if ($search !== '') {
-  $sql .= " AND user_id LIKE '%$search_esc%'";
-}
-if ($status_filter !== '') {
-  $sql .= " AND status = '$status_filter'";
-}
-if ($reward_filter !== '') {
-  $sql .= " AND reward_id = '$reward_filter'";
-}
+if ($search !== '') $sql .= " AND user_id LIKE '%$search_esc%'";
+if ($status_filter !== '') $sql .= " AND status = '$status_filter'";
+if ($reward_filter !== '') $sql .= " AND reward_id = '$reward_filter'";
 if ($date_filter === 'this_month') {
   $sql .= " AND MONTH(redemption_date_time)=MONTH(CURRENT_DATE())
             AND YEAR(redemption_date_time)=YEAR(CURRENT_DATE())";
@@ -249,7 +227,6 @@ if ($date_filter === 'this_month') {
 } elseif ($date_filter === '30_days') {
   $sql .= " AND redemption_date_time >= NOW() - INTERVAL 30 DAY";
 }
-
 $sql .= " ORDER BY redemption_date_time DESC";
 $result = $conn->query($sql);
 ?>
@@ -260,7 +237,7 @@ $result = $conn->query($sql);
 <thead>
 <tr>
   <th>ID</th><th>User ID</th><th>Reward ID</th>
-  <th>Date</th><th>Status</th><th>Points</th><th>Notes</th>
+  <th>Date</th><th>Status</th><th>Points</th><th>Action</th>
 </tr>
 </thead>
 <tbody>
@@ -272,7 +249,11 @@ $result = $conn->query($sql);
   <td><?= $row['redemption_date_time'] ?></td>
   <td><?= $row['status'] ?></td>
   <td><?= $row['points_spent'] ?></td>
-  <td><?= $row['notes'] ?? '-' ?></td>
+  <td>
+    <a href="admin_reward_redemption_view.php?id=<?= $row['redemption_id'] ?>" class="action-btn">
+      View
+    </a>
+  </td>
 </tr>
 <?php endwhile; else: ?>
 <tr><td colspan="7">No records found.</td></tr>
@@ -283,6 +264,5 @@ $result = $conn->query($sql);
 <?php endif; ?>
 
 <?php include "admin_footer.php"; ?>
-
 </div>
 </main>
