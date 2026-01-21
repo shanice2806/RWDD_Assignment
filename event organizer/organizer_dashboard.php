@@ -53,19 +53,7 @@ if ($impact_event) {
 <body>
   <?php include 'organizer_header.php'; ?>
 
-  <!-- Sidebar -->
-  <aside class="organizer-sidebar" id="sidebar">
-    <nav class="sidebar-menu">
-      <a href="organizer_dashboard.php" class="menu-item"><span class="menu-icon">📊</span> Dashboard</a>
-      <a href="organizer_event_create.php" class="menu-item"><span class="menu-icon">➕</span> Create Event</a>
-      <a href="organizer_event_view.php" class="menu-item"><span class="menu-icon">📅</span> Manage Events</a>
-      <a href="organizer_registration_list.php" class="menu-item"><span class="menu-icon">📝</span> Registrations</a>
-      <a href="organizer_attendance_log.php" class="menu-item"><span class="menu-icon">✅</span> Attendance</a>
-      <a href="organizer_volunteer_list.php" class="menu-item"><span class="menu-icon">🤝</span> Volunteers</a>
-      <a href="organizer_profile_view.php" class="menu-item"><span class="menu-icon">👤</span> Profile</a>
-      <a href="../login/logout.php" class="menu-item"><span class="menu-icon">⎋</span> Log Out</a>
-    </nav>
-  </aside>
+
 
   <!-- Main content -->
   <div class="main-content">

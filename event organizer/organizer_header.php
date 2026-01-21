@@ -14,11 +14,15 @@ $_SESSION['name'] = $_SESSION['name'] ?? 'User (Test)';
   <!-- Center: search bar -->
   <div class="search-container">
     <input type="text" class="search-bar" placeholder="Search events...">
+    <button class="search-btn">🔍</button>
   </div>
 
   <!-- Right side: icons -->
-  <div class="icons">
-    <button class="icon-btn">👤</button>
-    <a href="../login/logout.php" class="icon-btn">⎋</a>
+    <div class="icons">
+    <a href="admin_dashboard.php" class="icon-btn">🏠</a>
+    <a href="../guest.html" class="icon-btn">⎋</a>
   </div>
 </header>
+
+<?php include "organizer_sidebar.php"; ?>
+<script src="/RWDD_Assignment/event organizer/organizer.js"></script>
