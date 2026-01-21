@@ -3,7 +3,7 @@
   <div class="sidebar-profile">
     <div class="profile-avatar">👤</div>
     <div class="profile-text">
-      <strong>Kim Min-Gyu</strong>
+      <strong><?= htmlspecialchars($_SESSION['name'] ?? 'User'); ?></strong>
       <a href="view_profile.php">View Profile</a>
     </div>
   </div>
