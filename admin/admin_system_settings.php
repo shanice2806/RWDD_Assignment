@@ -83,8 +83,14 @@ $data = $stmt->get_result();
 
   <!-- View -->
   <select name="view">
+      <option value="badges" <?= $view === 'badges' ? 'selected' : '' ?>>
+      Badges
+    </option>
     <option value="categories" <?= $view === 'categories' ? 'selected' : '' ?>>
       Content Categories
+    </option>
+    <option value="eco_rules" <?= $view === 'eco_rules' ? 'selected' : '' ?>>
+      Eco-Rules
     </option>
     <option value="materials" <?= $view === 'materials' ? 'selected' : '' ?>>
       Materials

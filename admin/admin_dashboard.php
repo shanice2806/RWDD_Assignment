@@ -20,6 +20,8 @@ $total_flagged_log = getCount($conn, "SELECT COUNT(*) as total_flagged_log FROM 
 $total_reported_content = getCount($conn, "SELECT COUNT(*) as total_reported_content FROM post_reports", 'total_reported_content');
 ?>
 
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

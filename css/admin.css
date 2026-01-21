@@ -558,3 +558,22 @@ textarea[readonly] {
 }
 
 
+/* ===============================
+   CHOOSE TABLE FILTER BAR
+   =============================== */
+
+.choose-table-form {
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.choose-table-label {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-text);
+  margin-right: 6px;
+  white-space: nowrap;
+}
+
+
+
