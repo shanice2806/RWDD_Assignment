@@ -23,6 +23,7 @@ $event_id = $_GET['event_id'] ?? null;
 </head>
 <body>
   <?php include 'organizer_header.php'; ?>
+  <?php include 'organizer_sidebar.php'; ?>
 
   <!-- Main content -->
   <div class="main-content">
@@ -73,7 +74,7 @@ $event_id = $_GET['event_id'] ?? null;
           echo "<p style='color:#b00020; font-weight:600;'>Registration for this event is not open yet.</p>";
           echo "<a class='btn' href='organizer_event_view.php'>Open Registration</a>";
         } else {
-          // ✅ Join users table to get participant name
+          // Join users table to get participant name
           $registrations = $conn->query("
             SELECT r.registration_id, r.user_id, u.name, r.registration_status
             FROM registrations r
