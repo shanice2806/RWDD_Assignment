@@ -18,7 +18,8 @@ $total_events = $conn->query("
 $upcoming_events = $conn->query("
     SELECT COUNT(*) AS total
     FROM events
-    WHERE event_date_time > NOW() AND event_status = 'Approved'
+    WHERE event_date_time > NOW() 
+      AND event_status = 'Approved'
 ")->fetch_assoc()['total'];
 
 /* Total pending events */
@@ -44,7 +45,7 @@ $types  = "";
 
 /* Search by title or location */
 if ($search !== '') {
-    $where[] = "(event_title LIKE ? OR event_location LIKE ?)";
+    $where[] = "(e.event_title LIKE ? OR e.event_location LIKE ?)";
     $params[] = "%$search%";
     $params[] = "%$search%";
     $types   .= "ss";
@@ -52,25 +53,28 @@ if ($search !== '') {
 
 /* Status filter */
 if ($status !== '') {
-    $where[] = "event_status = ?";
+    $where[] = "e.event_status = ?";
     $params[] = $status;
     $types   .= "s";
 }
 
 /* =====================
-   BASE QUERY
+   BASE QUERY (WITH ATTENDANCE)
    ===================== */
 $sql = "
     SELECT
-        event_id,
-        event_title,
-        event_type,
-        event_date_time,
-        event_location,
-        event_status,
-        event_created_by,
-        event_qr_code_url
-    FROM events
+        e.event_id,
+        e.event_title,
+        e.event_type,
+        e.event_date_time,
+        e.event_location,
+        e.event_status,
+        e.event_created_by,
+        e.event_qr_code_url,
+        COUNT(a.attendance_id) AS total_attendance
+    FROM events e
+    LEFT JOIN attendance a 
+        ON e.event_id = a.event_id
 ";
 
 /* Apply filters */
@@ -78,7 +82,11 @@ if (!empty($where)) {
     $sql .= " WHERE " . implode(" AND ", $where);
 }
 
-$sql .= " ORDER BY event_date_time DESC";
+/* Group & Order */
+$sql .= "
+    GROUP BY e.event_id
+    ORDER BY e.event_date_time DESC
+";
 
 /* =====================
    PREPARE & EXECUTE
@@ -115,11 +123,11 @@ $result = $stmt->get_result();
     <p><strong><?= $upcoming_events ?></strong></p>
   </div>
 
- <div class="card">
-  <div class="icon">⌛</div>
-  <h4>Total Pending Events</h4>
-  <p><strong><?= $total_pending_events ?></strong></p>
-</div>
+  <div class="card">
+    <div class="icon">⌛</div>
+    <h4>Total Pending Events</h4>
+    <p><strong><?= $total_pending_events ?></strong></p>
+  </div>
 
 </div>
 
@@ -141,6 +149,7 @@ $result = $stmt->get_result();
       <option value="">All Status</option>
       <option value="Pending"  <?= $status === 'Pending' ? 'selected' : '' ?>>Pending</option>
       <option value="Approved" <?= $status === 'Approved' ? 'selected' : '' ?>>Approved</option>
+      <option value="Rejected" <?= $status === 'Rejected' ? 'selected' : '' ?>>Rejected</option>
       <option value="Cancelled" <?= $status === 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
     </select>
 
@@ -161,6 +170,7 @@ $result = $stmt->get_result();
       <th>Location</th>
       <th>Date & Time</th>
       <th>Status</th>
+      <th>Total Attendance</th>
       <th>Action</th>
     </tr>
   </thead>
@@ -174,15 +184,16 @@ $result = $stmt->get_result();
           <td><?= htmlspecialchars($row['event_location']) ?></td>
           <td><?= date("Y-m-d H:i", strtotime($row['event_date_time'])) ?></td>
           <td><?= htmlspecialchars($row['event_status']) ?></td>
+          <td><?= $row['total_attendance'] ?></td>
           <td class="action-col">
-            <a href="admin_event_view.php?id=<?= $row['event_id'] ?>" class="btn">VIEW</a>
-            <a href="admin_event_update.php?id=<?= $row['event_id'] ?>" class="btn">UPDATE</a>
+            <a href="admin_event_view.php?id=<?= urlencode($row['event_id']) ?>" class="btn">VIEW</a>
+            <a href="admin_event_update.php?id=<?= urlencode($row['event_id']) ?>" class="btn">UPDATE</a>
           </td>
         </tr>
       <?php endwhile; ?>
     <?php else: ?>
       <tr>
-        <td colspan="6" style="text-align:center;">No events found</td>
+        <td colspan="7" style="text-align:center;">No events found</td>
       </tr>
     <?php endif; ?>
   </tbody>
