@@ -23,7 +23,6 @@ $event_id = $_GET['event_id'] ?? null;
 </head>
 <body>
   <?php include 'organizer_header.php'; ?>
-  <?php include 'organizer_sidebar.php'; ?>
 
   <!-- Main content -->
   <div class="main-content">
@@ -124,6 +123,5 @@ $event_id = $_GET['event_id'] ?? null;
   </div>
 
   <?php include 'organizer_footer.php'; ?>
-  <script src="organizer.js"></script>
 </body>
 </html>

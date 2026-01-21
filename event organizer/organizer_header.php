@@ -1,6 +1,6 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+  session_start();
 }
 $_SESSION['name'] = $_SESSION['name'] ?? 'User (Test)';
 ?>
@@ -19,10 +19,10 @@ $_SESSION['name'] = $_SESSION['name'] ?? 'User (Test)';
 
   <!-- Right side: icons -->
     <div class="icons">
-    <a href="admin_dashboard.php" class="icon-btn">🏠</a>
+    <a href="organizer_dashboard.php" class="icon-btn">🏠</a>
     <a href="../guest.html" class="icon-btn">⎋</a>
   </div>
 </header>
 
 <?php include "organizer_sidebar.php"; ?>
-<script src="/RWDD_Assignment/event organizer/organizer.js"></script>
+<script src="/RWDD_Assignment/event%20organizer/organizer.js"></script>
