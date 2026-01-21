@@ -1,6 +1,6 @@
 <?php
 include "../connect.php";
-$page_title = "Eco-Points & Rewards";
+$page_title = "Rewards";
 include "admin_header.php";
 
 /* =====================
@@ -8,9 +8,11 @@ include "admin_header.php";
 ===================== */
 $table = $_GET['table'] ?? 'catalog';
 $search = trim($_GET['search'] ?? '');
-$status_filter = $_GET['status'] ?? '';
-$stock_filter = $_GET['stock'] ?? '';
-$date_filter = $_GET['date'] ?? '';
+
+$status_filter = $_GET['status'] ?? '';      // catalog: 1/0 | redemptions: Approved/Pending/Rejected
+$stock_filter  = $_GET['stock'] ?? '';
+$date_filter   = $_GET['date'] ?? '';
+$reward_filter = $_GET['reward_id'] ?? '';   // 🔥 for most redeemed reward filtering
 
 $search_esc = $conn->real_escape_string($search);
 
@@ -25,7 +27,7 @@ $low_stock_items = $conn->query("
     WHERE stock <= 10 AND is_active = 1
 ")->fetch_assoc()['total'];
 
-// Redeemed this month
+// Redeemed this month (Approved only)
 $total_redeemed_month = $conn->query("
     SELECT COUNT(*) AS total
     FROM reward_redemptions
@@ -34,9 +36,12 @@ $total_redeemed_month = $conn->query("
     AND YEAR(redemption_date_time) = YEAR(CURRENT_DATE())
 ")->fetch_assoc()['total'];
 
-// Most redeemed reward
+// 🔥 Most redeemed reward (Approved only)
 $most_redeemed = $conn->query("
-    SELECT rc.reward_name, COUNT(rr.redemption_id) AS total
+    SELECT 
+        rr.reward_id,
+        rc.reward_name,
+        COUNT(rr.redemption_id) AS total
     FROM reward_redemptions rr
     JOIN reward_catalog rc ON rr.reward_id = rc.reward_id
     WHERE rr.status = 'Approved'
@@ -46,6 +51,7 @@ $most_redeemed = $conn->query("
 ")->fetch_assoc();
 
 $most_redeemed_name = $most_redeemed['reward_name'] ?? 'N/A';
+$most_redeemed_id   = $most_redeemed['reward_id'] ?? '';
 ?>
 
 <main class="dashboard">
@@ -64,7 +70,7 @@ $most_redeemed_name = $most_redeemed['reward_name'] ?? 'N/A';
     <div class="icon">⚠️</div>
     <p>Low Stock Items</p>
     <h3><?= $low_stock_items ?></h3>
-    <button onclick="location.href='eco_rewards_view.php?table=catalog&stock=low'">
+    <button onclick="location.href='admin_rewards.php?table=catalog&stock=low&status=1'">
       View Catalog
     </button>
   </div>
@@ -73,16 +79,23 @@ $most_redeemed_name = $most_redeemed['reward_name'] ?? 'N/A';
     <div class="icon">🔥</div>
     <p>Most Redeemed Reward</p>
     <h3><?= htmlspecialchars($most_redeemed_name) ?></h3>
-    <button onclick="location.href='eco_rewards_view.php?table=redemptions'">
-      View Redemptions
-    </button>
+
+    <?php if ($most_redeemed_id): ?>
+      <button
+        onclick="location.href='admin_rewards.php?table=redemptions&status=Approved&reward_id=<?= $most_redeemed_id ?>'">
+        View Redemptions
+      </button>
+    <?php else: ?>
+      <button disabled>No Data</button>
+    <?php endif; ?>
   </div>
 
   <div class="card">
     <div class="icon">🎁</div>
     <p>Redeemed This Month</p>
     <h3><?= $total_redeemed_month ?></h3>
-    <button onclick="location.href='eco_rewards_view.php?table=redemptions&date=this_month'">
+    <button
+      onclick="location.href='admin_rewards.php?table=redemptions&date=this_month&status=Approved'">
       View Log
     </button>
   </div>
@@ -90,24 +103,16 @@ $most_redeemed_name = $most_redeemed['reward_name'] ?? 'N/A';
 </div>
 
 <!-- =====================
-     TABLE SELECTOR
+     CHOOSE TABLE
 ===================== -->
 <div class="announcement-search-wrapper">
-  <form method="GET" class="announcement-search-form choose-table-form">
-
-    <label class="choose-table-label">Choose Table</label>
-
-    <select name="table" class="announcement-search-input"
-            onchange="this.form.submit()">
-      <option value="catalog" <?= $table === 'catalog' ? 'selected' : '' ?>>
-        Reward Catalog
-      </option>
-      <option value="redemptions" <?= $table === 'redemptions' ? 'selected' : '' ?>>
-        Reward Redemptions
-      </option>
-    </select>
-
-  </form>
+<form method="GET" class="announcement-search-form choose-table-form">
+  <label class="choose-table-label">Choose Table</label>
+  <select name="table" class="announcement-search-input" onchange="this.form.submit()">
+    <option value="catalog" <?= $table === 'catalog' ? 'selected' : '' ?>>Reward Catalog</option>
+    <option value="redemptions" <?= $table === 'redemptions' ? 'selected' : '' ?>>Reward Redemptions</option>
+  </select>
+</form>
 </div>
 
 <!-- =====================
@@ -118,7 +123,10 @@ $most_redeemed_name = $most_redeemed['reward_name'] ?? 'N/A';
 
   <input type="hidden" name="table" value="<?= $table ?>">
 
-  <!-- SEARCH -->
+  <?php if ($reward_filter): ?>
+    <input type="hidden" name="reward_id" value="<?= $reward_filter ?>">
+  <?php endif; ?>
+
   <input
     type="text"
     name="search"
@@ -136,13 +144,18 @@ $most_redeemed_name = $most_redeemed['reward_name'] ?? 'N/A';
 
     <select name="stock" class="announcement-search-input">
       <option value="">All Stock</option>
-      <option value="low" <?= $stock_filter === 'low' ? 'selected' : '' ?>>
-        Low Stock (≤10)
-      </option>
+      <option value="low" <?= $stock_filter === 'low' ? 'selected' : '' ?>>Low Stock</option>
     </select>
   <?php endif; ?>
 
   <?php if ($table === 'redemptions'): ?>
+    <select name="status" class="announcement-search-input">
+      <option value="">All Status</option>
+      <option value="Approved" <?= $status_filter === 'Approved' ? 'selected' : '' ?>>Approved</option>
+      <option value="Pending" <?= $status_filter === 'Pending' ? 'selected' : '' ?>>Pending</option>
+      <option value="Rejected" <?= $status_filter === 'Rejected' ? 'selected' : '' ?>>Rejected</option>
+    </select>
+
     <select name="date" class="announcement-search-input">
       <option value="">All Time</option>
       <option value="this_month" <?= $date_filter === 'this_month' ? 'selected' : '' ?>>This Month</option>
@@ -168,11 +181,9 @@ $sql = "SELECT * FROM reward_catalog WHERE 1";
 if ($search !== '') {
   $sql .= " AND reward_name LIKE '%$search_esc%'";
 }
-
 if ($status_filter !== '') {
   $sql .= " AND is_active = '$status_filter'";
 }
-
 if ($stock_filter === 'low') {
   $sql .= " AND stock <= 10";
 }
@@ -186,14 +197,8 @@ $result = $conn->query($sql);
 <table class="eco-table">
 <thead>
 <tr>
-  <th>ID</th>
-  <th>Name</th>
-  <th>Description</th>
-  <th>Points</th>
-  <th>Stock</th>
-  <th>Status</th>
-  <th>Image</th>
-  <th>Created</th>
+  <th>ID</th><th>Name</th><th>Description</th><th>Points</th>
+  <th>Stock</th><th>Status</th><th>Image</th><th>Created</th>
 </tr>
 </thead>
 <tbody>
@@ -227,7 +232,12 @@ $sql = "SELECT * FROM reward_redemptions WHERE 1";
 if ($search !== '') {
   $sql .= " AND user_id LIKE '%$search_esc%'";
 }
-
+if ($status_filter !== '') {
+  $sql .= " AND status = '$status_filter'";
+}
+if ($reward_filter !== '') {
+  $sql .= " AND reward_id = '$reward_filter'";
+}
 if ($date_filter === 'this_month') {
   $sql .= " AND MONTH(redemption_date_time)=MONTH(CURRENT_DATE())
             AND YEAR(redemption_date_time)=YEAR(CURRENT_DATE())";
@@ -249,13 +259,8 @@ $result = $conn->query($sql);
 <table class="eco-table">
 <thead>
 <tr>
-  <th>ID</th>
-  <th>User ID</th>
-  <th>Reward ID</th>
-  <th>Date</th>
-  <th>Status</th>
-  <th>Points</th>
-  <th>Notes</th>
+  <th>ID</th><th>User ID</th><th>Reward ID</th>
+  <th>Date</th><th>Status</th><th>Points</th><th>Notes</th>
 </tr>
 </thead>
 <tbody>
