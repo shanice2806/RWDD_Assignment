@@ -12,20 +12,31 @@ if (!isset($_SESSION["user_id"])) {
 }
 $user_id = $_SESSION["user_id"];
 
-// Step 2: confirm submit (insert)
+$userSql = "SELECT name, eco_points, profile_image FROM users WHERE user_id = ? LIMIT 1";
+$stmt = mysqli_prepare($conn, $userSql);
+mysqli_stmt_bind_param($stmt, "s", $user_id);
+mysqli_stmt_execute($stmt);
+$res = mysqli_stmt_get_result($stmt);
+$user = mysqli_fetch_assoc($res);
+mysqli_stmt_close($stmt);
+
+$profileImg = $user["profile_image"]
+  ? "../" . $user["profile_image"]
+  : "../images/apu.png";
+
+
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["confirm_submit"])) {
   $material_id = trim($_POST["material_id"] ?? "");
   $weight_kg   = trim($_POST["weight_kg"] ?? "");
 
   if ($material_id === "" || $weight_kg === "") {
-    header("Location: recycle_add.php?err=1");
+    header("Location: user_recycle_add.php?err=1");
     exit();
   }
 
-  // default values (match your table)
-  $log_id = "rl_" . str_pad((string)rand(1, 999999), 3, "0", STR_PAD_LEFT); // beginner id
+  $log_id = "rl_" . str_pad((string)rand(1, 999999), 3, "0", STR_PAD_LEFT); 
   $event_id = NULL;
-  $photo_path = NULL;  // later you can upload
+  $photo_path = NULL;  
   $submitted_at = date("Y-m-d H:i:s");
   $status = "PENDING";
   $points_awarded = 0;
@@ -60,24 +71,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["confirm_submit"])) {
   exit();
 }
 
-// Step 1: preview submit -> show modal
 $showConfirm = ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["preview_submit"]));
 $matPrev = trim($_POST["material_id"] ?? "");
 $wPrev   = trim($_POST["weight_kg"] ?? "");
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Recycle log details</title>
+  <link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/user.css">
   <style>
-    body{font-family:Arial,sans-serif;
-    background:#f5f6f8;
-    margin:0}
-
     .card{max-width:520px;
-    margin:300px auto;
+    margin:200px auto;
     background:#fff;
     border-radius:12px;
     box-shadow:0 6px 18px rgba(0,0,0,.08);
@@ -93,15 +103,16 @@ $wPrev   = trim($_POST["weight_kg"] ?? "");
     border-radius:10px;
     box-sizing:border-box}
 
-    .btn{margin-top:14px;
-    width:100%;padding:10px 12px;
-    border:0;border-radius:10px;
-    background:#111827;color:#fff;
-    font-weight:800;
-    cursor:pointer}
+    .page-btn{
+      margin-top: 14px;
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-weight: 800;}
 
     .btn-outline{background:#fff;
     border:1px solid #ddd;
+    padding:8px 0px;
     color:#111827}
 
     .msg{padding:10px 12px;
@@ -111,23 +122,26 @@ $wPrev   = trim($_POST["weight_kg"] ?? "");
     .msg-error{background:#ffe8e8;
     color:#b00020}
 
-    .modal-backdrop{
-      position:fixed; 
-      inset:0;
-       background:rgba(0,0,0,.45);
-      display:none;
-       align-items:center;
-        justify-content:center;
-         padding:18px;
-          z-index:9999;
-    }
+.confirm-backdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  z-index: 999999; 
+}
 
-    .modal{width:100%;
-    max-width:420px;
-    background:#fff;
-    border-radius:14px;
-    box-shadow:0 10px 30px rgba(0,0,0,.2);
-    overflow:hidden}
+.confirm-modal{
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.2);
+  overflow: hidden;
+}
+
 
     .modal-body{padding:18px;
     text-align:center}
@@ -139,7 +153,43 @@ $wPrev   = trim($_POST["weight_kg"] ?? "");
     .half{width:120px}
   </style>
 </head>
-<body>
+  <body class="sidebar-collapsed">
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div> 
+
+<div class="user-layout">
+
+  <?php include __DIR__ . "/user_sidebar.php"; ?>
+
+  <div class="user-content">
+  <div class="user-top-bar">
+
+  <div class="user-top-left">
+    <button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
+
+    <div class="user-top-user">
+      <img src="<?php echo ($profileImg); ?>"
+           class="user-top-avatar" alt="Avatar">
+      <span class="user-top-name">
+        <?php echo ($user["name"]); ?>
+      </span>
+    </div>
+  </div>
+
+  <div class="user-top-center">
+<h1 style="color: white;">Recycle</h1>
+  </div>
+
+  <div class="user-top-right">
+    <span class="user-top-points">
+      🪙 <?php echo (int)$user["eco_points"]; ?> points
+    </span>
+    <a href="user_dashboard.php" class="user-top-btn">🏠</a>
+    <a href="friends_add.php" class="user-top-btn">👥</a>
+    <a href="../login/logout.php" class="user-top-btn logout">❌</a>
+  </div>
+
+</div>
 
   <div class="card">
     <h2 style="margin:0 0 8px;">Recycle log details</h2>
@@ -167,18 +217,17 @@ $wPrev   = trim($_POST["weight_kg"] ?? "");
 
       <label>Photo</label>
       <input type="file" disabled>
-      <small style="color:#6b7280;">(Upload can be added later)</small>
+      <small style="color:#6b7280;">(send a picture to prove ! )</small>
 
       <h2>Location :<br> in front of Audi five</h2>
 
-      <button class="btn" type="submit" name="preview_submit" value="1">Submit</button>
-      <a class="btn btn-outline" href="user_recycle.php" style="display:block;text-align:center;margin-top:10px;text-decoration:none;">Back</a>
+      <button class="btn page-btn" type="submit" name="preview_submit" value="1">Submit</button>
+      <a class="btn btn-outline page-btn" href="user_recycle.php" style="display:block;text-align:center;margin-top:10px;text-decoration:none;">Back</a>
     </form>
   </div>
 
-  <!-- Confirm popup -->
-  <div class="modal-backdrop" id="confirmModal">
-    <div class="modal">
+<div class="confirm-backdrop" id="confirmModal">
+  <div class="confirm-modal">
       <div class="modal-body">
         <h3 style="margin:0 0 6px;">You save the planet, you are my Hero!</h3>
         <p style="margin:0;color:#6b7280;">Confirm submit this recycle log?</p>
@@ -192,8 +241,6 @@ $wPrev   = trim($_POST["weight_kg"] ?? "");
           <button class="btn half" type="submit" name="confirm_submit" value="1">Yes</button>
         </form>
       </div>
-    </div>
-  </div>
 
   <script>
     const showConfirm = <?php echo $showConfirm ? "true" : "false"; ?>;
@@ -204,6 +251,13 @@ $wPrev   = trim($_POST["weight_kg"] ?? "");
     btnBack.addEventListener("click", () => modal.style.display = "none");
     modal.addEventListener("click", (e) => { if (e.target === modal) modal.style.display = "none"; });
   </script>
+    </div>
+  </div>
+  <footer>
+  <p>&copy; 2026 ReLife Hub</p>
+</footer>
+
+<script src="../user/user.js"></script>
 
 </body>
 </html>

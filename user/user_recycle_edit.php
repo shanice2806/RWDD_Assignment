@@ -18,7 +18,6 @@ if ($log_id === "") {
   exit();
 }
 
-// SAVE
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["save_log"])) {
   $material_id = trim($_POST["material_id"] ?? "");
   $weight_kg   = trim($_POST["weight_kg"] ?? "");
@@ -43,7 +42,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["save_log"])) {
   exit();
 }
 
-// LOAD
 $get = mysqli_prepare($conn, "
   SELECT log_id, material_id, weight_kg, location
   FROM recycling_log
@@ -67,8 +65,9 @@ if (!$log) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Edit Recycle Log</title>
+    <link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/user.css">
   <style>
-    body{font-family:Arial,sans-serif;background:#f5f6f8;margin:0}
     .card{max-width:520px;margin:30px auto;background:#fff;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.08);padding:18px}
     label{display:block;margin:12px 0 6px;font-weight:700}
     input, select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;box-sizing:border-box}

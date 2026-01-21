@@ -19,7 +19,6 @@ if ($role === "admin") {
 
 $user_id = $_SESSION["user_id"];
 
-// USER INFO
 $userSql = "SELECT user_id, name, eco_points, profile_image, role FROM users WHERE user_id=? LIMIT 1";
 $userStmt = mysqli_prepare($conn, $userSql);
 mysqli_stmt_bind_param($userStmt, "s", $user_id);
@@ -36,7 +35,6 @@ if (!$user) {
 
 $profileImg = !empty($user["profile_image"]) ? "../" . $user["profile_image"] : "../images/profile.png";
 
-// REMOVE LOG (only remove own log)
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["remove_log_id"])) {
   $log_id = trim($_POST["remove_log_id"]);
 
@@ -49,10 +47,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["remove_log_id"])) {
   exit();
 }
 
-// EDIT MODE
 $editMode = (isset($_GET["edit"]) && $_GET["edit"] == "1");
 
-// LOAD MY LOGS (match your real columns)
 $logsStmt = mysqli_prepare($conn, "
   SELECT 
     log_id, material_id, event_id, weight_kg, photo_path,
@@ -105,7 +101,6 @@ mysqli_stmt_close($logsStmt);
 
     <div class="user-content">
 
-      <!-- TOP BAR -->
       <div class="user-top-bar">
         <div class="user-top-left">
           <button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
@@ -114,13 +109,17 @@ mysqli_stmt_close($logsStmt);
             <span class="user-top-name"><?php echo htmlspecialchars($user["name"]); ?></span>
           </div>
         </div>
-
+  <div class="user-top-center">
+<h1 style="color: white;">Recycle</h1>
+  </div>
         <div class="user-top-right">
           <span class="user-top-points">🪙 <?php echo (int)$user["eco_points"]; ?> points</span>
           <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
+          <a href="friends_add.php" class="user-top-btn">👥</a>
           <a href="../login/logout.php" class="user-top-btn logout" title="Logout">⎋</a>
         </div>
       </div>
+      
 
       <div class="section-preview">
         <div class="card">

@@ -80,7 +80,6 @@ body{
     text-align: left;
 }
 
-/* Lightened the font for the Role section */
 .role-text {
     color: #888; 
     margin: 6px 0;

@@ -1,6 +1,5 @@
 <?php
-// about.php (Beginner friendly)
-// This page does not require login.
+
 
 session_start();
 ?>
@@ -10,6 +9,7 @@ session_start();
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>About ReLife Hub</title>
+  <link rel="stylesheet" href="../style.css">
   <style>
     body{font-family:Arial,sans-serif;background:#f5f6f8;margin:0}
     .topbar{background:#ffffff;border-bottom:1px solid #e5e7eb;padding:12px 16px}
@@ -28,7 +28,7 @@ session_start();
     .btn{display:inline-block;padding:10px 12px;border-radius:10px;border:1px solid #e5e7eb;text-decoration:none;color:#111827;font-weight:700;background:#fff}
     .btn.primary{background:#1f6feb;border-color:#1f6feb;color:#fff}
     footer{padding:16px;text-align:center;color:#6b7280;font-size:13px}
-    @media (max-width:700px){
+    @media (max-width:768px){
       .grid{grid-template-columns:1fr}
     }
   </style>
@@ -36,7 +36,6 @@ session_start();
 <body>
 
   <div class="topbar">
-    <!-- Back to login -->
     <a href="login.php">← Back to Login</a>
   </div>
 

@@ -6,9 +6,6 @@ error_reporting(E_ALL);
 session_start();
 require_once "../connect.php";
 
-/* =========================
-   LOGIN CHECK
-========================= */
 if (!isset($_SESSION["user_id"])) {
   header("Location: ../login/login.php");
   exit();
@@ -22,9 +19,7 @@ if ($role === "admin") {
 
 $user_id = $_SESSION["user_id"];
 
-/* =========================
-   GET USER INFO (same as dashboard)
-========================= */
+
 $userSql = "SELECT user_id, name, role, eco_points, profile_image
             FROM users WHERE user_id = ? LIMIT 1";
 $userStmt = mysqli_prepare($conn, $userSql);
@@ -71,7 +66,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["volunteer_event_id"])
     exit();
   }
 
-  // check already applied
   $check = mysqli_prepare($conn, "SELECT 1 FROM volunteers WHERE user_id=? AND event_id=? LIMIT 1");
   mysqli_stmt_bind_param($check, "ss", $user_id, $event_id);
   mysqli_stmt_execute($check);
@@ -103,9 +97,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["cancel_volunteer_even
   header("Location: user_event.php?volcancel=1");
   exit();
 }
-/* =========================
-   CANCEL REGISTRATION (optional)
-========================= */
+
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["cancel_event_id"])) {
   $event_id = trim($_POST["cancel_event_id"]);
 
@@ -118,9 +110,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["cancel_event_id"])) {
   exit();
 }
 
-/* =========================
-   SEARCH
-========================= */
 $q = trim($_GET["q"] ?? "");
 
 if ($q !== "") {
@@ -149,9 +138,7 @@ mysqli_stmt_execute($eventsStmt);
 $eventsRes = mysqli_stmt_get_result($eventsStmt);
 mysqli_stmt_close($eventsStmt);
 
-/* =========================
-   MY REGISTRATIONS
-========================= */
+
 $myRegs = [];
 $myRegStmt = mysqli_prepare($conn, "SELECT event_id FROM registrations WHERE user_id=?");
 mysqli_stmt_bind_param($myRegStmt, "s", $user_id);
@@ -172,9 +159,7 @@ while ($v = mysqli_fetch_assoc($myVolRes)) {
 }
 mysqli_stmt_close($myVolStmt);
 
-/* =========================
-   MY REGISTRATIONS LIST (table)
-========================= */
+
 $myListStmt = mysqli_prepare($conn, "
   SELECT e.event_id, e.event_title, e.event_date_time, e.event_location
   FROM registrations r
@@ -230,7 +215,6 @@ if ($myVolListStmt) {
 
   <div class="user-content">
 
-    <!-- TOP BAR (same as dashboard) -->
     <div class="user-top-bar">
 
       <div class="user-top-left">
@@ -242,7 +226,6 @@ if ($myVolListStmt) {
         </div>
       </div>
 
-      <!-- SEARCH BAR (works now) -->
       <form class="user-top-center" method="GET" action="user_event.php">
         <input class="user-top-search" type="text" name="q" placeholder="Search events..." value="<?php echo htmlspecialchars($q); ?>">
         <button class="user-top-search-btn" type="submit">Search</button>
@@ -258,7 +241,6 @@ if ($myVolListStmt) {
     </div>
 
 
-    <!-- UPCOMING EVENTS -->
     <div class="section-preview">
       <h2>Upcoming Events</h2>
 
@@ -301,7 +283,6 @@ if ($myVolListStmt) {
   </form>
 <?php endif; ?>
 
-<!-- Volunteer -->
 <?php if ($volApplied): ?>
   <span class="btn" style="margin-left:10px;opacity:.7;cursor:default;">🤝 Volunteer Applied</span>
 
@@ -324,7 +305,6 @@ if ($myVolListStmt) {
       <?php endif; ?>
     </div>
 
-    <!-- MY REGISTRATIONS -->
     <div class="section-preview">
       <h2>My Registrations</h2>
 
@@ -358,7 +338,6 @@ if ($myVolListStmt) {
 
   </div>
 </div>
-<!-- MY VOLUNTEER REGISTRATIONS -->
 <div class="section-preview">
   <h2>My Volunteer Registrations</h2>
 
