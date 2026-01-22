@@ -13,6 +13,9 @@ if (!isset($_SESSION["user_id"])) {
 
 $user_id = $_SESSION["user_id"];
 
+/* =========================
+   1) 取当前登录用户资料（用于 topbar + sidebar）
+========================= */
 $userSql = "SELECT name, eco_points, profile_image FROM users WHERE user_id = ? LIMIT 1";
 $uStmt = mysqli_prepare($conn, $userSql);
 mysqli_stmt_bind_param($uStmt, "s", $user_id);
@@ -24,29 +27,29 @@ mysqli_stmt_close($uStmt);
 $profileImg = trim($user["profile_image"] ?? "");
 if ($profileImg === "") $profileImg = "../assets/default-avatar.png";
 
+/* =========================
+   2) 分类筛选 + 分页
+========================= */
 $selectedCat = trim($_GET["category"] ?? "all");
 
+$page = (int)($_GET["page"] ?? 1);
+if ($page < 1) $page = 1;
+
+$pageSize = 1; // 你原本就是 1（一次一篇），我保留
+$offset   = ($page - 1) * $pageSize;
+
+/* 分类下拉 */
 $catSql = "SELECT content_category_id, content_name
            FROM content_categories
            WHERE is_active = 1
            ORDER BY content_name ASC";
 $catRes = mysqli_query($conn, $catSql);
 
-$page = (int)($_GET["page"] ?? 1);
-if ($page < 1) $page = 1;
-
-$pageSize = 1; 
-$offset   = ($page - 1) * $pageSize;
-
-$countSql = "
-  SELECT COUNT(*) AS total
-  FROM posts p
-  WHERE p.post_status = 'Public'
-";
-
-if ($selectedCat !== "all") {
-  $countSql .= " AND p.content_category_id = ? ";
-}
+/* =========================
+   3) 先算总数（为了分页）
+========================= */
+$countSql = "SELECT COUNT(*) AS total FROM posts p WHERE p.post_status = 'Public'";
+if ($selectedCat !== "all") $countSql .= " AND p.content_category_id = ?";
 
 if ($selectedCat !== "all") {
   $countStmt = mysqli_prepare($conn, $countSql);
@@ -65,9 +68,13 @@ if ($page > $totalPages) {
   $page = $totalPages;
   $offset = ($page - 1) * $pageSize;
 }
+
 $hasPrev = $page > 1;
 $hasNext = $page < $totalPages;
 
+/* =========================
+   4) 取当前页的 post（Public）
+========================= */
 $sql = "
   SELECT p.post_id, p.title, p.body, p.difficulty_level, p.post_created_at,
          p.content_category_id,
@@ -77,10 +84,7 @@ $sql = "
   WHERE p.post_status = 'Public'
 ";
 
-if ($selectedCat !== "all") {
-  $sql .= " AND p.content_category_id = ? ";
-}
-
+if ($selectedCat !== "all") $sql .= " AND p.content_category_id = ? ";
 $sql .= " ORDER BY p.post_created_at DESC LIMIT ? OFFSET ? ";
 
 $pStmt = mysqli_prepare($conn, $sql);
@@ -93,9 +97,36 @@ if ($selectedCat !== "all") {
 
 mysqli_stmt_execute($pStmt);
 $pRes = mysqli_stmt_get_result($pStmt);
-
 $post = mysqli_fetch_assoc($pRes);
 mysqli_stmt_close($pStmt);
+
+/* =========================
+   5) 小工具：把 youtube watch 转成 embed（给 iframe 用）
+========================= */
+function youtube_to_embed($url) {
+  $url = trim($url ?? "");
+  if ($url === "") return "";
+
+  // 已经是 embed
+  if (strpos($url, "youtube.com/embed/") !== false) return $url;
+
+  // watch?v=xxxx
+  $parts = parse_url($url);
+  if (!empty($parts["query"])) {
+    parse_str($parts["query"], $q);
+    if (!empty($q["v"])) {
+      return "https://www.youtube.com/embed/" . $q["v"];
+    }
+  }
+
+  // youtu.be/xxxx
+  if (!empty($parts["host"]) && strpos($parts["host"], "youtu.be") !== false) {
+    $vid = ltrim($parts["path"] ?? "", "/");
+    if ($vid !== "") return "https://www.youtube.com/embed/" . $vid;
+  }
+
+  return $url; // 兜底
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -106,6 +137,7 @@ mysqli_stmt_close($pStmt);
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/user.css">
 
+  <!-- 你原本的 CSS 全部保留 -->
   <style>
     .community-wrap{
       background:#f5f7f8;
@@ -130,7 +162,7 @@ mysqli_stmt_close($pStmt);
       border-radius:10px;
       background:#111; color:#fff;
       text-decoration:none;
-      display:flex; align-items:center; 
+      display:flex; align-items:center;
       justify-content:center;
       font-size:26px;
     }
@@ -210,8 +242,6 @@ mysqli_stmt_close($pStmt);
       border-top:1px solid #eee;
       margin-bottom:12px;
     }
-
-
 
     .wf-section-title{ font-weight:700; margin: 6px 0; }
     .wf-comments{
@@ -301,7 +331,6 @@ mysqli_stmt_close($pStmt);
 </head>
 
 <body class="sidebar-collapsed">
-
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <div class="user-layout">
@@ -313,13 +342,12 @@ mysqli_stmt_close($pStmt);
       <div class="user-top-left">
         <button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
         <div class="user-top-user">
-          <img src="<?php echo htmlspecialchars($profileImg); ?>" class="user-top-avatar" alt="Avatar">
-          <span class="user-top-name"><?php echo htmlspecialchars($user["name"]); ?></span>
+          <span class="user-top-name">Welcome! <?= htmlspecialchars($_SESSION['name'] ?? 'User') ?></span>
         </div>
       </div>
 
       <div class="user-top-center">
-        <h1 style="color :white;">Community</h1>
+        <h1 style="color:white;">Community</h1>
       </div>
 
       <div class="user-top-right">
@@ -340,7 +368,6 @@ mysqli_stmt_close($pStmt);
             <input type="hidden" name="page" value="1">
             <select name="category" onchange="this.form.submit()">
               <option value="all" <?php echo ($selectedCat==="all") ? "selected" : ""; ?>>All Category</option>
-
               <?php if ($catRes): ?>
                 <?php while ($cat = mysqli_fetch_assoc($catRes)): ?>
                   <option value="<?php echo htmlspecialchars($cat["content_category_id"]); ?>"
@@ -356,37 +383,62 @@ mysqli_stmt_close($pStmt);
         <?php if (!$post): ?>
           <p>No posts found.</p>
         <?php else: ?>
-          <?php $pid = $post["post_id"]; ?>
+          <?php
+            $pid = $post["post_id"];
+
+            /* ====== 取该 post 的媒体（优先 video，其次 image）====== */
+            $mediaSql = "SELECT media_type, file_path, video_url
+                         FROM post_media
+                         WHERE post_id = ?
+                         ORDER BY order_number ASC";
+            $mStmt = mysqli_prepare($conn, $mediaSql);
+            mysqli_stmt_bind_param($mStmt, "s", $pid);
+            mysqli_stmt_execute($mStmt);
+            $mRes = mysqli_stmt_get_result($mStmt);
+
+            $firstVideo = "";
+            $firstImage = "";
+
+            while ($m = mysqli_fetch_assoc($mRes)) {
+              if ($m["media_type"] === "video" && $firstVideo === "") $firstVideo = youtube_to_embed($m["video_url"]);
+              if ($m["media_type"] === "image" && $firstImage === "") $firstImage = $m["file_path"];
+            }
+            mysqli_stmt_close($mStmt);
+          ?>
 
           <div class="wf-card">
 
-<div class="wf-actions">
-  <button type="button" class="wf-icon user-top-btn" title="Like"
-          onclick="this.classList.toggle('liked')">♡</button>
+            <div class="wf-actions">
+              <button type="button" class="wf-icon user-top-btn" title="Like"
+                      onclick="this.classList.toggle('liked')">♡</button>
 
-  <button type="button" class="wf-icon user-top-btn" title="Comment"
-          onclick="document.getElementById('comment-<?php echo htmlspecialchars($pid); ?>')
-          .scrollIntoView({behavior:'smooth'});">
-    💬
-  </button>
+              <button type="button" class="wf-icon user-top-btn" title="Comment"
+                      onclick="document.getElementById('comment-<?php echo htmlspecialchars($pid); ?>')
+                      .scrollIntoView({behavior:'smooth'});">
+                💬
+              </button>
 
-  <button type="button" class="wf-icon user-top-btn" title="Report"
-          onclick="document.getElementById('report-<?php echo htmlspecialchars($pid); ?>').focus();">
-    ⚠
-  </button>
-</div>
+              <button type="button" class="wf-icon user-top-btn" title="Report"
+                      onclick="document.getElementById('report-<?php echo htmlspecialchars($pid); ?>').focus();">
+                ⚠
+              </button>
+            </div>
 
             <div class="wf-blank wf-video">
-  <iframe
-    width="100%"
-    height="500"
-    src="https://www.youtube.com/embed/bQJ2J-hfJRo"
-    title="Video"
-    frameborder="0"
-    allowfullscreen>
-  </iframe>
-</div>
+              <?php if ($firstVideo !== ""): ?>
+                <iframe width="100%" height="500"
+                  src="<?php echo htmlspecialchars($firstVideo); ?>"
+                  title="Video" frameborder="0" allowfullscreen></iframe>
 
+              <?php elseif ($firstImage !== ""): ?>
+                <img src="<?php echo htmlspecialchars($firstImage); ?>"
+                     style="width:100%; height:500px; object-fit:cover; display:block;"
+                     alt="Post media">
+
+              <?php else: ?>
+                <!-- no media -->
+              <?php endif; ?>
+            </div>
 
             <div class="wf-bottom">
               <div class="wf-author">
@@ -405,6 +457,7 @@ mysqli_stmt_close($pStmt);
               <?php endif; ?>
 
               <?php
+                /* ====== 取评论 ====== */
                 $csql = "
                   SELECT c.comment_text, u.name
                   FROM community_comments c
@@ -434,17 +487,24 @@ mysqli_stmt_close($pStmt);
 
               <?php mysqli_stmt_close($cstmt); ?>
 
+              <!-- comment 表单：加回 category/page，这样提交后能回到当前页 -->
               <form class="wf-form-row" method="post" action="comment_add.php">
                 <input type="hidden" name="post_id" value="<?php echo htmlspecialchars($pid); ?>">
+                <input type="hidden" name="category" value="<?php echo htmlspecialchars($selectedCat); ?>">
+                <input type="hidden" name="page" value="<?php echo (int)$page; ?>">
                 <input type="text" name="comment" placeholder="add a comment..." required>
                 <button type="submit">Send</button>
               </form>
 
+              <!-- report 表单：加回 category/page -->
               <form class="wf-form-row" method="post" action="report_add.php">
                 <input type="hidden" name="post_id" value="<?php echo htmlspecialchars($pid); ?>">
+                <input type="hidden" name="category" value="<?php echo htmlspecialchars($selectedCat); ?>">
+                <input type="hidden" name="page" value="<?php echo (int)$page; ?>">
                 <input id="report-<?php echo htmlspecialchars($pid); ?>" type="text" name="reason" placeholder="Report reason..." required>
                 <button type="submit">Report</button>
               </form>
+
             </div>
           </div>
 

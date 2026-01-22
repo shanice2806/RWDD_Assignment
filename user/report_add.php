@@ -2,127 +2,81 @@
 session_start();
 require_once "../connect.php";
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 if (!isset($_SESSION["user_id"])) {
   header("Location: ../login/login.php");
   exit();
 }
 
-$catSql = "SELECT content_category_id, content_name
-           FROM content_categories
-           WHERE is_active=1
-           ORDER BY content_name ASC";
-$catRes = mysqli_query($conn, $catSql);
-?>
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Upload Tutorial</title>
-  <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/user.css">
-  <style>
-    .page-wrap{ padding-top:80px; background:#f5f7f8; min-height:100vh; }
-    .page-container{ max-width:900px; margin:0 auto; padding:16px; }
-    .card{ background:#fff; border:1px solid #ddd; border-radius:14px; padding:18px; }
-    .row{ margin-bottom:12px; }
-    .row label{ display:block; font-weight:800; margin-bottom:6px; }
-    .row input, .row textarea, .row select{
-      width:100%; padding:12px 14px; border:1px solid #ddd; border-radius:12px;
-      font-size:16px; box-sizing:border-box;
-    }
-    .row textarea{ min-height:140px; }
+$user_id = $_SESSION["user_id"];
+$post_id = trim($_POST["post_id"] ?? "");
+$reason  = trim($_POST["reason"] ?? "");
 
-    .modal-bg{ position:fixed; inset:0; background:rgba(0,0,0,.45);
-      display:none; align-items:center; justify-content:center; z-index:5000; }
-    .modal{ width:min(420px,92vw); background:#fff; border:1px solid #ddd; border-radius:14px;
-      padding:16px; text-align:center; }
-    .modal-actions{ display:flex; gap:12px; justify-content:center; margin-top:14px; }
-  </style>
-</head>
-<body class="sidebar-collapsed">
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
+$back = $_SERVER["HTTP_REFERER"] ?? "user_community.php";
 
-<div class="user-layout">
-  <?php include __DIR__ . "/user_sidebar.php"; ?>
-  <div class="user-content">
+if ($post_id === "" || $reason === "") {
+  header("Location: $back");
+  exit();
+}
 
-    <div class="user-top-bar">
-      <div class="user-top-left">
-        <button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
-        <div style="font-weight:900;">Tutorial</div>
-      </div>
-      <div class="user-top-right">
-        <a href="tutorial_view.php" class="user-top-btn">←</a>
-      </div>
-    </div>
+$checkSql = "SELECT post_id FROM posts WHERE post_id = ? LIMIT 1";
+$checkStmt = mysqli_prepare($conn, $checkSql);
+mysqli_stmt_bind_param($checkStmt, "s", $post_id);
+mysqli_stmt_execute($checkStmt);
+$checkRes = mysqli_stmt_get_result($checkStmt);
+$exists = mysqli_fetch_assoc($checkRes);
+mysqli_stmt_close($checkStmt);
 
-    <div class="page-wrap">
-      <div class="page-container">
-        <div class="card">
-          <h2 style="margin:0 0 14px;">Upload Tutorial</h2>
+if (!$exists) {
+  header("Location: $back");
+  exit();
+}
 
-          <form id="addForm" action="user_tutorial_process.php" method="POST">
-            <div class="row">
-              <label>title</label>
-              <input type="text" name="title" required>
-            </div>
+// generate report_id
+$getLastSql = "SELECT report_id FROM post_reports ORDER BY report_id DESC LIMIT 1";
+$lastRes = mysqli_query($conn, $getLastSql);
 
-            <div class="row">
-              <label>body</label>
-              <textarea name="body" required></textarea>
-            </div>
+$newReportId = "rpt_001";
+if ($lastRes && ($r = mysqli_fetch_assoc($lastRes))) {
+  $last = $r["report_id"];         
+  $num  = (int)substr($last, 4);    
+  $num++;
+  $newReportId = "rpt_" . str_pad($num, 3, "0", STR_PAD_LEFT);
+}
 
-            <div class="row">
-              <label>difficultylevel</label>
-              <select name="difficulty_level" required>
-                <option value="Beginner">easy</option>
-                <option value="Intermediate">medium</option>
-                <option value="Advanced">hard</option>
-              </select>
-            </div>
+mysqli_begin_transaction($conn);
 
-            <div class="row">
-              <label>category</label>
-              <select name="content_category_id" required>
-                <option value="" disabled selected>category</option>
-                <?php while($c = mysqli_fetch_assoc($catRes)) { ?>
-                  <option value="<?php echo $c["content_category_id"]; ?>">
-                    <?php echo $c["content_name"]; ?>
-                  </option>
-                <?php } ?>
-              </select>
-            </div>
+try {
+  $insSql = "INSERT INTO post_reports (report_id, post_id, reported_by, report_reason, reported_at)
+             VALUES (?, ?, ?, ?, NOW())";
+  $insStmt = mysqli_prepare($conn, $insSql);
+  mysqli_stmt_bind_param($insStmt, "ssss", $newReportId, $post_id, $user_id, $reason);
+  mysqli_stmt_execute($insStmt);
+  mysqli_stmt_close($insStmt);
 
-            <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
-              <a class="user-top-btn" href="tutorial_view.php">Back</a>
-              <button type="button" class="user-top-btn" id="openConfirm">Upload</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+  $upSql = "UPDATE posts
+            SET report_count = report_count + 1
+            WHERE post_id = ?";
+  $upStmt = mysqli_prepare($conn, $upSql);
+  mysqli_stmt_bind_param($upStmt, "s", $post_id);
+  mysqli_stmt_execute($upStmt);
+  mysqli_stmt_close($upStmt);
 
-    <footer><p>&copy; 2026 ReLife Hub</p></footer>
-  </div>
-</div>
+  $flagSql = "UPDATE posts
+              SET is_flagged = CASE WHEN report_count >= 3 THEN 1 ELSE is_flagged END
+              WHERE post_id = ?";
+  $flagStmt = mysqli_prepare($conn, $flagSql);
+  mysqli_stmt_bind_param($flagStmt, "s", $post_id);
+  mysqli_stmt_execute($flagStmt);
+  mysqli_stmt_close($flagStmt);
 
-<div class="modal-bg" id="confirmModal">
-  <div class="modal">
-    <h3 style="margin:0 0 10px;">Are you Confirm want to Upload the Content?</h3>
-    <div class="modal-actions">
-      <button type="button" class="user-top-btn" id="noBtn">No</button>
-      <button type="button" class="user-top-btn" id="yesBtn">Confirm</button>
-    </div>
-  </div>
-</div>
+  mysqli_commit($conn);
+} catch (Throwable $e) {
+  mysqli_rollback($conn);
+}
 
-<script src="../user/user.js"></script>
-<script>
-  const modal = document.getElementById("confirmModal");
-  document.getElementById("openConfirm").onclick = () => modal.style.display = "flex";
-  document.getElementById("noBtn").onclick = () => modal.style.display = "none";
-  document.getElementById("yesBtn").onclick = () => document.getElementById("addForm").submit();
-  modal.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
-</script>
-</body>
-</html>
+header("Location: $back");
+exit();

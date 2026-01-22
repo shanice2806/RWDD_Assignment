@@ -124,11 +124,7 @@ $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_lo
     <button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
 
     <div class="user-top-user">
-      <img src="<?php echo ($profileImg); ?>"
-           class="user-top-avatar" alt="Avatar">
-      <span class="user-top-name">
-        <?php echo ($user["name"]); ?>
-      </span>
+      <span> Welcome!  <?= htmlspecialchars($_SESSION['name'] ?? 'User') ?> </span>
     </div>
   </div>
 

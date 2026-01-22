@@ -221,8 +221,7 @@ if ($myVolListStmt) {
         <button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
 
         <div class="user-top-user">
-          <img src="<?php echo htmlspecialchars($profileImg); ?>" class="user-top-avatar" alt="Avatar">
-          <span class="user-top-name"><?php echo htmlspecialchars($user["name"]); ?></span>
+          <span class="user-top-name"><span> Welcome!  <?= htmlspecialchars($_SESSION['name'] ?? 'User') ?> </span>
         </div>
       </div>
 

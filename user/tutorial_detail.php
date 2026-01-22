@@ -12,18 +12,38 @@ if (!isset($_SESSION["user_id"])) {
 }
 
 $user_id = $_SESSION["user_id"];
-$id = $_GET["id"] ?? "";
+$id = trim($_GET["id"] ?? "");
 
-$userSql = "SELECT name, eco_points, profile_image FROM users WHERE user_id='$user_id' LIMIT 1";
-$uRes = mysqli_query($conn, $userSql);
-$user = mysqli_fetch_assoc($uRes) ?: ["name"=>"User","eco_points"=>0,"profile_image"=>""];
+$userSql = "SELECT name, eco_points, profile_image FROM users WHERE user_id=? LIMIT 1";
+$uStmt = mysqli_prepare($conn, $userSql);
+mysqli_stmt_bind_param($uStmt, "s", $user_id);
+mysqli_stmt_execute($uStmt);
+$uRes  = mysqli_stmt_get_result($uStmt);
+$user  = mysqli_fetch_assoc($uRes) ?: ["name"=>"User","eco_points"=>0,"profile_image"=>""];
+mysqli_stmt_close($uStmt);
 
 $profileImg = trim($user["profile_image"] ?? "");
 if ($profileImg === "") $profileImg = "../assets/default-avatar.png";
 
-$sql = "SELECT * FROM posts WHERE post_id='$id' AND user_id='$user_id'";
-$res = mysqli_query($conn, $sql);
-$row = $res ? mysqli_fetch_assoc($res) : null;
+$row = null;
+if ($id !== "") {
+  $sql = "
+    SELECT p.*, cc.content_name
+    FROM posts p
+    LEFT JOIN content_categories cc ON cc.content_category_id = p.content_category_id
+    WHERE p.post_id = ?
+      AND (p.post_status = 'Public' OR p.user_id = ?)
+    LIMIT 1
+  ";
+  $stmt = mysqli_prepare($conn, $sql);
+  mysqli_stmt_bind_param($stmt, "ss", $id, $user_id);
+  mysqli_stmt_execute($stmt);
+  $res = mysqli_stmt_get_result($stmt);
+  $row = mysqli_fetch_assoc($res);
+  mysqli_stmt_close($stmt);
+}
+
+$isOwner = ($row && $row["user_id"] === $user_id);
 ?>
 <!doctype html>
 <html lang="en">
@@ -43,6 +63,15 @@ $row = $res ? mysqli_fetch_assoc($res) : null;
       .page-container{ max-width:100%; padding:14px; }
       .title{ font-size:22px; }
     }
+    .page-btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      padding:10px 16px; border-radius:12px;
+      background:#1e3a34; color:#ffffff; border:1px solid #1e3a34;
+      font-size:15px; font-weight:800; text-decoration:none; cursor:pointer;
+      transition:all .2s ease;
+    }
+    .page-btn:hover{ background:#3ba99c; border-color:#3ba99c; color:#fff; }
+    button.page-btn{ appearance:none; -webkit-appearance:none; outline:none; }
   </style>
 </head>
 
@@ -54,7 +83,6 @@ $row = $res ? mysqli_fetch_assoc($res) : null;
 
   <div class="user-content">
 
-    <!-- TOP BAR -->
     <div class="user-top-bar">
       <div class="user-top-left">
         <button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
@@ -78,32 +106,30 @@ $row = $res ? mysqli_fetch_assoc($res) : null;
       <div class="page-container">
 
         <div class="card">
-          <div style="font-size:12px;color:#999;margin-bottom:10px;">
-            DEBUG: id=<?php echo htmlspecialchars($id); ?> | session_user=<?php echo htmlspecialchars($user_id); ?>
-          </div>
-
           <?php if (!$row): ?>
-            <h2 style="margin:0 0 10px;">Not found / Not your tutorial</h2>
+            <h2 style="margin:0 0 10px;">Not found</h2>
             <p style="margin:0 0 14px;color:#666;">
-              This tutorial does not belong to your account or the id is wrong.
+              The tutorial is not public, or the id is wrong.
             </p>
-            <a class="user-top-btn" href="tutorial_view.php">Back</a>
+            <a class="page-btn" href="tutorial_view.php">Back</a>
 
           <?php else: ?>
             <div class="title"><?php echo htmlspecialchars($row["title"]); ?></div>
             <div class="meta">
               Difficulty: <?php echo htmlspecialchars($row["difficulty_level"]); ?> |
-              Category: <?php echo htmlspecialchars($row["content_category_id"]); ?> |
+              Category: <?php echo htmlspecialchars($row["content_name"] ?? $row["content_category_id"]); ?> |
               Date: <?php echo htmlspecialchars($row["post_created_at"] ?? ""); ?>
             </div>
 
             <div><?php echo nl2br(htmlspecialchars($row["body"])); ?></div>
 
-            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
-              <a class="user-top-btn" href="tutorial_edit.php?id=<?php echo htmlspecialchars($row["post_id"]); ?>">Edit</a>
-              <a class="user-top-btn" href="tutorial_delete.php?id=<?php echo htmlspecialchars($row["post_id"]); ?>"
-                 onclick="return confirm('Delete this tutorial?');">Delete</a>
-            </div>
+            <?php if ($isOwner): ?>
+              <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
+                <a class="page-btn" href="tutorial_edit.php?id=<?php echo urlencode($row["post_id"]); ?>">Edit</a>
+                <a class="page-btn" href="tutorial_delete.php?id=<?php echo urlencode($row["post_id"]); ?>"
+                   onclick="return confirm('Delete this tutorial?');">Delete</a>
+              </div>
+            <?php endif; ?>
           <?php endif; ?>
         </div>
 
