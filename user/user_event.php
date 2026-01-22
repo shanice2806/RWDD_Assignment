@@ -239,6 +239,42 @@ if ($myVolListStmt) {
 
     </div>
 
+<?php
+$att = $_GET["att"] ?? "";
+?>
+<div class="section-preview">
+  <h2>Take Attendance</h2>
+
+  <form method="POST" action="attendance_take_process.php" id="attForm">
+    <div style="display:flex; gap:14px; flex-wrap:wrap; margin-top:10px;">
+
+      <input type="text" name="code1" placeholder="Code 1" required
+        style="flex:1; min-width:40px; font-size:22px; padding:18px; border:1px solid #ddd; border-radius:12px; text-align:center; font-weight:800;">
+
+      <input type="text" name="code2" placeholder="Code 2" required
+        style="flex:1; min-width:40px; font-size:22px; padding:18px; border:1px solid #ddd; border-radius:12px; text-align:center; font-weight:800;">
+
+      <input type="text" name="code3" placeholder="Code 3" required
+        style="flex:1; min-width:40px; font-size:22px; padding:18px; border:1px solid #ddd; border-radius:12px; text-align:center; font-weight:800;">
+
+    </div>
+
+    <button type="submit" class="btn" style="margin-top:14px; font-size:18px; padding:14px 18px;">
+      ✅ Take Attendance
+    </button>
+  </form>
+</div>
+
+<script>
+  (function(){
+    const att = <?php echo json_encode($att); ?>;
+    if (!att) return;
+
+    if (att === "ok") alert("✅ Attendance recorded successfully!");
+    else if (att === "dup") alert("ℹ️ You already checked in for this event.");
+    else alert("❌ Attendance failed. Please check the 3 codes and try again.");
+  })();
+</script>
 
     <div class="section-preview">
       <h2>Upcoming Events</h2>

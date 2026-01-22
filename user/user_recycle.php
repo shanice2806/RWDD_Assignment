@@ -105,8 +105,7 @@ mysqli_stmt_close($logsStmt);
         <div class="user-top-left">
           <button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
           <div class="user-top-user">
-            <img src="<?php echo htmlspecialchars($profileImg); ?>" class="user-top-avatar" alt="Avatar">
-            <span class="user-top-name"><?php echo htmlspecialchars($user["name"]); ?></span>
+            <span> Welcome!  <?= htmlspecialchars($_SESSION['name'] ?? 'User') ?> </span>
           </div>
         </div>
   <div class="user-top-center">
@@ -116,7 +115,7 @@ mysqli_stmt_close($logsStmt);
           <span class="user-top-points">🪙 <?php echo (int)$user["eco_points"]; ?> points</span>
           <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
           <a href="friends_add.php" class="user-top-btn">👥</a>
-          <a href="../login/logout.php" class="user-top-btn logout" title="Logout">⎋</a>
+          <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
         </div>
       </div>
       
@@ -200,7 +199,7 @@ mysqli_stmt_close($logsStmt);
     </div>
   </div>
 
-  <footer style="text-align:center;color:#6b7280;font-size:13px;padding:16px;">
+  <footer>
     © 2026 ReLife Hub
   </footer>
 

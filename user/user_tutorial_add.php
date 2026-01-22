@@ -91,14 +91,18 @@ $catRes = mysqli_query($conn, $catSql);
         </div>
       </div>
 
-      <div class="user-top-center">
-        <div style="font-weight:900;">Tutorial</div>
-      </div>
+        <div class="user-top-center">
+<h1 style="color: white;">Tutorial</h1>
+  </div>
 
       <div class="user-top-right">
-        <span class="user-top-points">🪙 <?php echo (int)$user["eco_points"]; ?> points</span>
-        <a href="tutorial_view.php" class="user-top-btn">←</a>
-      </div>
+        <span class="user-top-points">
+      🪙 <?php echo (int)$user["eco_points"]; ?> points
+        </span>
+    <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
+    <a class="user-top-btn" href="friends_add.php" title="Add Friend">👥</a>
+    <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
+  </div>
     </div>
 
     <div class="page-wrap">

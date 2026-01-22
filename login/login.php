@@ -83,19 +83,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   <title>Login</title>
   <link rel="stylesheet" href="../css/style.css">
   <style>
-    body{font-family:Arial,sans-serif;
-    background:#f5f6f8;
-    margin:0}
-
     .wrap{max-width:420px;
     margin:220px auto;
     background:#fff;
     padding:24px;
     border-radius:12px;
-    box-shadow:0 6px 18px rgba(0,0,0,.08)}
+    box-shadow:0 20px 30px rgba(0, 0, 0, 0.5)}
 
     h1{margin:0 0 14px;
-    font-size:22px}
+    font-size:30px}
 
     label{display:block;
     margin:12px 0 6px;
@@ -133,6 +129,29 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     height:auto;
     border-radius:10px;}
 
+    .password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  padding-right: 5px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 18px;
+  user-select: none;
+  color: #666;
+}
+
+.toggle-password:hover {
+  color: #000;
+}
+
   </style>
 </head>
 <body>
@@ -151,14 +170,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       <label for="identifier">TP Number / Email</label>
       <input id="identifier" name="identifier" type="text" placeholder="TP000002 or adamtan@gmail.com" required>
 
-      <label for="password">Password</label>
-      <input id="password" name="password" type="password" required>
+ <label for="password">Password</label>
+
+<div class="password-wrapper">
+  <input id="password" name="password" type="password" required>
+  <span class="toggle-password" onclick="togglePassword()">👁️</span>
+</div>
+
 
       <button class="btn" type="submit">Sign In</button>
     </form>
 
     <div class="row">
-      <a href="register.php">Create account</a>
+      <span>Dont' have an account?
+      <a href="register.php">Register</a>
+    </span>
       <a href="forgot_password.php">Forgot password?</a>
     </div>
   </div>
@@ -170,5 +196,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   <p>&copy; 2026 ReLife Hub</p>
 </footer>
 
+<script>
+function togglePassword() {
+  const pwd = document.getElementById("password");
+  const icon = event.target;
+
+  if (pwd.type === "password") {
+    pwd.type = "text";
+    icon.textContent = "👀";
+  } else {
+    pwd.type = "password";
+    icon.textContent = "👁️";
+  }
+}
+</script>
 </body>
 </html>

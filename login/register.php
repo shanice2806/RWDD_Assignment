@@ -136,6 +136,28 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     height:auto;
     border-radius:10px;}
 
+.password-wrapper{
+  position: relative;
+}
+
+.password-wrapper input{
+  padding-right: 5px;
+}
+
+.toggle-password{
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 18px;
+  user-select: none;
+  color: #666;
+}
+
+.toggle-password:hover{
+  color: #000;
+}
 
   </style>
 </head>
@@ -157,19 +179,26 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <form method="POST">
       <label for="user_id">TP Number</label>
-      <input id="user_id" name="user_id" type="text" placeholder="TP083586" required>
+      <input id="user_id" name="user_id" type="text" placeholder="example :TP123456" required>
 
       <label for="name">Full Name</label>
-      <input id="name" name="name" type="text" placeholder="Loo Yu Chai" required>
+      <input id="name" name="name" type="text" placeholder="Your name" required>
 
       <label for="email">Email</label>
       <input id="email" name="email" type="email" placeholder="you@example.com" required>
 
       <label for="password">Password</label>
-      <input id="password" name="password" type="password" placeholder="Min 6 characters" required>
+        <div class="password-wrapper">
+          <input id="password" name="password" type="password" placeholder="Min 6 characters" required>
+            <span class="toggle-password" onclick="togglePassword('password', this)">👁️</span>
+        </div>
 
       <label for="confirm_password">Confirm Password</label>
-      <input id="confirm_password" name="confirm_password" type="password" required>
+        <div class="password-wrapper">
+          <input id="confirm_password" name="confirm_password" type="password" required>
+            <span class="toggle-password" onclick="togglePassword('confirm_password', this)">👁️</span>
+        </div>
+
 
       <button class="btn" type="submit">Register</button>
     </form>
@@ -184,5 +213,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <footer>
   <p>&copy; 2026 ReLife Hub</p>
 </footer>
+<script>
+function togglePassword(inputId, iconEl) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  if (input.type === "password") {
+    input.type = "text";
+    iconEl.textContent = "👀";
+  } else {
+    input.type = "password";
+    iconEl.textContent = "👁️";
+  }
+}
+</script>
+
 </body>
 </html>

@@ -13,7 +13,6 @@ if (!isset($_SESSION["user_id"])) {
 
 $user_id = $_SESSION["user_id"];
 
-/* ===== 取用户资料（给 sidebar + topbar）===== */
 $userSql = "SELECT name, eco_points, profile_image FROM users WHERE user_id=? LIMIT 1";
 $uStmt = mysqli_prepare($conn, $userSql);
 mysqli_stmt_bind_param($uStmt, "s", $user_id);
@@ -25,18 +24,15 @@ mysqli_stmt_close($uStmt);
 $profileImg = trim($user["profile_image"] ?? "");
 if ($profileImg === "") $profileImg = "../assets/default-avatar.png";
 
-/* ===== filters ===== */
 $filterDiff = trim($_GET["diff"] ?? "all");
 $filterCat  = trim($_GET["cat"] ?? "all");
 
-/* category list */
 $catSql = "SELECT content_category_id, content_name
            FROM content_categories
            WHERE is_active=1
            ORDER BY content_name ASC";
 $catRes = mysqli_query($conn, $catSql);
 
-/* ===== 取我的 posts（prepared）===== */
 $sql = "SELECT post_id, title, difficulty_level, content_category_id, post_created_at
         FROM posts
         WHERE user_id = ?";
@@ -150,7 +146,6 @@ if ($flashSuccess) unset($_SESSION["flash_success"]);
     .page-btn:hover{ background:#3ba99c; border-color:#3ba99c; color:#fff; }
     button.page-btn{ appearance:none; -webkit-appearance:none; outline:none; }
 
-/* ===== Upload Success Popup (no class collision) ===== */
 .success-modal-bg{
   position: fixed;
   inset: 0;
@@ -224,16 +219,18 @@ if ($flashSuccess) unset($_SESSION["flash_success"]);
         </div>
       </div>
 
-      <div class="user-top-center">
-        <input class="user-top-search" type="text" placeholder="Search... (not connected)">
-        <button class="user-top-search-btn" type="button">Search</button>
-      </div>
+<div class="user-top-center">
+<h1 style="color: white;">Tutorial</h1>
+  </div>
 
       <div class="user-top-right">
-        <span class="user-top-points">🪙 <?php echo (int)$user["eco_points"]; ?> points</span>
-        <a href="user_dashboard.php" class="user-top-btn">🏠</a>
-        <a href="../login/logout.php" class="user-top-btn logout">❌</a>
-      </div>
+        <span class="user-top-points">
+      🪙 <?php echo (int)$user["eco_points"]; ?> points
+        </span>
+    <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
+    <a class="user-top-btn" href="friends_add.php" title="Add Friend">👥</a>
+    <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
+  </div>
     </div>
 
     <div class="page-wrap">
@@ -281,7 +278,6 @@ if ($flashSuccess) unset($_SESSION["flash_success"]);
 
                 <div class="actions">
                   <a class="page-btn" href="tutorial_detail.php?id=<?php echo urlencode($row["post_id"]); ?>">View</a>
-                  <a class="page-btn" href="tutorial_edit.php?id=<?php echo urlencode($row["post_id"]); ?>">Edit</a>
                   <a class="page-btn" href="tutorial_delete.php?id=<?php echo urlencode($row["post_id"]); ?>"
                      onclick="return confirm('Delete this tutorial?');">Delete</a>
                 </div>
@@ -320,17 +316,14 @@ if ($flashSuccess) unset($_SESSION["flash_success"]);
   const successOk = document.getElementById("successOk");
 
   if (successModal) {
-    // show
     successModal.style.display = "flex";
 
-    // ok close
     if (successOk) {
       successOk.addEventListener("click", () => {
         successModal.style.display = "none";
       });
     }
 
-    // click outside close
     successModal.addEventListener("click", (e) => {
       if (e.target === successModal) successModal.style.display = "none";
     });

@@ -12,8 +12,6 @@ session_start();
   <link rel="stylesheet" href="../style.css">
   <style>
     body{font-family:Arial,sans-serif;background:#f5f6f8;margin:0}
-    .topbar{background:#ffffff;border-bottom:1px solid #e5e7eb;padding:12px 16px}
-    .topbar a{color:#1f6feb;text-decoration:none;font-weight:700}
     .container{max-width:900px;margin:24px auto;padding:0 16px}
     .card{background:#fff;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.08);padding:20px;margin-bottom:16px}
     h1{margin:0 0 6px;font-size:26px}
@@ -35,8 +33,8 @@ session_start();
 </head>
 <body>
 
-  <div class="topbar">
-    <a href="login.php">← Back to Login</a>
+  <div class="btn">
+    <a href="login.php">Back to Login</a>
   </div>
 
   <div class="container">
