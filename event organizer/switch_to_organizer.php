@@ -9,7 +9,6 @@ if (!isset($_SESSION["user_id"])) {
 
 $user_id = $_SESSION["user_id"];
 
-// 从 DB 再确认 role（防止别人改 session）
 $sql = "SELECT role FROM users WHERE user_id = ? LIMIT 1";
 $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_bind_param($stmt, "s", $user_id);

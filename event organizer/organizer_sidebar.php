@@ -20,15 +20,13 @@ $profileImg    = '../images/profile.png';
   </div>
 
   <div class="organizer-sidebar-menu">
-    <a href="organizer_dashboard.php" class="organizer-menu-item">📅 Event Management</a>
-    <a href="organizer_registration_list.php" class="organizer-menu-item">📝 Registration, Attendance & Volunteers</a>
-    <a href="organizer_recycling_log.php" class="organizer-menu-item">🌱 Sustainability Tracking</a>
-    <a href="organizer_feedback.php" class="organizer-menu-item">💬 Collaboration & Feedback</a>
-    <a href="organizer_event_archive.php" class="organizer-menu-item">📁 Archive & Showcase</a>
+    <a href="organizer_event_management.php" class="organizer-menu-item">📅 Event Management</a>
+    <a href="organizer_registration_attendance_hub.php" class="organizer-menu-item">📝 Registration, Attendance & Volunteers</a>
+    <a href="organizer_sustainability_hub.php" class="organizer-menu-item">🌱 Sustainability Tracking</a>
+    <a href="organizer_collaboration_feedback_hub.php" class="organizer-menu-item">💬 Collaboration & Feedback</a>
+    <a href="organizer_archive_showcase_hub.php" class="organizer-menu-item">📁 Archive & Showcase</a>
     <a href="organizer_profile_view.php" class="organizer-menu-item">👤 Profile</a>
     
     <a href="../login/logout.php" class="organizer-menu-item logout" onclick="return confirm('Logout now?');">🚪 Log Out</a>
   </div>
 </aside>
-
-<script src="/RWDD_Assignment/event organizer/organizer.js"></script>
