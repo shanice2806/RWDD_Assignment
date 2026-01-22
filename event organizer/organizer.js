@@ -8,13 +8,4 @@ document.addEventListener("DOMContentLoaded", () => {
       sidebar.classList.toggle("open");
     });
   }
-
-  // Collapsible submenu logic
-  document.querySelectorAll(".menu-toggle").forEach(btn => {
-    btn.addEventListener("click", () => {
-      btn.classList.toggle("active");
-      const submenu = btn.nextElementSibling;
-      submenu.style.display = submenu.style.display === "flex" ? "none" : "flex";
-    });
-  });
 });
