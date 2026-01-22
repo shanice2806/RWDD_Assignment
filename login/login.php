@@ -53,7 +53,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $_SESSION["email"]   = $row["email"];
             $_SESSION["role"]    = $row["role"];
 
-            // update last_login
             $upd = mysqli_prepare($conn, "UPDATE users SET last_login = NOW() WHERE user_id = ?");
             if ($upd) {
               mysqli_stmt_bind_param($upd, "s", $row["user_id"]);
@@ -89,7 +88,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     margin:0}
 
     .wrap{max-width:420px;
-    margin:60px auto;
+    margin:220px auto;
     background:#fff;
     padding:24px;
     border-radius:12px;
@@ -103,19 +102,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     font-weight:600}
 
     input{width:100%;
-    padding:10px 12px;
+    padding:10px 7px;
     border:1px solid #ddd;
     border-radius:10px}
 
     .btn{margin-top:16px;
     width:100%;
-    padding:10px 12px;
-    border:0;
-    border-radius:10px;
-    background:#1f6feb;
-    color:#fff;
     font-weight:700;
-    cursor:pointer}
+  }
 
     .row{display:flex;
     justify-content:space-between;
@@ -143,7 +137,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 </head>
 <body>
   <div class="wrap">
-
 <div class="login-top-img">
   <img src="../images/apu.png" alt="ReLife Hub">
 </div>
@@ -170,7 +163,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     </div>
   </div>
 
-<div class="row" style="justify-content:center;margin-top:10px;">
+<div class="row" style="justify-content:center;margin-top:150px;">
   <a href="about.php">About ReLife Hub</a>
 </div>
 <footer>

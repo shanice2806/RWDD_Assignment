@@ -1,7 +1,7 @@
 <?php
 $userName = $user["name"] ?? "User";
 $userRole = $user["role"] ?? "User";
-$profileImg = $profileImg ?? "../images/profile.png";
+$profileImg = $profileImg ?? "../images/apu.png";
 ?>
 <!DOCTYPE html>
 <html lang="en">

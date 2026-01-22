@@ -2,13 +2,11 @@
 session_start();
 require_once "../connect.php";
 
-//login first
 if (!isset($_SESSION["user_id"])) {
   header("Location: ../login/login.php");
   exit();
 }
 
-// Only allow User(student,staff,teacher only not for admin) role 
 $role = strtolower(trim($_SESSION["role"] ?? ""));
 if ($role === "admin") {
   header("Location: ../admin/admin_dashboard.php");
@@ -17,7 +15,6 @@ if ($role === "admin") {
 
 $user_id = $_SESSION["user_id"];
 
-// take data from database
 $userSql = "SELECT user_id, name, email, role, eco_points, badges, created_at, account_status, last_login, profile_image
             FROM users
             WHERE user_id = ?
@@ -36,10 +33,8 @@ if (!$user) {
   exit();
 }
 
-// Profile image fallback
-$profileImg = $user["profile_image"] ? "../" . $user["profile_image"] : "../images/profile.png";
+$profileImg = $user["profile_image"] ? "../" . $user["profile_image"] : "../images/diz1jrk-e0114a7d-478f-4478-94e5-cbe3a8cc7cc2.png";
 
-// Stats: recycling logs
 function getCount($conn, $sql, $user_id) {
   $stmt = mysqli_prepare($conn, $sql);
   mysqli_stmt_bind_param($stmt, "s", $user_id);
@@ -54,10 +49,8 @@ $totalLogs   = getCount($conn, "SELECT COUNT(*) AS c FROM recycling_log WHERE us
 $pendingLogs = getCount($conn, "SELECT COUNT(*) AS c FROM recycling_log WHERE user_id = ? AND status = 'pending'", $user_id);
 $validLogs   = getCount($conn, "SELECT COUNT(*) AS c FROM recycling_log WHERE user_id = ? AND status = 'valid'", $user_id);
 
-// Stats: posts
 $totalPosts  = getCount($conn, "SELECT COUNT(*) AS c FROM posts WHERE user_id = ?", $user_id);
 
-// Recent activity lists 
 $recentLogs = [];
 $logStmt = mysqli_prepare($conn, "SELECT rl.log_id,
        m.materials_name AS material_type,
@@ -93,15 +86,12 @@ if ($postStmt) {
   mysqli_stmt_close($postStmt);
 }
 
-// Badge parsing (your badges column could be NULL or "badge1,badge2")
 $badges = [];
 if (!empty($user["badges"])) {
-  // supports comma-separated badges
   $parts = array_map("trim", explode(",", $user["badges"]));
   foreach ($parts as $b) if ($b !== "") $badges[] = $b;
 }
 
-// Friendly dates
 $joined = $user["created_at"] ? date("F Y", strtotime($user["created_at"])) : "—";
 $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_login"])) : "First login";
 
@@ -134,11 +124,7 @@ $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_lo
     <button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
 
     <div class="user-top-user">
-      <img src="<?php echo ($profileImg); ?>"
-           class="user-top-avatar" alt="Avatar">
-      <span class="user-top-name">
-        <?php echo ($user["name"]); ?>
-      </span>
+      <span> Welcome!  <?= htmlspecialchars($_SESSION['name'] ?? 'User') ?> </span>
     </div>
   </div>
 
@@ -257,7 +243,7 @@ $lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_lo
   <?php endif; ?>
 
   <a class="btn" href="../posts/post_add.php">+ Create Post</a>
-  <a class="btn" href="../posts/post_list.php" style="margin-left: 10px;">View Community</a>
+  <a class="btn" href="../user/user_community.php" style="margin-left: 10px;">View Community</a>
 </div>
 
   </div>

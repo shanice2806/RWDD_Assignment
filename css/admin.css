@@ -369,6 +369,29 @@ main.dashboard {
   border: 1px solid var(--color-border);
 }
 
+/* Center labels & inputs evenly */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;   /* center everything */
+}
+
+/* Center label text and match input width */
+.form-group label {
+  width: 100%;
+  max-width: 600px;      /* control form width */
+  text-align: center;   /* 🔥 key fix */
+}
+
+/* Match input width with label */
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  max-width: 600px;      /* same as label */
+}
+
+
 /* Page title bar (back + title) */
 .page-title-bar {
   display: flex;

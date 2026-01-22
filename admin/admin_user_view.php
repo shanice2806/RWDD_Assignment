@@ -55,6 +55,7 @@ $user = $result->fetch_assoc();
             </a>
         </div>
 
+
         <!-- User Details -->
         <div class="form-group">
             <label>Name</label>
@@ -99,6 +100,17 @@ $user = $result->fetch_assoc();
         <div class="form-group">
             <label>Account Status</label>
             <input type="text" value="<?= htmlspecialchars($user['account_status']) ?>" readonly>
+        </div>
+
+        <!-- Edit Button -->
+        <div style="text-align:center; margin-bottom:20px;">
+    
+            <!-- VIEW ECO POINT TRANSACTIONS -->
+            <a href="admin_points_transaction.php?id=<?= urlencode($user['user_id']) ?>" 
+                class="btn"
+               style="background:#3ba99c; color:#fff;">
+                VIEW ECO POINT TRANSACTIONS
+            </a>
         </div>
 
     </div>

@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once "../connect.php"; // must define $conn
+require_once "../connect.php";
 
 $error = "";
 $success = "";
@@ -21,7 +21,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   } elseif (strlen($pass1) < 6) {
     $error = "Password must be at least 6 characters.";
   } else {
-    // duplicate check: TP or email
     $check = "SELECT user_id FROM users WHERE user_id = ? OR email = ? LIMIT 1";
     $stmt = mysqli_prepare($conn, $check);
 
@@ -37,7 +36,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       } else {
         $hashed = password_hash($pass1, PASSWORD_DEFAULT);
 
-        // your table defaults/required fields
         $role = "User";
         $eco_points = 0;
         $badges = NULL;
@@ -55,7 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if (!$ins) {
           $error = "SQL error: " . mysqli_error($conn);
         } else {
-          // types: user_id(s) name(s) email(s) role(s) password(s) eco_points(i) badges(s/NULL) created_at(s) status(s) last_login(s/NULL) profile_image(s/NULL)
+
           mysqli_stmt_bind_param(
             $ins,
             "sssssisssss",
@@ -96,20 +94,57 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   <link rel="stylesheet" href="../css/style.css">
 
   <style>
-    body{font-family:Arial,sans-serif;background:#f5f6f8;margin:0}
-    .wrap{max-width:460px;margin:50px auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
-    h1{margin:0 0 14px;font-size:22px}
-    label{display:block;margin:12px 0 6px;font-weight:600}
-    input{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px}
-    .btn{margin-top:16px;width:100%;padding:10px 12px;border:0;border-radius:10px;background:#16a34a;color:#fff;font-weight:700;cursor:pointer}
+    body{font-family:Arial,sans-serif;
+    background:#f5f6f8;
+    margin:0}
+
+    .wrap{max-width:460px;
+    margin:50px auto;
+    background:#fff;padding:24px;
+    border-radius:12px;
+    box-shadow:0 6px 18px rgba(0,0,0,.08)}
+
+    h1{margin:0 0 14px;
+    font-size:22px}
+
+    label{display:block;
+    margin:12px 0 6px;
+    font-weight:600}
+
+    input{width:100%;
+    padding:10px 7px;
+    border:1px solid #ddd;
+    border-radius:10px}
+
+    .btn{margin-top:16px;
+    width:100%;}
+
     .msg{padding:10px 12px;border-radius:10px;margin:10px 0}
+
     .error{background:#ffe8e8;color:#b00020}
+
     .success{background:#e9ffef;color:#0b6b2b}
+
     a{text-decoration:none;color:#1f6feb}
+
+        .login-top-img{
+    text-align:center;
+    margin-bottom:16px;}
+
+    .login-top-img img{
+    max-width:100%;
+    height:auto;
+    border-radius:10px;}
+
+
   </style>
 </head>
 <body>
   <div class="wrap">
+    
+    <div class="login-top-img">
+      <img src="../images/apu.png" alt="ReLife Hub">
+</div>
     <h1>Create Account</h1>
 
     <?php if ($error !== ""): ?>
@@ -143,7 +178,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       Already have an account? <a href="login.php">Login</a>
     </p>
   </div>
-  <div class="row" style="text-align:center;margin-top:10px;">
+  <div class="row" style="text-align:center;margin-top:150px;">
   <a href="about.php">About ReLife Hub</a>
 </div>
 <footer>

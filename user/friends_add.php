@@ -2,7 +2,6 @@
 session_start();
 require_once "../connect.php";
 
-// Check login & role
 if (!isset($_SESSION["user_id"])) {
     header("Location: ../login/login.php");
     exit();
@@ -16,7 +15,6 @@ if ($role === "admin") {
 
 $user_id = $_SESSION["user_id"];
 
-// Fetch user info for top bar / avatar / points
 $userSql = "SELECT user_id, name, eco_points, profile_image, badges, created_at, last_login
             FROM users WHERE user_id = ? LIMIT 1";
 $userStmt = mysqli_prepare($conn, $userSql);

@@ -101,22 +101,7 @@
   background: rgba(255,255,255,0.04);
   transition: background 0.2s ease;
 }
-
-.user-menu-item:hover{
-  background: rgba(255,255,255,0.10);
-}
-
-.user-menu-item.active{
-  background: rgba(255,255,255,0.18);
-  font-weight: 600;
-}
-
 .user-menu-item.logout{
-  margin-top: 10px;
-  background: rgba(239,68,68,0.20);
-}
-
-.user-menu-item.logout:hover{
   background: rgba(239,68,68,0.30);
 }
 
