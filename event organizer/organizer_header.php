@@ -1,11 +1,14 @@
 <?php
+// Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
   session_start();
 }
+
+// Get user's name from session (or set default)
 $_SESSION['name'] = $_SESSION['name'] ?? 'User (Test)';
 ?>
 <header class="top-bar">
-  <!-- Left side: sidebar toggle + user name -->
+  <!-- Left side: hamburger menu + user name -->
   <div class="top-left">
     <button id="sidebar-toggle" class="icon-btn">☰</button>
     <span class="user-name"><?= htmlspecialchars($_SESSION['name']) ?></span>
@@ -17,8 +20,8 @@ $_SESSION['name'] = $_SESSION['name'] ?? 'User (Test)';
     <button class="search-btn">🔍</button>
   </div>
 
-  <!-- Right side: icons -->
-    <div class="icons">
+  <!-- Right side: home and exit icons -->
+  <div class="icons">
     <a href="organizer_dashboard.php" class="icon-btn">🏠</a>
     <a href="../guest.html" class="icon-btn">⎋</a>
   </div>

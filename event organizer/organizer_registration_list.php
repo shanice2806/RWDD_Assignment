@@ -1,16 +1,23 @@
 <?php
+// Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Protect access: only logged-in organizers
+// ========================================
+// Check if user is an organizer
+// ========================================
 if (!isset($_SESSION["user_id"]) || !in_array(strtolower($_SESSION["role"]), ["event organizer","event_organizer","organizer"])) {
+    // Not an organizer? Send to login page
     header("Location: ../login/login.php");
     exit();
 }
 
+// Connect to database
 include '../connect.php';
 
+// Get event_id from URL (if provided)
+// Example: organizer_registration_list.php?event_id=evt_001
 $event_id = $_GET['event_id'] ?? null;
 ?>
 <!DOCTYPE html>
@@ -29,7 +36,9 @@ $event_id = $_GET['event_id'] ?? null;
     <main class="dashboard">
 
       <?php if (!$event_id): ?>
-        <!-- Show list of events -->
+        <!-- ============================================ -->
+        <!-- CASE 1: No event selected - Show all events -->
+        <!-- ============================================ -->
         <h2>Event Registration Overview</h2>
         <table class="eco-table">
           <thead>
@@ -44,11 +53,22 @@ $event_id = $_GET['event_id'] ?? null;
           </thead>
           <tbody>
           <?php
-          $events = $conn->query("SELECT event_id, event_title, event_date_time, event_status, event_location, registration_status FROM events ORDER BY event_date_time DESC");
+          // Get all events from database
+          $query = "SELECT event_id, event_title, event_date_time, event_status, event_location, registration_status FROM events ORDER BY event_date_time DESC";
+          $events = $conn->query($query);
+          
+          // Check if there are any events
           if ($events && $events->num_rows > 0) {
+            // Loop through each event
             while ($row = $events->fetch_assoc()) {
               $eid = $row['event_id'];
-              $count = $conn->query("SELECT COUNT(*) AS total FROM registrations WHERE event_id = '$eid'")->fetch_assoc()['total'];
+              
+              // Count how many people registered for this event
+              $count_query = "SELECT COUNT(*) AS total FROM registrations WHERE event_id = '$eid'";
+              $count_result = $conn->query($count_query);
+              $count = $count_result->fetch_assoc()['total'];
+              
+              // Display event row
               echo "<tr>
                 <td>".htmlspecialchars($row['event_title'])."</td>
                 <td>".htmlspecialchars($row['event_date_time'])."</td>
@@ -66,21 +86,34 @@ $event_id = $_GET['event_id'] ?? null;
         </table>
 
       <?php else:
-        $event = $conn->query("SELECT event_title, event_date_time, registration_status FROM events WHERE event_id = '$event_id'")->fetch_assoc();
+        // ============================================
+        // CASE 2: Event selected - Show registrations
+        // ============================================
+        
+        // Get event details
+        $event_query = "SELECT event_title, event_date_time, registration_status FROM events WHERE event_id = '$event_id'";
+        $event_result = $conn->query($event_query);
+        $event = $event_result->fetch_assoc();
+        
+        // Check if event exists
         if (!$event) {
           echo "<p>Event not found.</p>";
-        } elseif (strtolower($event['registration_status']) !== 'open') {
+        } 
+        // Check if registration is open
+        elseif (strtolower($event['registration_status']) !== 'open') {
           echo "<p style='color:#b00020; font-weight:600;'>Registration for this event is not open yet.</p>";
           echo "<a class='btn' href='organizer_event_view.php'>Open Registration</a>";
-        } else {
-          // Join users table to get participant name
-          $registrations = $conn->query("
+        } 
+        else {
+          // Get all registrations with user names
+          $registrations_query = "
             SELECT r.registration_id, r.user_id, u.name, r.registration_status
             FROM registrations r
             JOIN users u ON r.user_id = u.user_id
             WHERE r.event_id = '$event_id'
             ORDER BY r.registration_id DESC
-          ");
+          ";
+          $registrations = $conn->query($registrations_query);
       ?>
 
         <h2>Registrations for <?= htmlspecialchars($event['event_title']) ?> (<?= htmlspecialchars($event['event_date_time']) ?>)</h2>

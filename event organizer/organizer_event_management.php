@@ -76,8 +76,8 @@ include '../connect.php';
         </div>
         <div class="action-grid">
           <a href="organizer_event_view.php" class="action-btn">👁️ View All Events</a>
-          <a href="organizer_event_edit.php" class="action-btn">✏️ Edit Events</a>
-          <a href="organizer_event_archive.php" class="action-btn">📦 Archive Events</a>
+          <a href="organizer_event_select_edit.php" class="action-btn">✏️ Edit Events</a>
+          <a href="organizer_event_select_archive.php" class="action-btn">📦 Archive Events</a>
         </div>
         <div class="submenu">
           <div class="submenu-title">💡 Quick Tips</div>
@@ -99,9 +99,9 @@ include '../connect.php';
           </div>
         </div>
         <div class="action-grid">
-          <a href="organizer_announcement_view.php" class="action-btn">📄 View Announcements</a>
-          <a href="organizer_announcement_add.php" class="action-btn">➕ Post Announcement</a>
-          <a href="organizer_send_notification.php" class="action-btn">🔔 Send Notification</a>
+          <a href="organizer_announcement.php" class="action-btn">📄 View Announcements</a>
+          <a href="organizer_announcement_create.php" class="action-btn">➕ Post Announcement</a>
+          <a href="organizer_notification_send.php" class="action-btn">🔔 Send Notification</a>
           <a href="organizer_recap_summary.php" class="action-btn">📊 Post Recap</a>
         </div>
         <div class="submenu">
