@@ -193,7 +193,20 @@ $result = $conn->query($sql);
   <td><?= $row['points_required'] ?></td>
   <td><?= $row['stock'] ?></td>
   <td><?= $row['is_active'] ? 'Active' : 'Inactive' ?></td>
-  <td><img src="<?= $row['image_path'] ?>" width="60"></td>
+<td>
+  <?php
+    // Use reward image if exists, otherwise use default image
+    $rewardImage = !empty($row['image_path'])
+        ? "../images/reward/" . $row['image_path']
+        : "../images/reward/default.jpeg";
+  ?>
+
+  <img src="<?= htmlspecialchars($rewardImage) ?>"
+       width="60"
+       alt="Reward Image">
+</td>
+
+
   <td>
     <a href="admin_reward_edit.php?id=<?= $row['reward_id'] ?>" class="action-btn">Edit</a>
   </td>

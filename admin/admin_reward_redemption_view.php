@@ -148,10 +148,21 @@ $data = $result->fetch_assoc();
     </div>
 
     <div class="form-group">
-      <label>Reward Image</label>
-      <div style="margin-top:10px;">
-        <img src="<?= $data['image_path'] ?>" width="120" style="border-radius:6px;">
-      </div>
+  <label>Reward Image</label>
+  <div style="margin-top:10px;">
+    <?php
+        // If image_path is empty, show placeholder
+        $rewardImage = !empty($data['image_path'])
+            ? $data['image_path']
+            : 'default.jpeg';
+    ?>
+    <img src="../images/reward/<?= htmlspecialchars($rewardImage) ?>"
+         width="120"
+         style="border-radius:6px;"
+         alt="Reward Image">
+  </div>
+</div>
+
     </div>
   </div>
 

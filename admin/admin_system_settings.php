@@ -210,7 +210,16 @@ $data = $stmt->get_result();
   <td><?= htmlspecialchars($row['name']) ?></td>
   <td><?= htmlspecialchars($row['description']) ?></td>
   <td><?= $row['required_points'] ?></td>
-  <td><img src="<?= $row['icon_path'] ?>" width="40"></td>
+  <td>
+  <?php if (!empty($row['icon_path'])): ?>
+    <img src="../images/badges/<?= htmlspecialchars($row['icon_path']) ?>"
+         width="40"
+         alt="Badge Icon">
+  <?php else: ?>
+    -
+  <?php endif; ?>
+</td>
+
   <td><?= $row['is_active'] ? 'Active' : 'Inactive' ?></td>
 
 <?php elseif ($view === 'eco_rules'): ?>

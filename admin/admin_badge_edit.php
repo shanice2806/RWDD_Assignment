@@ -44,30 +44,46 @@ $badge = $result->fetch_assoc();
 ===================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $badge_name       = trim($_POST['badge_name']);
-    $description      = trim($_POST['description']);
-    $required_points  = (int) $_POST['required_points'];
-    $status           = (int) $_POST['is_active'];
+    $badge_name      = trim($_POST['badge_name']);
+    $description     = trim($_POST['description']);
+    $required_points = (int) $_POST['required_points'];
+    $status          = (int) $_POST['is_active'];
 
-    $icon_path = $badge['icon_path']; // default: keep old icon
+    /* Default: keep old icon filename */
+    $icon_path = $badge['icon_path'];
 
-    /* Handle new icon upload */
+    /* =====================
+       HANDLE ICON UPLOAD
+    ===================== */
     if (!empty($_FILES['icon']['name'])) {
 
-        $upload_dir = "../images/badges/";
+        $upload_dir  = "../images/badges/";
+        $allowed_ext = ['jpg', 'jpeg', 'png', 'gif'];
+
         if (!is_dir($upload_dir)) {
             mkdir($upload_dir, 0777, true);
         }
 
-        $file_ext  = pathinfo($_FILES['icon']['name'], PATHINFO_EXTENSION);
+        $file_ext = strtolower(pathinfo($_FILES['icon']['name'], PATHINFO_EXTENSION));
+
+        /* Validate file type */
+        if (!in_array($file_ext, $allowed_ext)) {
+            die("Invalid file type. Only JPG, JPEG, PNG & GIF allowed.");
+        }
+
+        /* Rename using badge ID */
         $file_name = $badge_id . "." . $file_ext;
         $target    = $upload_dir . $file_name;
 
         if (move_uploaded_file($_FILES['icon']['tmp_name'], $target)) {
-            $icon_path = "/images/badges/" . $file_name;
+            /* STORE ONLY FILE NAME IN DATABASE */
+            $icon_path = $file_name;
         }
     }
 
+    /* =====================
+       UPDATE DATABASE
+    ===================== */
     if ($badge_name !== '' && $required_points > 0) {
 
         $stmt = $conn->prepare("
@@ -110,16 +126,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h2><?= htmlspecialchars($badge_id) ?></h2>
   </div>
 
-  <!-- CENTERED FORM -->
+  <!-- FORM CONTAINER -->
   <div class="profile-container">
 
     <form method="POST"
           enctype="multipart/form-data"
-          style="
-            background:#e5e5e5;
-            padding:30px;
-            border-radius:8px;
-          ">
+          style="background:#e5e5e5;padding:30px;border-radius:8px;">
 
       <!-- BADGE ID -->
       <div class="form-group">
@@ -140,13 +152,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <!-- DESCRIPTION -->
       <div class="form-group">
-        <label>Badge Description</label>
+        <label>Description</label>
         <input type="text"
                name="description"
                value="<?= htmlspecialchars($badge['description']) ?>">
       </div>
 
-      <!-- POINTS -->
+      <!-- REQUIRED POINTS -->
       <div class="form-group">
         <label>Points Required</label>
         <input type="number"
@@ -173,9 +185,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="form-group">
         <label>Badge Icon</label>
 
-        <?php if ($badge['icon_path']): ?>
+        <?php if (!empty($badge['icon_path'])): ?>
           <div style="margin-bottom:10px;">
-            <img src="<?= $badge['icon_path'] ?>"
+            <img src="../images/badges/<?= htmlspecialchars($badge['icon_path']) ?>"
                  style="width:100px;border-radius:6px;">
           </div>
         <?php endif; ?>
@@ -186,7 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
 
       <!-- ACTION BUTTONS -->
-      <div style="display:flex; justify-content:center; gap:12px; margin-top:25px;">
+      <div style="display:flex;justify-content:center;gap:12px;margin-top:25px;">
         <a href="admin_system_settings.php?view=badges"
            class="action-btn">CANCEL</a>
 
@@ -203,4 +215,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </main>
 
 <?php include "admin_footer.php"; ?>
-/

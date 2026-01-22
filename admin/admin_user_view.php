@@ -26,6 +26,13 @@ if ($result->num_rows === 0) {
 }
 
 $user = $result->fetch_assoc();
+
+/* =====================
+   PROFILE IMAGE LOGIC
+===================== */
+$profileImage = !empty($user['profile_image'])
+    ? $user['profile_image']
+    : 'default.jpeg';
 ?>
 
 <main class="dashboard">
@@ -39,24 +46,26 @@ $user = $result->fetch_assoc();
     <!-- PROFILE CARD -->
     <div class="section-preview" style="max-width:700px; margin:auto;">
 
-        <!-- Avatar -->
-        <div class="profile-avatar-large" style="text-align:center; margin-bottom:15px;">
-            <?php if (!empty($user['profile_image'])): ?>
-                <img src="../uploads/<?= htmlspecialchars($user['profile_image']) ?>" alt="Profile">
-            <?php else: ?>
-                👤
-            <?php endif; ?>
+        <!-- PROFILE IMAGE -->
+        <div style="text-align:center; margin-bottom:20px;">
+            <img src="../images/profile/<?= htmlspecialchars($profileImage) ?>"
+                 alt="Profile Photo"
+                 style="
+                    width:120px;
+                    height:120px;
+                    border-radius:50%;
+                    object-fit:cover;
+                 ">
         </div>
 
-        <!-- Edit Button -->
+        <!-- EDIT BUTTON -->
         <div style="text-align:center; margin-bottom:20px;">
             <a href="admin_user_edit.php?id=<?= urlencode($user['user_id']) ?>" class="btn">
                 EDIT PROFILE
             </a>
         </div>
 
-
-        <!-- User Details -->
+        <!-- USER DETAILS -->
         <div class="form-group">
             <label>Name</label>
             <input type="text" value="<?= htmlspecialchars($user['name']) ?>" readonly>
@@ -102,12 +111,10 @@ $user = $result->fetch_assoc();
             <input type="text" value="<?= htmlspecialchars($user['account_status']) ?>" readonly>
         </div>
 
-        <!-- Edit Button -->
+        <!-- VIEW ECO POINT TRANSACTIONS -->
         <div style="text-align:center; margin-bottom:20px;">
-    
-            <!-- VIEW ECO POINT TRANSACTIONS -->
-            <a href="admin_points_transaction.php?id=<?= urlencode($user['user_id']) ?>" 
-                class="btn"
+            <a href="admin_points_transaction.php?id=<?= urlencode($user['user_id']) ?>"
+               class="btn"
                style="background:#3ba99c; color:#fff;">
                 VIEW ECO POINT TRANSACTIONS
             </a>
