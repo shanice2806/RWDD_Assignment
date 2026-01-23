@@ -167,7 +167,6 @@ if ($notifError !== "") {
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/user.css">
 
-  <style>
 <style>
   .notif-wrap{
     margin: 16px 0;
@@ -270,8 +269,6 @@ if ($notifError !== "") {
     }
   }
 </style>
-
-  </style>
 </head>
 
 <body class="sidebar-collapsed">
