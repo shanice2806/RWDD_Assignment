@@ -1,6 +1,5 @@
 <?php
-session_start();
-require_once "../connect.php";
+include "../connect.php";
 
 $page_title = "Add Eco Rule";
 include "admin_header.php";
@@ -62,8 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<main class="dashboard">
 <div class="main-content">
+<main class="dashboard">
 
   <!-- PAGE TITLE BAR -->
   <div class="page-title-bar">
@@ -75,14 +74,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <!-- CENTERED FORM -->
   <div class="profile-container">
-
-    <form method="POST"
-          style="
-            background:#e5e5e5;
-            padding:30px;
-            border-radius:8px;
-          ">
-
+    <div class="form-panel">
+    <form method="POST">
       <div class="form-group">
         <label>Rule Key</label>
         <input type="text"
@@ -113,11 +106,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </button>
       </div>
 
-    </form>
-
+      </form>
+    </div>
   </div>
 
-</div>
 </main>
 
 <?php include "admin_footer.php"; ?>

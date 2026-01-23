@@ -8,8 +8,8 @@ session_start();
   <meta charset="UTF-8">
   <title><?= $page_title ?? 'Admin Panel' ?></title>
 
-  <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/admin.css">
+  <link rel="stylesheet" href="../css/style.css?v=<?= time() ?>">
+  <link rel="stylesheet" href="../css/admin.css?v=<?= time() ?>">
 </head>
 
 <body>

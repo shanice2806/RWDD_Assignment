@@ -1,70 +1,67 @@
 <?php
-include "../connect.php";
+session_start();
+require_once "../connect.php";
+
+$page_title = "Add Badge";
+include "admin_header.php";
 
 /* =====================
    HANDLE ADD BADGE
-   ===================== */
+===================== */
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-    $badge_name      = $_POST['badge_name'];
-    $description     = $_POST['description'];
-    $required_points = $_POST['required_points'];
-    $is_active       = 1; // default active
+    $badge_name      = trim($_POST['badge_name']);
+    $description     = trim($_POST['description']);
+    $required_points = (int) $_POST['required_points'];
+    $is_active       = 1;
 
     /* =====================
-   IMAGE UPLOAD (DEBUG FRIENDLY)
-   ===================== */
-if (!isset($_FILES['badge_icon'])) {
-    die("No file input received. Check your form name='badge_icon' and enctype.");
-}
+       IMAGE UPLOAD
+    ===================== */
+    if (!isset($_FILES['badge_icon'])) {
+        die("No file uploaded.");
+    }
 
-if ($_FILES['badge_icon']['error'] !== UPLOAD_ERR_OK) {
-    die("Upload error code: " . $_FILES['badge_icon']['error']);
-}
+    if ($_FILES['badge_icon']['error'] !== UPLOAD_ERR_OK) {
+        die("Upload error code: " . $_FILES['badge_icon']['error']);
+    }
 
-/* folder path (admin -> ../images/badges/) */
-$upload_dir = realpath(__DIR__ . "/../images/badges");
+    $upload_dir = realpath(__DIR__ . "/../images/badges");
+    if ($upload_dir === false) {
+        die("Upload folder not found.");
+    }
+    $upload_dir .= DIRECTORY_SEPARATOR;
 
-if ($upload_dir === false) {
-    die("Upload folder not found: " . __DIR__ . "/../images/badges");
-}
+    $tmp_name  = $_FILES['badge_icon']['tmp_name'];
+    $extension = strtolower(pathinfo($_FILES['badge_icon']['name'], PATHINFO_EXTENSION));
 
-$upload_dir .= DIRECTORY_SEPARATOR;
+    $allowed = ['png', 'jpg', 'jpeg', 'webp'];
+    if (!in_array($extension, $allowed)) {
+        die("Only PNG, JPG, JPEG, WEBP files are allowed.");
+    }
 
-$tmp_name  = $_FILES['badge_icon']['tmp_name'];
-$extension = strtolower(pathinfo($_FILES['badge_icon']['name'], PATHINFO_EXTENSION));
+    if ($_FILES['badge_icon']['size'] > 2 * 1024 * 1024) {
+        die("File too large. Max 2MB.");
+    }
 
-$allowed = ['png', 'jpg', 'jpeg', 'webp'];
-if (!in_array($extension, $allowed)) {
-    die("Only PNG, JPG, JPEG, WEBP allowed.");
-}
+    if (!is_writable($upload_dir)) {
+        die("Upload folder is not writable.");
+    }
 
-/* optional: file size limit (2MB) */
-if ($_FILES['badge_icon']['size'] > 2 * 1024 * 1024) {
-    die("File too large. Max 2MB.");
-}
+    $new_filename = uniqid("badge_") . "." . $extension;
+    $target_path  = $upload_dir . $new_filename;
 
-$new_filename = uniqid("badge_") . "." . $extension;
-$target_path  = $upload_dir . $new_filename;
-
-/* check folder write permission */
-if (!is_writable($upload_dir)) {
-    die("Upload folder is not writable: " . $upload_dir);
-}
-
-/* move file */
-if (!move_uploaded_file($tmp_name, $target_path)) {
-    die("Failed to upload image. Target: " . $target_path);
-}
-
+    if (!move_uploaded_file($tmp_name, $target_path)) {
+        die("Failed to upload image.");
+    }
 
     /* =====================
        INSERT INTO DATABASE
-       ===================== */
+    ===================== */
     $badge_id = uniqid("b_");
 
     $stmt = $conn->prepare("
-        INSERT INTO badges 
+        INSERT INTO badges
         (badge_id, badge_name, required_points, icon_path, description, is_active)
         VALUES (?, ?, ?, ?, ?, ?)
     ");
@@ -79,92 +76,104 @@ if (!move_uploaded_file($tmp_name, $target_path)) {
         $is_active
     );
 
-    $stmt->execute();
-
-    header("Location: admin_badge.php?added=1");
-    exit;
+    if ($stmt->execute()) {
+        header("Location: admin_badge.php?added=1");
+        exit();
+    } else {
+        die("Database error: " . $stmt->error);
+    }
 }
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Add Badge</title>
-    <link rel="stylesheet" href="../css/admin.css">
-    <style>
-        /* Simple inline styles to match mockup */
-        .upload-box {
-            width: 180px;
-            height: 120px;
-            border: 2px dashed #bbb;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
+<main class="dashboard">
+<div class="main-content">
 
-        .upload-box img {
-            max-width: 100%;
-            max-height: 100%;
-            display: none;
-        }
+  <!-- PAGE TITLE BAR -->
+  <div class="page-title-bar">
+    <a href="http://localhost/RWDD_Assignment/admin/admin_system_settings.php?view=badges" class="icon-btn back-btn">↩</a>
+    <h2>Add Badge</h2>
+  </div>
 
-        .upload-box span {
-            font-size: 28px;
-            color: #888;
-        }
+  <!-- CENTERED FORM -->
+  <div class="profile-container">
+    <div class="form-panel">
+    <form method="POST" enctype="multipart/form-data">
 
-        input[type="file"] {
-            display: none;
-        }
+      <div class="form-group">
+        <label>Badge Name</label>
+        <input type="text" name="badge_name" required>
+      </div>
 
-        .form-card {
-            width: 420px;
-            margin: auto;
-        }
+      <div class="form-group">
+        <label>Badge Description</label>
+        <textarea name="description" rows="3" required></textarea>
+      </div>
 
-        .form-card input,
-        .form-card textarea {
-            width: 100%;
-            margin-bottom: 12px;
-        }
+      <div class="form-group">
+        <label>Points Required</label>
+        <input type="number" name="required_points" min="1" required>
+      </div>
 
-        .btn-add {
-            padding: 8px 20px;
-        }
-    </style>
-</head>
-<body>
+      <div class="form-group">
+        <label>Badge Icon</label>
 
-<h2>Add Badge</h2>
+        <!-- Upload box stays unchanged -->
+        <label class="upload-box">
+          <span id="plusIcon">+</span>
+          <img id="previewImg">
+          <input type="file"
+                 name="badge_icon"
+                 accept="image/*"
+                 onchange="previewImage(event)"
+                 required>
+        </label>
+      </div>
 
-<form method="POST" enctype="multipart/form-data" class="form-card">
+      <div style="text-align:center; margin-top:25px;">
+        <button type="submit" class="action-btn">ADD</button>
+      </div>
 
-    <label>Badge Name</label>
-    <input type="text" name="badge_name" required>
+    </form>
 
-    <label>Badge Description</label>
-    <textarea name="description" rows="3" required></textarea>
+  </div>
 
-    <label>Points Required</label>
-    <input type="number" name="required_points" required>
+</div>
+</main>
 
-    <label>Badge Icon</label>
+<?php include "admin_footer.php"; ?>
 
-    <label class="upload-box">
-        <span id="plusIcon">+</span>
-        <img id="previewImg">
-        <input type="file" name="badge_icon" accept="image/*" onchange="previewImage(event)" required>
-    </label>
+<!-- Upload box styles ONLY -->
+<style>
+.upload-box {
+    width: 180px;
+    height: 120px;
+    border: 2px dashed #bbb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin: 0 auto;
+}
 
-    <button type="submit" class="btn-add">ADD</button>
+.upload-box img {
+    max-width: 100%;
+    max-height: 100%;
+    display: none;
+}
 
-</form>
+.upload-box span {
+    font-size: 28px;
+    color: #888;
+}
+
+input[type="file"] {
+    display: none;
+}
+</style>
 
 <script>
 function previewImage(event) {
-    const img = document.getElementById("previewImg");
+    const img  = document.getElementById("previewImg");
     const plus = document.getElementById("plusIcon");
 
     img.src = URL.createObjectURL(event.target.files[0]);
@@ -172,6 +181,3 @@ function previewImage(event) {
     plus.style.display = "none";
 }
 </script>
-
-</body>
-</html>
