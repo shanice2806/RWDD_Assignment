@@ -9,7 +9,7 @@ if (!isset($_SESSION["user_id"])) {
 $role = strtolower(trim($_SESSION["role"] ?? "user"));
 
 if ($role === "admin") {
-  header("Location: ../admin/admin_dashboard.php");
+  header("Location: admin/admin_dashboard.php");
   exit();
 }
 
