@@ -168,75 +168,109 @@ if ($notifError !== "") {
   <link rel="stylesheet" href="../css/user.css">
 
   <style>
+<style>
+  .notif-wrap{
+    margin: 16px 0;
+    padding: 14px 16px;
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+  }
+  .notif-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .notif-title{
+    font-weight: 700;
+    font-size: 18px;
+    margin: 0;
+  }
+  .notif-small{
+    color: var(--color-muted);
+    font-size: 13px;
+    margin-top: 2px;
+  }
+  .notif-list{
+    display:flex;
+    flex-direction:column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .notif-item{
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    background: var(--color-section);
+  }
+  .notif-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--color-muted);
+    margin-bottom: 6px;
+  }
+  .notif-msg{
+    margin: 0;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+  .notif-badge{
+    display:inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: #fff;
+    font-size: 12px;
+    color: var(--color-text);
+  }
+  .notif-empty{
+    color: var(--color-muted);
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
     .notif-wrap{
-      margin: 16px 0;
-      padding: 14px 16px;
-      background: #fff;
-      border: 1px solid var(--color-border);
-      border-radius: 12px;
+      margin: 12px 0;
+      padding: 12px;
+      border-radius: 10px;
     }
-    .notif-header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 12px;
-      margin-bottom: 10px;
-    }
+
     .notif-title{
-      font-weight: 700;
-      font-size: 18px;
-      margin: 0;
+      font-size: 16px;
     }
+
     .notif-small{
-      color: var(--color-muted);
-      font-size: 13px;
+      font-size: 12px;
     }
-    .notif-list{
-      display:flex;
-      flex-direction:column;
-      gap: 10px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
+
     .notif-item{
-      border: 1px solid var(--color-border);
+      padding: 10px;
       border-radius: 10px;
-      padding: 10px 12px;
-      background: var(--color-section);
     }
+
     .notif-meta{
-      display:flex;
-      flex-wrap:wrap;
-      gap: 10px;
-      font-size: 12px;
-      color: var(--color-muted);
-      margin-bottom: 6px;
+      gap: 8px;
+      font-size: 11px;
     }
-    .notif-msg{
-      margin: 0;
-      line-height: 1.35;
-    }
+
     .notif-badge{
-      display:inline-block;
-      padding: 2px 8px;
-      border-radius: 999px;
-      border: 1px solid var(--color-border);
-      background: #fff;
-      font-size: 12px;
-      color: var(--color-text);
+      font-size: 11px;
+      padding: 2px 7px;
     }
-    .notif-empty{
-      color: var(--color-muted);
-      margin: 0;
+
+    .notif-msg{
+      font-size: 13px;
+      line-height: 1.45;
     }
-    .notif-close{
-      border: 1px solid var(--color-border);
-      background: #fff;
-      border-radius: 10px;
-      padding: 6px 10px;
-      cursor: pointer;
-    }
+  }
+</style>
+
   </style>
 </head>
 
@@ -282,7 +316,6 @@ if ($notifError !== "") {
           <p class="notif-title">🔔 Notifications</p>
           <div class="notif-small">Latest updates for you (showing up to 5)</div>
         </div>
-        <button class="notif-close" type="button" id="notifCloseBtn">Hide</button>
       </div>
 
       <?php if (count($notifications) === 0): ?>
@@ -404,7 +437,7 @@ if ($notifError !== "") {
         </table>
       <?php endif; ?>
 
-      <a class="btn" href="../posts/post_add.php">+ Create Post</a>
+      <a class="btn" href="../user/user_tutorial_add.php">+ Create Post</a>
       <a class="btn" href="../user/user_community.php" style="margin-left: 10px;">View Community</a>
     </div>
 
@@ -416,21 +449,5 @@ if ($notifError !== "") {
 </footer>
 
 <script src="../user/user.js"></script>
-
-<script>
-  const notifBox = document.getElementById("notifBox");
-  const closeBtn = document.getElementById("notifCloseBtn");
-
-
-  if (sessionStorage.getItem("hideNotifBox") === "1") {
-    notifBox.style.display = "none";
-  }
-
-  closeBtn.addEventListener("click", () => {
-    notifBox.style.display = "none";
-    sessionStorage.setItem("hideNotifBox", "1");
-  });
-</script>
-
 </body>
 </html>
