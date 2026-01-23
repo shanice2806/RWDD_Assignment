@@ -66,7 +66,7 @@ $transactions = $stmt->get_result();
 ===================== -->
 <div class="profile-container" style="max-width: 1100px;">
 
-  <div style="background:#e5e5e5; padding:25px; border-radius:8px; margin-bottom:30px;">
+  <div class="section-preview" style="margin-bottom: 30px;">
     <h3 style="margin-bottom:15px;">User Details</h3>
 
     <div class="form-group">
@@ -98,7 +98,7 @@ $transactions = $stmt->get_result();
   <!-- =====================
        TRANSACTION HISTORY
   ===================== -->
-  <div style="background:#e5e5e5; padding:25px; border-radius:8px;">
+  <div class="section-preview ">
     <h3 style="margin-bottom:15px;">Transaction History</h3>
 
     <table class="eco-table">

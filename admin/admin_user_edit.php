@@ -68,12 +68,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- Profile Image -->
         <div style="text-align:center; margin-bottom:20px;">
-            <?php if (!empty($user['profile_image'])): ?>
-                <img src="../<?= htmlspecialchars($user['profile_image']) ?>"
-                     style="width:120px; height:120px; border-radius:50%; object-fit:cover;">
-            <?php else: ?>
-                <div style="font-size:80px;">👤</div>
-            <?php endif; ?>
+            <?php
+$profileImage = !empty($user['profile_image'])
+    ? "../images/profile/" . htmlspecialchars($user['profile_image'])
+    : "../images/profile/default.jpeg";
+?>
+
+<div class="profile-avatar-large">
+  <img src="<?= $profileImage ?>" alt="Profile">
+</div>
+
         </div>
 
         <!-- READ ONLY FIELDS -->
