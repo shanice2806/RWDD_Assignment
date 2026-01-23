@@ -116,15 +116,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="text" value="<?= htmlspecialchars($data['weight_kg']) ?>" readonly class="readonly">
         </div>
 
-        <!-- PHOTO -->
-        <div class="form-group">
-            <label>Photo Proof :</label>
-            <div style="margin-top:10px;">
-                <img src="<?= htmlspecialchars($data['photo_path']) ?>"
-                     style="max-width:100%; border-radius:8px;">
-            </div>
-        </div>
+        
+    <!-- =====================
+         PHOTO PROOF
+    ===================== -->
+    <div class="form-group">
+        <label>Photo Proof</label>
 
+        <div style="
+            border:1px solid #ccc;
+            padding:15px;
+            text-align:center;
+            border-radius:6px;
+            background:#fafafa;
+        ">
+            <?php if (!empty($data['photo_path'])): ?>
+                <img
+                    src="../images/recycling_proof/<?= htmlspecialchars($data['photo_path']) ?>"
+                    alt="Recycling Proof"
+                    style="max-width:100%; max-height:300px; object-fit:contain;"
+                >
+            <?php else: ?>
+                <p style="color:#777;">No photo uploaded</p>
+            <?php endif; ?>
+        </div>
+    </div>
         <!-- STATUS -->
         <div class="form-group">
             <label>Status :</label>

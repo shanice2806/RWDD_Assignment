@@ -86,22 +86,31 @@ $log = $result->fetch_assoc();
     </div>
 
     <!-- =====================
-         PHOTO PROOF
-         ===================== -->
-    <div class="form-group">
-        <label>Photo Proof</label>
-        <div style="border:1px solid #ccc; padding:10px; text-align:center;">
-            <?php if (!empty($log['photo_path'])): ?>
-                <img 
-                  src="<?= htmlspecialchars($log['photo_path']) ?>" 
-                  alt="Photo Proof"
-                  style="max-width:100%; max-height:300px; object-fit:contain;"
-                >
-            <?php else: ?>
-                <p>No photo uploaded</p>
-            <?php endif; ?>
-        </div>
+     PHOTO PROOF
+     ===================== -->
+<div class="form-group">
+    <label>Photo Proof</label>
+    <div style="border:1px solid #ccc; padding:10px; text-align:center;">
+
+        <?php
+        $photoPath = !empty($log['photo_path'])
+            ? "../images/recycling_proof/" . htmlspecialchars($log['photo_path'])
+            : "";
+        ?>
+
+        <?php if (!empty($photoPath) && file_exists(__DIR__ . "/../images/recycling_proof/" . $log['photo_path'])): ?>
+            <img
+                src="<?= $photoPath ?>"
+                alt="Photo Proof"
+                style="max-width:100%; max-height:300px; object-fit:contain;"
+            >
+        <?php else: ?>
+            <p>No photo uploaded</p>
+        <?php endif; ?>
+
     </div>
+</div>
+
 
     <div class="form-group">
         <label>Status</label>
