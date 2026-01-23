@@ -119,13 +119,12 @@ function youtube_to_embed($url) {
     }
   }
 
-  // youtu.be/xxxx
   if (!empty($parts["host"]) && strpos($parts["host"], "youtu.be") !== false) {
     $vid = ltrim($parts["path"] ?? "", "/");
     if ($vid !== "") return "https://www.youtube.com/embed/" . $vid;
   }
 
-  return $url; // 兜底
+  return $url; 
 }
 ?>
 <!DOCTYPE html>
@@ -137,7 +136,6 @@ function youtube_to_embed($url) {
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/user.css">
 
-  <!-- 你原本的 CSS 全部保留 -->
   <style>
     .community-wrap{
       background:#f5f7f8;
@@ -409,16 +407,16 @@ function youtube_to_embed($url) {
           <div class="wf-card">
 
             <div class="wf-actions">
-              <button type="button" class="wf-icon user-top-btn" title="Like"
+              <button type="button" class="wf-icon" title="Like"
                       onclick="this.classList.toggle('liked')">♡</button>
 
-              <button type="button" class="wf-icon user-top-btn" title="Comment"
+              <button type="button" class="wf-icon" title="Comment"
                       onclick="document.getElementById('comment-<?php echo htmlspecialchars($pid); ?>')
                       .scrollIntoView({behavior:'smooth'});">
                 💬
               </button>
 
-              <button type="button" class="wf-icon user-top-btn" title="Report"
+              <button type="button" class="wf-icon" title="Report"
                       onclick="document.getElementById('report-<?php echo htmlspecialchars($pid); ?>').focus();">
                 ⚠
               </button>
