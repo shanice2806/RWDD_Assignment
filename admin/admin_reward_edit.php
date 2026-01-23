@@ -9,7 +9,7 @@ include "admin_header.php";
    VALIDATE ID
 ===================== */
 if (!isset($_GET['id'])) {
-    header("Location: admin_rewards.php?table=catalog");
+    header("Location: admin_rewards.php");
     exit();
 }
 
@@ -19,13 +19,14 @@ $reward_id = $_GET['id'];
    FETCH REWARD
 ===================== */
 $stmt = $conn->prepare("
-    SELECT reward_id,
-           reward_name,
-           description,
-           points_required,
-           stock,
-           is_active,
-           image_path
+    SELECT 
+        reward_id,
+        reward_name,
+        description,
+        points_required,
+        stock,
+        is_active,
+        image_path
     FROM reward_catalog
     WHERE reward_id = ?
 ");
@@ -34,11 +35,17 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
-    header("Location: admin_rewards.php?table=catalog");
+    header("Location: admin_rewards.php");
     exit();
 }
 
 $reward = $result->fetch_assoc();
+
+/* =====================
+   STATUS MESSAGE
+===================== */
+$success = "";
+$error   = "";
 
 /* =====================
    HANDLE FORM SUBMIT
@@ -51,68 +58,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stock           = (int) $_POST['stock'];
     $status          = (int) $_POST['is_active'];
 
-    /* Keep old image by default */
-    $image_path = $reward['image_path'];
+    if ($reward_name === "" || $points_required <= 0) {
+        $error = "Reward name, points required, and stock must be greater than 0.";
+    } else {
 
-    /* =====================
-       HANDLE IMAGE UPLOAD
-    ===================== */
-    if (!empty($_FILES['image']['name'])) {
+        /* Default: keep existing image */
+        $image_path = $reward['image_path'];
 
-        $upload_dir  = "../images/reward/";
-        $allowed_ext = ['jpg', 'jpeg', 'png', 'gif'];
+        /* =====================
+           HANDLE IMAGE UPLOAD
+        ===================== */
+        if (!empty($_FILES['image']['name'])) {
 
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0777, true);
+            $upload_dir  = "../images/reward/";
+            $allowed_ext = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
+            }
+
+            $original_name = basename($_FILES['image']['name']);
+            $file_ext = strtolower(pathinfo($original_name, PATHINFO_EXTENSION));
+
+            if (!in_array($file_ext, $allowed_ext)) {
+                $error = "Invalid image type. Only JPG, JPEG, PNG, GIF, WEBP allowed.";
+            } else {
+
+                $target = $upload_dir . $original_name;
+
+                if (move_uploaded_file($_FILES['image']['tmp_name'], $target)) {
+                    $image_path = $original_name;
+                } else {
+                    $error = "Failed to upload reward image.";
+                }
+            }
         }
 
-        $file_ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+        /* =====================
+           UPDATE DATABASE
+        ===================== */
+        if ($error === "") {
 
-        if (!in_array($file_ext, $allowed_ext)) {
-            die("Invalid file type. Only JPG, JPEG, PNG & GIF allowed.");
-        }
+            $stmt = $conn->prepare("
+                UPDATE reward_catalog
+                SET reward_name = ?,
+                    description = ?,
+                    points_required = ?,
+                    stock = ?,
+                    is_active = ?,
+                    image_path = ?
+                WHERE reward_id = ?
+            ");
 
-        /* Rename image using reward ID */
-        $file_name = $reward_id . "." . $file_ext;
-        $target    = $upload_dir . $file_name;
+            $stmt->bind_param(
+                "ssiiiss",
+                $reward_name,
+                $description,
+                $points_required,
+                $stock,
+                $status,
+                $image_path,
+                $reward_id
+            );
 
-        if (move_uploaded_file($_FILES['image']['tmp_name'], $target)) {
-            $image_path = $file_name; // store ONLY filename
-        }
-    }
+            if ($stmt->execute()) {
+                $success = "Reward updated successfully.";
 
-    /* =====================
-       UPDATE DATABASE
-    ===================== */
-    if ($reward_name !== '' && $points_required > 0 && $stock >= 0) {
-
-        $stmt = $conn->prepare("
-            UPDATE reward_catalog
-            SET reward_name = ?,
-                description = ?,
-                points_required = ?,
-                stock = ?,
-                image_path = ?,
-                is_active = ?
-            WHERE reward_id = ?
-        ");
-
-        $stmt->bind_param(
-            "ssiisis",
-            $reward_name,
-            $description,
-            $points_required,
-            $stock,
-            $image_path,
-            $status,
-            $reward_id
-        );
-
-        if ($stmt->execute()) {
-            header("Location: admin_rewards.php?table=catalog");
-            exit();
-        } else {
-            die("Database Error: " . $stmt->error);
+                /* Refresh local data */
+                $reward['reward_name']     = $reward_name;
+                $reward['description']     = $description;
+                $reward['points_required'] = $points_required;
+                $reward['stock']           = $stock;
+                $reward['is_active']       = $status;
+                $reward['image_path']      = $image_path;
+            } else {
+                $error = "Failed to update reward.";
+            }
         }
     }
 }
@@ -123,19 +144,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <!-- PAGE TITLE BAR -->
   <div class="page-title-bar">
-    <a href="admin_rewards.php?table=catalog"
-       class="icon-btn back-btn">↩</a>
+    <a href="admin_rewards.php" class="icon-btn back-btn">↩</a>
     <h2><?= htmlspecialchars($reward_id) ?></h2>
   </div>
 
-  <!-- FORM CONTAINER -->
   <div class="profile-container">
 
+    <!-- STATUS MESSAGE -->
+    <?php if (!empty($success)): ?>
+      <div class="alert-success">
+        <?= htmlspecialchars($success) ?>
+      </div>
+    <?php endif; ?>
+
+    <?php if (!empty($error)): ?>
+      <div class="alert-error">
+        <?= htmlspecialchars($error) ?>
+      </div>
+    <?php endif; ?>
+
+    <!-- FORM -->
     <form method="POST"
           enctype="multipart/form-data"
-          style="background:#e5e5e5;padding:30px;border-radius:8px;">
+          class="form-panel">
 
-      <!-- REWARD ID -->
       <div class="form-group">
         <label>Reward ID</label>
         <input type="text"
@@ -143,7 +175,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                readonly>
       </div>
 
-      <!-- REWARD NAME -->
       <div class="form-group">
         <label>Reward Name</label>
         <input type="text"
@@ -152,15 +183,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                required>
       </div>
 
-      <!-- DESCRIPTION -->
       <div class="form-group">
-        <label>Description</label>
-        <input type="text"
-               name="description"
-               value="<?= htmlspecialchars($reward['description']) ?>">
+        <label>Product Description</label>
+        <textarea name="description" rows="3" required><?= htmlspecialchars($reward['description']) ?></textarea>
       </div>
 
-      <!-- POINTS REQUIRED -->
       <div class="form-group">
         <label>Points Required</label>
         <input type="number"
@@ -170,17 +197,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                required>
       </div>
 
-      <!-- STOCK -->
       <div class="form-group">
         <label>Stock</label>
         <input type="number"
                name="stock"
-               min="0"
                value="<?= $reward['stock'] ?>"
                required>
       </div>
 
-      <!-- STATUS -->
       <div class="form-group">
         <label>Status</label>
         <select name="is_active">
@@ -189,34 +213,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </select>
       </div>
 
-      <!-- REWARD IMAGE -->
       <div class="form-group">
-        <label>Reward Image</label>
+        <label>Product Image</label>
 
-        <?php
-          $currentImage = !empty($reward['image_path'])
-              ? $reward['image_path']
-              : 'default.jpeg';
-        ?>
+        <?php if (!empty($reward['image_path'])): ?>
+          <div style="margin-bottom:10px;">
+            <img src="../images/reward/<?= htmlspecialchars($reward['image_path']) ?>"
+                 style="width:120px;border-radius:6px;">
+          </div>
+        <?php endif; ?>
 
-        <div style="margin-bottom:10px;">
-          <img src="../images/reward/<?= htmlspecialchars($currentImage) ?>"
-               style="width:120px;border-radius:6px;">
-        </div>
-
-        <input type="file"
-               name="image"
-               accept="image/*">
+        <input type="file" name="image" accept="image/*">
       </div>
 
-      <!-- ACTION BUTTONS -->
       <div style="display:flex;justify-content:center;gap:12px;margin-top:25px;">
-        <a href="admin_rewards.php?table=catalog"
-           class="action-btn">CANCEL</a>
-
-        <button type="submit" class="action-btn">
-          SAVE
-        </button>
+        <a href="admin_rewards.php" class="action-btn">CANCEL</a>
+        <button type="submit" class="action-btn">EDIT</button>
       </div>
 
     </form>
@@ -227,3 +239,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </main>
 
 <?php include "admin_footer.php"; ?>
+

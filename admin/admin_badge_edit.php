@@ -39,6 +39,10 @@ if ($result->num_rows === 0) {
 
 $badge = $result->fetch_assoc();
 
+/* STATUS MESSAGE */
+$success = "";
+$error   = "";
+
 /* =====================
    HANDLE FORM SUBMIT
 ===================== */
@@ -49,68 +53,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $required_points = (int) $_POST['required_points'];
     $status          = (int) $_POST['is_active'];
 
-    /* Default: keep old icon filename */
-    $icon_path = $badge['icon_path'];
+    if ($badge_name === "" || $required_points <= 0) {
+        $error = "Badge name and points are required.";
+    } else {
 
-    /* =====================
-       HANDLE ICON UPLOAD
-    ===================== */
-    if (!empty($_FILES['icon']['name'])) {
+        /* Default: keep existing icon */
+        $icon_path = $badge['icon_path'];
 
-        $upload_dir  = "../images/badges/";
-        $allowed_ext = ['jpg', 'jpeg', 'png', 'gif'];
+        /* =====================
+           HANDLE ICON UPLOAD
+        ===================== */
+        if (!empty($_FILES['icon']['name'])) {
 
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0777, true);
+            $upload_dir  = "../images/badges/";
+            $allowed_ext = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
+            }
+
+            $original_name = basename($_FILES['icon']['name']);
+            $file_ext = strtolower(pathinfo($original_name, PATHINFO_EXTENSION));
+
+            if (!in_array($file_ext, $allowed_ext)) {
+                $error = "Invalid file type. Only JPG, JPEG, PNG, GIF, WEBP allowed.";
+            } else {
+                $target = $upload_dir . $original_name;
+
+                if (move_uploaded_file($_FILES['icon']['tmp_name'], $target)) {
+                    $icon_path = $original_name;
+                } else {
+                    $error = "Failed to upload badge icon.";
+                }
+            }
         }
 
-        $file_ext = strtolower(pathinfo($_FILES['icon']['name'], PATHINFO_EXTENSION));
+        /* =====================
+           UPDATE DATABASE
+        ===================== */
+        if ($error === "") {
 
-        /* Validate file type */
-        if (!in_array($file_ext, $allowed_ext)) {
-            die("Invalid file type. Only JPG, JPEG, PNG & GIF allowed.");
-        }
+            $stmt = $conn->prepare("
+                UPDATE badges
+                SET badge_name = ?,
+                    description = ?,
+                    required_points = ?,
+                    icon_path = ?,
+                    is_active = ?
+                WHERE badge_id = ?
+            ");
 
-        /* Rename using badge ID */
-        $file_name = $badge_id . "." . $file_ext;
-        $target    = $upload_dir . $file_name;
+            $stmt->bind_param(
+                "ssisis",
+                $badge_name,
+                $description,
+                $required_points,
+                $icon_path,
+                $status,
+                $badge_id
+            );
 
-        if (move_uploaded_file($_FILES['icon']['tmp_name'], $target)) {
-            /* STORE ONLY FILE NAME IN DATABASE */
-            $icon_path = $file_name;
-        }
-    }
+            if ($stmt->execute()) {
+                $success = "Badge updated successfully.";
 
-    /* =====================
-       UPDATE DATABASE
-    ===================== */
-    if ($badge_name !== '' && $required_points > 0) {
-
-        $stmt = $conn->prepare("
-            UPDATE badges
-            SET badge_name = ?,
-                description = ?,
-                required_points = ?,
-                icon_path = ?,
-                is_active = ?
-            WHERE badge_id = ?
-        ");
-
-        $stmt->bind_param(
-            "ssisis",
-            $badge_name,
-            $description,
-            $required_points,
-            $icon_path,
-            $status,
-            $badge_id
-        );
-
-        if ($stmt->execute()) {
-            header("Location: admin_system_settings.php?view=badges");
-            exit();
-        } else {
-            die("Database Error: " . $stmt->error);
+                /* refresh local data */
+                $badge['badge_name'] = $badge_name;
+                $badge['description'] = $description;
+                $badge['required_points'] = $required_points;
+                $badge['icon_path'] = $icon_path;
+                $badge['is_active'] = $status;
+            } else {
+                $error = "Failed to update badge.";
+            }
         }
     }
 }
@@ -126,62 +140,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h2><?= htmlspecialchars($badge_id) ?></h2>
   </div>
 
-  <!-- FORM CONTAINER -->
   <div class="profile-container">
 
+    <!-- STATUS MESSAGE -->
+    <?php if (!empty($success)): ?>
+      <div class="alert-success">
+        <?= htmlspecialchars($success) ?>
+      </div>
+    <?php endif; ?>
+
+    <?php if (!empty($error)): ?>
+      <div class="alert-error">
+        <?= htmlspecialchars($error) ?>
+      </div>
+    <?php endif; ?>
+
+    <!-- FORM -->
     <form method="POST"
           enctype="multipart/form-data"
-          style="background:#e5e5e5;padding:30px;border-radius:8px;">
+          class="form-panel">
 
-      <!-- BADGE ID -->
       <div class="form-group">
         <label>Badge ID</label>
-        <input type="text"
-               value="<?= htmlspecialchars($badge['badge_id']) ?>"
-               readonly>
+        <input type="text" value="<?= htmlspecialchars($badge['badge_id']) ?>" readonly>
       </div>
 
-      <!-- BADGE NAME -->
       <div class="form-group">
         <label>Badge Name</label>
-        <input type="text"
-               name="badge_name"
-               value="<?= htmlspecialchars($badge['badge_name']) ?>"
-               required>
+        <input type="text" name="badge_name"
+               value="<?= htmlspecialchars($badge['badge_name']) ?>" required>
       </div>
 
-      <!-- DESCRIPTION -->
       <div class="form-group">
         <label>Description</label>
-        <input type="text"
-               name="description"
+        <input type="text" name="description"
                value="<?= htmlspecialchars($badge['description']) ?>">
       </div>
 
-      <!-- REQUIRED POINTS -->
       <div class="form-group">
         <label>Points Required</label>
-        <input type="number"
-               name="required_points"
-               min="1"
-               value="<?= $badge['required_points'] ?>"
-               required>
+        <input type="number" name="required_points"
+               min="1" value="<?= $badge['required_points'] ?>" required>
       </div>
 
-      <!-- STATUS -->
       <div class="form-group">
         <label>Status</label>
         <select name="is_active">
-          <option value="1" <?= $badge['is_active'] == 1 ? 'selected' : '' ?>>
-            Active
-          </option>
-          <option value="0" <?= $badge['is_active'] == 0 ? 'selected' : '' ?>>
-            Inactive
-          </option>
+          <option value="1" <?= $badge['is_active'] == 1 ? 'selected' : '' ?>>Active</option>
+          <option value="0" <?= $badge['is_active'] == 0 ? 'selected' : '' ?>>Inactive</option>
         </select>
       </div>
 
-      <!-- BADGE ICON -->
       <div class="form-group">
         <label>Badge Icon</label>
 
@@ -192,19 +201,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </div>
         <?php endif; ?>
 
-        <input type="file"
-               name="icon"
-               accept="image/*">
+        <input type="file" name="icon" accept="image/*">
       </div>
 
-      <!-- ACTION BUTTONS -->
       <div style="display:flex;justify-content:center;gap:12px;margin-top:25px;">
-        <a href="admin_system_settings.php?view=badges"
-           class="action-btn">CANCEL</a>
-
-        <button type="submit" class="action-btn">
-          EDIT
-        </button>
+        <a href="admin_system_settings.php?view=badges" class="action-btn">CANCEL</a>
+        <button type="submit" class="action-btn">EDIT</button>
       </div>
 
     </form>

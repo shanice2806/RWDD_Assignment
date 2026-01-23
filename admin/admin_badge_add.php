@@ -5,6 +5,10 @@ require_once "../connect.php";
 $page_title = "Add Badge";
 include "admin_header.php";
 
+/* STATUS MESSAGE */
+$success = "";
+$error   = "";
+
 /* =====================
    HANDLE ADD BADGE
 ===================== */
@@ -15,72 +19,73 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $required_points = (int) $_POST['required_points'];
     $is_active       = 1;
 
-    /* =====================
-       IMAGE UPLOAD
-    ===================== */
-    if (!isset($_FILES['badge_icon'])) {
-        die("No file uploaded.");
-    }
-
-    if ($_FILES['badge_icon']['error'] !== UPLOAD_ERR_OK) {
-        die("Upload error code: " . $_FILES['badge_icon']['error']);
-    }
-
-    $upload_dir = realpath(__DIR__ . "/../images/badges");
-    if ($upload_dir === false) {
-        die("Upload folder not found.");
-    }
-    $upload_dir .= DIRECTORY_SEPARATOR;
-
-    $tmp_name  = $_FILES['badge_icon']['tmp_name'];
-    $extension = strtolower(pathinfo($_FILES['badge_icon']['name'], PATHINFO_EXTENSION));
-
-    $allowed = ['png', 'jpg', 'jpeg', 'webp'];
-    if (!in_array($extension, $allowed)) {
-        die("Only PNG, JPG, JPEG, WEBP files are allowed.");
-    }
-
-    if ($_FILES['badge_icon']['size'] > 2 * 1024 * 1024) {
-        die("File too large. Max 2MB.");
-    }
-
-    if (!is_writable($upload_dir)) {
-        die("Upload folder is not writable.");
-    }
-
-    $new_filename = uniqid("badge_") . "." . $extension;
-    $target_path  = $upload_dir . $new_filename;
-
-    if (!move_uploaded_file($tmp_name, $target_path)) {
-        die("Failed to upload image.");
-    }
-
-    /* =====================
-       INSERT INTO DATABASE
-    ===================== */
-    $badge_id = uniqid("b_");
-
-    $stmt = $conn->prepare("
-        INSERT INTO badges
-        (badge_id, badge_name, required_points, icon_path, description, is_active)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ");
-
-    $stmt->bind_param(
-        "ssissi",
-        $badge_id,
-        $badge_name,
-        $required_points,
-        $new_filename,
-        $description,
-        $is_active
-    );
-
-    if ($stmt->execute()) {
-        header("Location: admin_badge.php?added=1");
-        exit();
+    if ($badge_name === "" || $required_points <= 0) {
+        $error = "Badge name and points are required.";
+    } elseif (!isset($_FILES['badge_icon']) || $_FILES['badge_icon']['error'] !== UPLOAD_ERR_OK) {
+        $error = "Please upload a valid badge icon.";
     } else {
-        die("Database error: " . $stmt->error);
+
+        /* =====================
+           IMAGE UPLOAD
+        ===================== */
+        $upload_dir = realpath(__DIR__ . "/../images/badges");
+        if ($upload_dir === false) {
+            $error = "Upload folder not found.";
+        } else {
+
+            $upload_dir .= DIRECTORY_SEPARATOR;
+            $tmp_name   = $_FILES['badge_icon']['tmp_name'];
+            $file_name  = basename($_FILES['badge_icon']['name']);
+            $extension  = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+
+            $allowed = ['png', 'jpg', 'jpeg', 'webp'];
+            if (!in_array($extension, $allowed)) {
+                $error = "Only PNG, JPG, JPEG, WEBP files are allowed.";
+            } elseif ($_FILES['badge_icon']['size'] > 2 * 1024 * 1024) {
+                $error = "File too large. Max 2MB.";
+            } elseif (!is_writable($upload_dir)) {
+                $error = "Upload folder is not writable.";
+            } else {
+
+                $target_path = $upload_dir . $file_name;
+
+                if (!move_uploaded_file($tmp_name, $target_path)) {
+                    $error = "Failed to upload image.";
+                } else {
+
+                    /* =====================
+                       INSERT INTO DATABASE
+                    ===================== */
+                    $badge_id = uniqid("b_");
+
+                    $stmt = $conn->prepare("
+                        INSERT INTO badges
+                        (badge_id, badge_name, required_points, icon_path, description, is_active)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    ");
+
+                    $stmt->bind_param(
+                        "ssissi",
+                        $badge_id,
+                        $badge_name,
+                        $required_points,
+                        $file_name,
+                        $description,
+                        $is_active
+                    );
+
+                    if ($stmt->execute()) {
+                        $success = "Badge added successfully.";
+
+                        /* clear form */
+                        $badge_name = $description = "";
+                        $required_points = "";
+                    } else {
+                        $error = "Database error: " . $stmt->error;
+                    }
+                }
+            }
+        }
     }
 }
 ?>
@@ -90,34 +95,50 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
   <!-- PAGE TITLE BAR -->
   <div class="page-title-bar">
-    <a href="http://localhost/RWDD_Assignment/admin/admin_system_settings.php?view=badges" class="icon-btn back-btn">↩</a>
+    <a href="admin_system_settings.php?view=badges"
+       class="icon-btn back-btn">↩</a>
     <h2>Add Badge</h2>
   </div>
 
-  <!-- CENTERED FORM -->
   <div class="profile-container">
+
+    <!-- STATUS MESSAGE -->
+    <?php if (!empty($success)): ?>
+      <div class="alert-success">
+        <?= htmlspecialchars($success) ?>
+      </div>
+    <?php endif; ?>
+
+    <?php if (!empty($error)): ?>
+      <div class="alert-error">
+        <?= htmlspecialchars($error) ?>
+      </div>
+    <?php endif; ?>
+
+    <!-- FORM -->
     <div class="form-panel">
     <form method="POST" enctype="multipart/form-data">
 
       <div class="form-group">
         <label>Badge Name</label>
-        <input type="text" name="badge_name" required>
+        <input type="text" name="badge_name"
+               value="<?= htmlspecialchars($badge_name ?? '') ?>" required>
       </div>
 
       <div class="form-group">
         <label>Badge Description</label>
-        <textarea name="description" rows="3" required></textarea>
+        <textarea name="description" rows="3" required><?= htmlspecialchars($description ?? '') ?></textarea>
       </div>
 
       <div class="form-group">
         <label>Points Required</label>
-        <input type="number" name="required_points" min="1" required>
+        <input type="number" name="required_points"
+               min="1" value="<?= htmlspecialchars($required_points ?? '') ?>" required>
       </div>
 
       <div class="form-group">
         <label>Badge Icon</label>
 
-        <!-- Upload box stays unchanged -->
         <label class="upload-box">
           <span id="plusIcon">+</span>
           <img id="previewImg">
@@ -134,6 +155,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       </div>
 
     </form>
+    </div>
 
   </div>
 
@@ -142,7 +164,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 <?php include "admin_footer.php"; ?>
 
-<!-- Upload box styles ONLY -->
+<!-- Upload box styles -->
 <style>
 .upload-box {
     width: 180px;

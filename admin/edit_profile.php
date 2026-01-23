@@ -67,7 +67,20 @@ $badges = array_filter(array_map('trim', explode(',', $user['badges'])));
       <h2>My Profile</h2>
     </div>
 
-    <div class="profile-container">
+   <!-- STATUS MESSAGE -->
+<?php if (!empty($success)): ?>
+  <div class="alert-success">
+    <?= htmlspecialchars($success) ?>
+  </div>
+<?php endif; ?>
+
+<?php if (!empty($error)): ?>
+  <div class="alert-error">
+    <?= htmlspecialchars($error) ?>
+  </div>
+<?php endif; ?>    <div class="profile-container">
+
+
 
       <!-- Avatar -->
       <div class="profile-avatar-large">
@@ -102,18 +115,6 @@ $badges = array_filter(array_map('trim', explode(',', $user['badges'])));
 </div>
 
 
-      <!-- STATUS MESSAGE -->
-      <?php if ($success): ?>
-        <div style="background:#e6f4ea;color:#1e7e34;padding:10px;border-radius:6px;margin-bottom:15px;">
-            <?= htmlspecialchars($success) ?>
-        </div>
-      <?php endif; ?>
-
-      <?php if ($error): ?>
-        <div style="background:#fdecea;color:#b02a37;padding:10px;border-radius:6px;margin-bottom:15px;">
-            <?= htmlspecialchars($error) ?>
-        </div>
-      <?php endif; ?>
 
       <!-- PROFILE FORM -->
       <form class="profile-form" method="POST">
