@@ -1,9 +1,8 @@
 <?php
-session_start();
 require_once "../connect.php";
 
 $page_title = "Forgot Password";
-include "user_header.php"; // or admin_header.php if shared
+include "user_header.php";
 
 $success = "";
 $error = "";
@@ -11,30 +10,29 @@ $temp_password = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-    $email = trim($_POST['email']);
+    $email   = trim($_POST['email']);
+    $user_id = trim($_POST['user_id']); // TP number
 
-    if ($email === "") {
-        $error = "Please enter your email.";
+    if ($email === "" || $user_id === "") {
+        $error = "Please enter your TP Number and email.";
     } else {
 
         /* =====================
-           CHECK USER EXISTS
+           VERIFY USER ID + EMAIL MATCH
         ===================== */
         $stmt = $conn->prepare("
             SELECT user_id, email
             FROM users
-            WHERE email = ?
+            WHERE user_id = ?
+              AND email = ?
         ");
-        $stmt->bind_param("s", $email);
+        $stmt->bind_param("ss", $user_id, $email);
         $stmt->execute();
         $result = $stmt->get_result();
 
         if ($result->num_rows === 0) {
-            $error = "No account found with this email.";
+            $error = "TP Number and email do not match.";
         } else {
-
-            $user = $result->fetch_assoc();
-            $user_id = $user['user_id'];
 
             /* =====================
                GENERATE TEMP PASSWORD
@@ -95,71 +93,128 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 ?>
 
-<main class="dashboard">
-<div class="main-content">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Forgot Password</title>
+<link rel="stylesheet" href="../css/style.css">
 
-  <div class="page-title-bar">
-    <a href="login.php" class="icon-btn back-btn">↩</a>
-    <h2>Forgot Password</h2>
+<style>
+.wrap {
+    max-width:420px;
+    margin:220px auto;
+    background:#fff;
+    padding:24px;
+    border-radius:12px;
+    box-shadow:0 20px 30px rgba(0,0,0,0.5);
+}
+h1 {
+    margin-bottom:14px;
+    font-size:30px;
+    text-align:center;
+}
+label {
+    display:block;
+    margin:12px 0 6px;
+    font-weight:600;
+}
+input {
+    width:100%;
+    padding:10px;
+    border:1px solid #ddd;
+    border-radius:10px;
+}
+.btn {
+    margin-top:16px;
+    width:100%;
+    font-weight:700;
+}
+.error {
+    background:#ffe8e8;
+    color:#b00020;
+    padding:10px 12px;
+    border-radius:10px;
+    margin-bottom:12px;
+}
+.success {
+    background:#e7f8ef;
+    color:#1e7e34;
+    padding:14px;
+    border-radius:10px;
+}
+.login-top-img {
+    text-align:center;
+    margin-bottom:16px;
+}
+.login-top-img img {
+    max-width:100%;
+    border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+  <div class="login-top-img">
+    <img src="../images/apu.png" alt="ReLife Hub">
   </div>
 
-  <div class="profile-container">
+  <h1>Forgot Password</h1>
 
-    <!-- SUCCESS MESSAGE -->
-    <?php if (!empty($success)): ?>
-      <div class="alert-success">
-        <p><?= htmlspecialchars($success) ?></p>
+  <!-- SUCCESS -->
+  <?php if (!empty($success)): ?>
+    <div class="success">
+      <p><?= htmlspecialchars($success) ?></p>
 
-        <p style="margin-top:10px;">
-          <strong>Your Temporary Password:</strong><br>
-          <span style="font-size:18px;">
-            <?= htmlspecialchars($temp_password) ?>
-          </span>
-        </p>
+      <p style="margin-top:10px;">
+        <strong>Your Temporary Password:</strong><br>
+        <span style="font-size:18px;">
+          <?= htmlspecialchars($temp_password) ?>
+        </span>
+      </p>
 
-        <p style="margin-top:10px;">
-          Please log in using this temporary password and change it immediately.
-        </p>
+      <p style="margin-top:10px;">
+        Please log in using this temporary password and change it immediately.
+      </p>
 
-        <!-- LOGIN NOW BUTTON -->
-        <div style="text-align:center;margin-top:20px;">
-          <a href="login_forgot_password.php" class="action-btn">
-            Login Now
-          </a>
-        </div>
-      </div>
-    <?php endif; ?>
-
-    <!-- ERROR MESSAGE -->
-    <?php if (!empty($error)): ?>
-      <div class="alert-error">
-        <?= htmlspecialchars($error) ?>
-      </div>
-    <?php endif; ?>
-
-    <!-- FORM (HIDDEN AFTER SUCCESS) -->
-    <?php if (empty($success)): ?>
-    <div class="form-panel">
-      <form method="POST">
-
-        <div class="form-group">
-          <label>Email Address</label>
-          <input type="email" name="email" required>
-        </div>
-
-        <div style="text-align:center;margin-top:20px;">
-          <button type="submit" class="action-btn">
-            GENERATE TEMP PASSWORD
-          </button>
-        </div>
-
-      </form>
+      <a href="login_forgot_password.php" class="btn">
+        Login Now
+      </a>
     </div>
-    <?php endif; ?>
+  <?php endif; ?>
 
-  </div>
+  <!-- ERROR -->
+  <?php if (!empty($error)): ?>
+    <div class="error"><?= htmlspecialchars($error) ?></div>
+  <?php endif; ?>
+
+  <!-- FORM -->
+  <?php if (empty($success)): ?>
+    <form method="POST">
+
+      <label>TP Number</label>
+      <input type="text" name="user_id" placeholder="TP000123" required>
+
+      <label>Email Address</label>
+      <input type="email" name="email" placeholder="janelee@gmail.com" required>
+
+      <button type="submit" class="btn">
+        Generate Temporary Password
+      </button>
+
+    </form>
+  <?php endif; ?>
 
 </div>
-</main>
+
+<footer style="text-align:center;margin-top:150px;">
+  <p>&copy; 2026 ReLife Hub</p>
+</footer>
+
+</body>
+</html>
 
 <?php include "user_footer.php"; ?>

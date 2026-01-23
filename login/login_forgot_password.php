@@ -1,14 +1,7 @@
 <?php
-session_start();
 require_once "../connect.php";
 
 $error = "";
-
-/* If already logged in via forgot flow, redirect */
-if (isset($_SESSION['reset_user_id'])) {
-    header("Location: reset_password.php");
-    exit();
-}
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
@@ -20,10 +13,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     } else {
 
         /* =====================
-           VERIFY TEMP PASSWORD
+           VERIFY RESET CREDENTIALS
         ===================== */
         $stmt = $conn->prepare("
-            SELECT reset_id, user_id
+            SELECT reset_id
             FROM reset_password
             WHERE email = ?
               AND temporary_password = ?
@@ -42,12 +35,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             if ($row = $result->fetch_assoc()) {
 
-                /* Store session for reset step */
-                $_SESSION['reset_id'] = $row['reset_id'];
-                $_SESSION['reset_user_id'] = $row['user_id'];
-                $_SESSION['reset_email'] = $email;
+                /* ✅ DO NOT invalidate here */
 
-                header("Location: reset_password.php");
+                /* ✅ Redirect using POST-compatible flow */
+                ?>
+                <form id="redirectForm" method="POST" action="reset_password.php">
+                    <input type="hidden" name="email" value="<?= htmlspecialchars($email) ?>">
+                    <input type="hidden" name="temporary_password" value="<?= htmlspecialchars($temp_password) ?>">
+                </form>
+                <script>
+                    document.getElementById("redirectForm").submit();
+                </script>
+                <?php
                 exit();
 
             } else {
@@ -62,47 +61,68 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Forgot Password Login</title>
-  <link rel="stylesheet" href="../css/style.css">
-  <style>
-    .wrap {
-      max-width:420px;
-      margin:200px auto;
-      background:#fff;
-      padding:24px;
-      border-radius:12px;
-      box-shadow:0 20px 30px rgba(0,0,0,0.15);
-    }
-    h1 { margin-bottom:16px; }
-    label { font-weight:600; display:block; margin-top:14px; }
-    input {
-      width:100%;
-      padding:10px;
-      border:1px solid #ddd;
-      border-radius:8px;
-      margin-top:6px;
-    }
-    .btn {
-      margin-top:20px;
-      width:100%;
-      font-weight:700;
-    }
-    .error {
-      background:#ffe8e8;
-      color:#b00020;
-      padding:10px;
-      border-radius:8px;
-      margin-bottom:12px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Forgot Password Login</title>
+<link rel="stylesheet" href="../css/style.css">
+
+<style>
+.wrap {
+  max-width:420px;
+  margin:220px auto;
+  background:#fff;
+  padding:24px;
+  border-radius:12px;
+  box-shadow:0 20px 30px rgba(0,0,0,0.5);
+}
+h1 {
+  text-align:center;
+  margin-bottom:16px;
+}
+label {
+  font-weight:600;
+  display:block;
+  margin-top:14px;
+}
+input {
+  width:100%;
+  padding:10px;
+  border:1px solid #ddd;
+  border-radius:10px;
+}
+.btn {
+  margin-top:20px;
+  width:100%;
+  font-weight:700;
+}
+.error {
+  background:#ffe8e8;
+  color:#b00020;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:12px;
+}
+.login-top-img {
+  text-align:center;
+  margin-bottom:16px;
+}
+.login-top-img img {
+  max-width:100%;
+  border-radius:10px;
+}
+</style>
 </head>
+
 <body>
 
 <div class="wrap">
+
+  <div class="login-top-img">
+    <img src="../images/apu.png" alt="ReLife Hub">
+  </div>
+
   <h1>Forgot Password Login</h1>
 
-  <?php if ($error !== ""): ?>
+  <?php if (!empty($error)): ?>
     <div class="error"><?= htmlspecialchars($error) ?></div>
   <?php endif; ?>
 
@@ -117,6 +137,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <button class="btn" type="submit">Continue</button>
 
   </form>
+
 </div>
 
 </body>
