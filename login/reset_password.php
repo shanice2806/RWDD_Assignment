@@ -109,7 +109,7 @@ if (isset($_POST['new_password'])) {
 h1 { text-align:center; margin-bottom:16px; }
 label { font-weight:600; display:block; margin-top:14px; }
 input {
-  width:100%;
+  width: 95%;
   padding:10px;
   border:1px solid #ddd;
   border-radius:10px;

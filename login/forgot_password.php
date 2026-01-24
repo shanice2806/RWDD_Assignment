@@ -120,11 +120,12 @@ label {
     font-weight:600;
 }
 input {
-    width:100%;
+    width:95%;
     padding:10px;
     border:1px solid #ddd;
     border-radius:10px;
 }
+
 .btn {
     margin-top:16px;
     width:100%;
@@ -199,7 +200,7 @@ input {
       <input type="text" name="user_id" placeholder="TP000123" required>
 
       <label>Email Address</label>
-      <input type="email" name="email" placeholder="janelee@gmail.com" required>
+      <input type="email" name="email" placeholder="example@gmail.com" required>
 
       <button type="submit" class="btn">
         Generate Temporary Password

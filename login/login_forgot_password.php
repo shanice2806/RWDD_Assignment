@@ -84,7 +84,7 @@ label {
   margin-top:14px;
 }
 input {
-  width:100%;
+  width:95%;
   padding:10px;
   border:1px solid #ddd;
   border-radius:10px;
