@@ -96,38 +96,51 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Check file size (max 5MB)
                 if ($_FILES['event_poster']['size'] <= 5242880) {
                     // Create upload folder if it doesn't exist
-                    $upload_dir = "../uploads/events/";
+                    $upload_dir = "../images/events/";
                     if (!file_exists($upload_dir)) {
                         mkdir($upload_dir, 0777, true);
                     }
                     
-                    // Create unique filename
-                    $new_filename = uniqid() . '_' . $filename;
+                    // Create filename: evt_001_poster.jpg
+                    $new_filename = $event_id . '_poster.' . $filetype;
                     $upload_path = $upload_dir . $new_filename;
                     
                     // Move uploaded file
                     if (move_uploaded_file($_FILES['event_poster']['tmp_name'], $upload_path)) {
-                        // Delete old poster from event_media if exists
-                        $delete_query = "DELETE FROM event_media WHERE event_id = '$event_id'";
-                        $conn->query($delete_query);
+                        // Check if poster already exists
+                        $check_query = "SELECT event_media_id FROM event_media WHERE event_id = '$event_id' LIMIT 1";
+                        $check_result = $conn->query($check_query);
                         
-                        // Generate new media ID
-                        $media_query = "SELECT event_media_id FROM event_media ORDER BY event_media_id DESC LIMIT 1";
-                        $media_result = $conn->query($media_query);
+                        $file_path = "images/events/" . $new_filename;
                         
-                        if ($media_result->num_rows > 0) {
-                            $last_id = $media_result->fetch_assoc()['event_media_id'];
-                            $number = intval(substr($last_id, 4)) + 1;
-                            $new_media_id = 'emd_' . str_pad($number, 3, '0', STR_PAD_LEFT);
+                        if ($check_result->num_rows > 0) {
+                            // Update existing poster
+                            $existing_media = $check_result->fetch_assoc();
+                            $media_id = $existing_media['event_media_id'];
+                            
+                            $update_query = "UPDATE event_media 
+                                            SET event_media_file_path = '$file_path', 
+                                                event_media_uploaded_by = '$user_id'
+                                            WHERE event_media_id = '$media_id'";
+                            $conn->query($update_query);
                         } else {
-                            $new_media_id = 'emd_001';
+                            // Insert new poster
+                            // Generate new media ID
+                            $media_query = "SELECT event_media_id FROM event_media ORDER BY event_media_id DESC LIMIT 1";
+                            $media_result = $conn->query($media_query);
+                            
+                            if ($media_result->num_rows > 0) {
+                                $last_id = $media_result->fetch_assoc()['event_media_id'];
+                                $number = intval(substr($last_id, 4)) + 1;
+                                $new_media_id = 'emd_' . str_pad($number, 3, '0', STR_PAD_LEFT);
+                            } else {
+                                $new_media_id = 'emd_001';
+                            }
+                            
+                            $insert_query = "INSERT INTO event_media (event_media_id, event_id, event_media_file_path, event_media_uploaded_by, event_media_is_hidden) 
+                                            VALUES ('$new_media_id', '$event_id', '$file_path', '$user_id', 0)";
+                            $conn->query($insert_query);
                         }
-                        
-                        // Insert new poster
-                        $file_path = "uploads/events/" . $new_filename;
-                        $insert_query = "INSERT INTO event_media (event_media_id, event_id, event_media_file_path, event_media_uploaded_by, event_media_is_hidden) 
-                                        VALUES ('$new_media_id', '$event_id', '$file_path', '$user_id', 0)";
-                        $conn->query($insert_query);
                         
                         echo "<script>alert('Poster updated successfully!'); window.location.href='organizer_event_edit.php?id=$event_id';</script>";
                     } else {
