@@ -131,8 +131,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
           <a href="view_profile.php" class="action-btn">Cancel</a>
 
           <button type="submit"
-                  class="action-btn"
-                  style="display:flex;align-items:center;justify-content:center;">
+                  class="action-btn">
             Submit
           </button>
         </div>

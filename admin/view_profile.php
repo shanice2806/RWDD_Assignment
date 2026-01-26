@@ -5,7 +5,9 @@ require_once "../connect.php";
 $page_title = "My Profile";
 include "admin_header.php";
 
-/* Auth check */
+/* =====================
+   AUTH CHECK
+===================== */
 if (!isset($_SESSION["user_id"])) {
     header("Location: ../login/login.php");
     exit();
@@ -13,19 +15,42 @@ if (!isset($_SESSION["user_id"])) {
 
 $user_id = $_SESSION["user_id"];
 
-/* Fetch user */
-$stmt = $conn->prepare("
-    SELECT user_id, name, email, role, eco_points, badges,
+/* =====================
+   FETCH USER
+===================== */
+$userStmt = $conn->prepare("
+    SELECT user_id, name, email, role, eco_points,
            created_at, account_status, last_login, profile_image
     FROM users
     WHERE user_id = ?
 ");
-$stmt->bind_param("s", $user_id);
-$stmt->execute();
-$user = $stmt->get_result()->fetch_assoc();
+$userStmt->bind_param("s", $user_id);
+$userStmt->execute();
+$user = $userStmt->get_result()->fetch_assoc();
 
-/* Split badges */
-$badges = array_filter(array_map('trim', explode(',', $user['badges'])));
+/* =====================
+   FETCH USER BADGES (JOIN TABLE)
+===================== */
+$badgeStmt = $conn->prepare("
+    SELECT 
+        b.badge_id,
+        b.badge_name,
+        b.icon_path,
+        ub.date_awarded
+    FROM user_badges ub
+    JOIN badges b ON ub.badge_id = b.badge_id
+    WHERE ub.user_id = ?
+      AND b.is_active = 1
+    ORDER BY ub.date_awarded ASC
+");
+$badgeStmt->bind_param("s", $user_id);
+$badgeStmt->execute();
+$badgeResult = $badgeStmt->get_result();
+
+$badges = [];
+while ($row = $badgeResult->fetch_assoc()) {
+    $badges[] = $row;
+}
 ?>
 
 <main class="dashboard">
@@ -38,27 +63,23 @@ $badges = array_filter(array_map('trim', explode(',', $user['badges'])));
 
     <div class="profile-container">
 
-      <!-- Avatar -->
+      <!-- AVATAR -->
       <div class="profile-avatar-large">
-  <?php if (!empty($user['profile_image'])): ?>
-    <img 
-      src="../images/profile/<?= htmlspecialchars($user['profile_image']) ?>" 
-      alt="Profile"
-    >
-  <?php else: ?>
-    👤
-  <?php endif; ?>
-</div>
+        <?php if (!empty($user['profile_image'])): ?>
+          <img src="../images/profile/<?= htmlspecialchars($user['profile_image']) ?>" alt="Profile">
+        <?php else: ?>
+          👤
+        <?php endif; ?>
+      </div>
 
+      <!-- ACTION -->
+      <div style="text-align:center; margin-bottom:20px;">
+        <a href="edit_profile.php?id=<?= urlencode($user['user_id']) ?>" class="btn">
+          Edit Profile
+        </a>
+      </div>
 
-      <!-- Actions -->
-                <div style="text-align:center; margin-bottom:20px;">
-            <a href="edit_profile.php?id=<?= urlencode($user['user_id']) ?>" class="btn">
-                Edit Profile
-            </a>
-        </div>
-
-      <!-- Form -->
+      <!-- PROFILE FORM -->
       <form class="profile-form">
 
         <div class="form-group">
@@ -86,16 +107,35 @@ $badges = array_filter(array_map('trim', explode(',', $user['badges'])));
           <input type="text" value="<?= htmlspecialchars($user['eco_points']) ?>" readonly>
         </div>
 
+        <!-- BADGES -->
         <div class="form-group">
           <label>Badges :</label>
-          <div style="display:flex; gap:10px; overflow-x:auto;">
-            <?php foreach ($badges as $badge): ?>
-              <div style="min-width:60px;height:60px;background:#e0e0e0;
-                          display:flex;align-items:center;justify-content:center;
-                          border-radius:6px;font-size:12px;text-align:center;">
-                <?= htmlspecialchars($badge) ?>
-              </div>
-            <?php endforeach; ?>
+
+          <div style="display:flex; gap:14px; overflow-x:auto;">
+
+            <?php if (!empty($badges)): ?>
+              <?php foreach ($badges as $badge): ?>
+                <div style="
+                  width:100px;
+                  height: 80px;
+                  background:#f2f2f2;
+                  border-radius:10px;
+                  display:flex;
+                  align-items:center;
+                  justify-content:center;
+                ">
+                  <img
+                    src="../images/badges/<?= htmlspecialchars($badge['icon_path']) ?>"
+                    alt="<?= htmlspecialchars($badge['badge_name']) ?>"
+                    title="<?= htmlspecialchars($badge['badge_name']) ?> (Awarded: <?= htmlspecialchars($badge['date_awarded']) ?>)"
+                    style="max-width:80px; max-height:80px; object-fit:contain;"
+                  >
+                </div>
+              <?php endforeach; ?>
+            <?php else: ?>
+              <span style="color:#777;">No badges earned yet</span>
+            <?php endif; ?>
+
           </div>
         </div>
 

@@ -271,12 +271,15 @@ main.dashboard {
 }
 
 .action-btn {
-  display: block;
   margin: 6px auto;
   padding: 6px 10px;
-  width: 80px;        /* ✅ SAME WIDTH */
-  height: 36px;       /* ✅ SAME HEIGHT */
+  width: 80px;        
+  height: 36px;       
   line-height: 36px;  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
 
   background-color: var(--color-secondary);
   color: #fff;
@@ -389,9 +392,7 @@ textarea[readonly] {
 
 /* Save button underline */
 .save-btn {
-  text-decoration: underline;
-}
-
+  text-decoration: none}
 .save-btn:hover {
   text-decoration: none;
 }
@@ -601,6 +602,14 @@ a.btn:hover,
 .card button:hover,
 .announcement-search-btn:hover{
   background-color: var(--color-primary);
+}
+
+
+a.btn,
+a.btn:hover,
+a.btn:focus,
+a.btn:visited {
+  text-decoration: none;
 }
 
 
