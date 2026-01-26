@@ -87,7 +87,7 @@ $result = $conn->query($query);
                     ?>
                     <div class="no-events">
                         <p>You don't have any events to archive.</p>
-                        <a href="organizer_event_create.php" class="btn-primary">Create New Event</a>
+                        <a href="organizer_event_create.php" class="action-btn">Create New Event</a>
                     </div>
                     <?php
                 }
@@ -96,7 +96,7 @@ $result = $conn->query($query);
             
             <!-- Back button -->
             <div class="text-center mt-20">
-                <a href="organizer_event_management.php" class="btn-secondary">← Back to Event Management</a>
+                <a href="organizer_event_management.php" class="action-btn">← Back to Event Management</a>
             </div>
         </div>
     </div>

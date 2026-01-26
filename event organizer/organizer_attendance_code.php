@@ -62,7 +62,7 @@ $events_result = $conn->query($events_query);
     <main class="dashboard">
       
       <div class="attendance-code-container">
-        <a href="organizer_registration_attendance_hub.php" class="btn">← Back</a>
+        <a href="organizer_registration_attendance_hub.php" class="action-btn">← Back</a>
         
         <h1>Code Attendance</h1>
 
@@ -96,8 +96,8 @@ $events_result = $conn->query($events_query);
 
             <!-- Action Buttons -->
             <div class="action-buttons">
-              <a href="organizer_attendance_manual.php?event_id=<?= $selected_event['event_id'] ?>" class="btn btn-secondary">Take Attendance Manually</a>
-              <a href="organizer_attendance_view.php?event_id=<?= $selected_event['event_id'] ?>" class="btn btn-primary">View Attendance List</a>
+              <a href="organizer_attendance_manual.php?event_id=<?= $selected_event['event_id'] ?>" class="action-btn">Take Attendance Manually</a>
+              <a href="organizer_attendance_view.php?event_id=<?= $selected_event['event_id'] ?>" class="action-btn">View Attendance List</a>
             </div>
           <?php endif; ?>
         </form>

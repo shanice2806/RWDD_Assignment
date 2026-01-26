@@ -137,7 +137,7 @@ $events_result = $conn->query($events_query);
             </table>
 
             <!-- Export Button -->
-            <button type="button" onclick="exportToCSV()" class="btn btn-secondary">Export List</button>
+            <button type="button" onclick="exportToCSV()" class="action-btn">Export List</button>
 
           <?php elseif ($selected_event && count($attendance_list) == 0): ?>
             <p class="no-data">No attendance records for this event.</p>
@@ -147,7 +147,7 @@ $events_result = $conn->query($events_query);
         <?php if ($selected_event): ?>
           <!-- Back Button -->
           <div class="back-button-container">
-            <a href="organizer_registration_attendance_hub.php" class="btn btn-primary">Back</a>
+            <a href="organizer_registration_attendance_hub.php" class="action-btn">Back</a>
           </div>
         <?php endif; ?>
       </div>

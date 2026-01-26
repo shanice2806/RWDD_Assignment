@@ -111,8 +111,8 @@ if ($announcement['is_active'] == 1) {
                 
                 <!-- Action buttons -->
                 <div class="flex gap-15 flex-center mt-20">
-                    <a href="organizer_announcement.php" class="btn-secondary">Back to Announcements</a>
-                    <a href="organizer_announcement_edit.php?id=<?php echo $announcement_id; ?>" class="btn-primary">Edit Announcement</a>
+                    <a href="organizer_announcement.php" class="action-btn">Back to Announcements</a>
+                    <a href="organizer_announcement_edit.php?id=<?php echo $announcement_id; ?>" class="action-btn">Edit Announcement</a>
                 </div>
             </div>
         </div>

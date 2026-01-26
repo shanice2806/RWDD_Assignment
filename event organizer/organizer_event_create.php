@@ -295,8 +295,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
         
         <div class="form-actions">
-          <button type="submit" name="status" value="draft" class="btn btn-secondary">Save Draft</button>
-          <button type="submit" name="status" value="pending" class="btn btn-primary">Submit for Approval</button>
+          <button type="submit" name="status" value="draft" class="action-btn">Save Draft</button>
+          <button type="submit" name="status" value="pending" class="action-btn">Submit for Approval</button>
         </div>
       </form>
     </div>

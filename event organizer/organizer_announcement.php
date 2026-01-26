@@ -90,9 +90,9 @@ $result = $conn->query($query);
                                 <p><strong>Status:</strong> <span class="badge <?php echo $status_class; ?>"><?php echo $status_label; ?></span></p>
                             </div>
                             <div class="announcement-actions flex gap-10">
-                                <a href="organizer_announcement_view.php?id=<?php echo $announcement['announcement_id']; ?>" class="btn-secondary btn-small">View</a>
-                                <a href="organizer_announcement_edit.php?id=<?php echo $announcement['announcement_id']; ?>" class="btn-primary btn-small">Edit</a>
-                                <a href="organizer_announcement_delete.php?id=<?php echo $announcement['announcement_id']; ?>" class="btn-secondary btn-small">Delete</a>
+                                <a href="organizer_announcement_view.php?id=<?php echo $announcement['announcement_id']; ?>" class="action-btn">View</a>
+                                <a href="organizer_announcement_edit.php?id=<?php echo $announcement['announcement_id']; ?>" class="action-btn">Edit</a>
+                                <a href="organizer_announcement_delete.php?id=<?php echo $announcement['announcement_id']; ?>" class="action-btn">Delete</a>
                             </div>
                         </div>
                         <?php

@@ -99,8 +99,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_delete'])) {
                     
                     <form method="POST" class="confirmation-form">
                         <div class="flex gap-15 flex-center">
-                            <a href="organizer_announcement.php" class="btn-secondary">Cancel</a>
-                            <button type="submit" name="confirm_delete" class="btn-primary" style="background: #e53e3e; border-color: #e53e3e;">Delete Announcement</button>
+                            <a href="organizer_announcement.php" class="action-btn">Cancel</a>
+                            <button type="submit" name="confirm_delete" class="action-btn" style="background: #e53e3e; border-color: #e53e3e;">Delete Announcement</button>
                         </div>
                     </form>
                 </div>

@@ -71,7 +71,7 @@ $result = $conn->query($query);
                             </div>
                             
                             <div class="event-card-actions">
-                                <a href="organizer_event_edit.php?id=<?php echo $event['event_id']; ?>" class="btn-edit">✏️ Edit This Event</a>
+                                <a href="organizer_event_edit.php?id=<?php echo $event['event_id']; ?>" class="action-btn">✏️ Edit This Event</a>
                             </div>
                         </div>
                         <?php
@@ -80,7 +80,7 @@ $result = $conn->query($query);
                     ?>
                     <div class="no-events">
                         <p>You don't have any events to edit yet.</p>
-                        <a href="organizer_event_create.php" class="btn-create">Create New Event</a>
+                        <a href="organizer_event_create.php" class="action-btn">Create New Event</a>
                     </div>
                     <?php
                 }
@@ -89,7 +89,7 @@ $result = $conn->query($query);
             
             <!-- Back button -->
             <div style="margin-top: 30px; text-align: center;">
-                <a href="organizer_event_management.php" class="btn-secondary">← Back to Event Management</a>
+                <a href="organizer_event_management.php" class="action-btn">← Back to Event Management</a>
             </div>
         </div>
     </div>

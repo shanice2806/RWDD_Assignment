@@ -105,19 +105,19 @@ if ($impact_event) {
           <div class="icon">📅</div>
           <p>Total Events</p>
           <h3><?= $total_events ?></h3>
-          <a href="organizer_event_view.php" class="btn">View</a>
+          <a href="organizer_event_view.php" class="action-btn">View</a>
         </div>
         <div class="card">
           <div class="icon">⏳</div>
           <p>Pending Approvals</p>
           <h3><?= $total_pending ?></h3>
-          <a href="organizer_event_view.php?filter=pending" class="btn">Review</a>
+          <a href="organizer_event_view.php?filter=pending" class="action-btn">Review</a>
         </div>
         <div class="card">
           <div class="icon">📝</div>
           <p>Registrations</p>
           <h3><?= $total_registrations ?></h3>
-          <a href="organizer_registration_list.php" class="btn">View</a>
+          <a href="organizer_registration_list.php" class="action-btn">View</a>
         </div>
       </section>
 
@@ -164,7 +164,7 @@ if ($impact_event) {
         <?php if ($impact_event): ?>
           <p><strong>Attendance:</strong> <?= $impact_attendance ?> participants</p>
           <p><strong>Recyclables:</strong> <?= $impact_recyclables ?> kg collected</p>
-          <a href="organizer_report.php?event_id=<?= urlencode($impact_event['event_id']) ?>" class="btn">View Full Report</a>
+          <a href="organizer_report.php?event_id=<?= urlencode($impact_event['event_id']) ?>" class="action-btn">View Full Report</a>
         <?php else: ?>
           <p>No approved events yet.</p>
         <?php endif; ?>

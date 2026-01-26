@@ -148,7 +148,7 @@ $event_id = $_GET['event_id'] ?? null;
           </tbody>
         </table>
 
-        <a href="organizer_registration_list.php" class="btn">← Back to Event List</a>
+        <a href="organizer_registration_list.php" class="action-btn">← Back to Event List</a>
 
       <?php } endif; ?>
 

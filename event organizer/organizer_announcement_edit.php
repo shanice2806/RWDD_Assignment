@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_announcement'])
             <!-- Page header -->
             <div class="page-header flex-between">
                 <h1>Edit Announcement</h1>
-                <a href="organizer_announcement.php" class="btn-secondary">Back</a>
+                <a href="organizer_announcement.php" class="action-btn">Back</a>
             </div>
             
             <!-- Form container -->
@@ -127,8 +127,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_announcement'])
                     
                     <!-- Buttons -->
                     <div class="form-actions flex gap-15 flex-center">
-                        <a href="organizer_announcement.php" class="btn-secondary">Cancel</a>
-                        <button type="submit" name="update_announcement" class="btn-primary">Update Announcement</button>
+                        <a href="organizer_announcement.php" class="action-btn">Cancel</a>
+                        <button type="submit" name="update_announcement" class="action-btn">Update Announcement</button>
                     </div>
                 </form>
             </div>

@@ -118,8 +118,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_archive'])) {
                     
                     <form method="POST" class="confirmation-form">
                         <div class="flex gap-15 flex-center">
-                            <a href="organizer_event_select_archive.php" class="btn-secondary">Cancel</a>
-                            <button type="submit" name="confirm_archive" class="btn-primary">Archive Event</button>
+                            <a href="organizer_event_select_archive.php" class="action-btn">Cancel</a>
+                            <button type="submit" name="confirm_archive" class="action-btn">Archive Event</button>
                         </div>
                     </form>
                 </div>

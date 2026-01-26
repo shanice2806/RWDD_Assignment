@@ -197,8 +197,8 @@ $current_poster = $poster_result->num_rows > 0 ? $poster_result->fetch_assoc()['
                         <form method="POST">
                             <textarea name="event_description" rows="6" required><?php echo htmlspecialchars($event['event_description']); ?></textarea>
                             <div class="button-group">
-                                <button type="button" class="btn-cancel" onclick="toggleSection('description')">Cancel</button>
-                                <button type="submit" name="update_description" class="btn-save">Save Changes</button>
+                                <button type="button" class="action-btn" onclick="toggleSection('description')">Cancel</button>
+                                <button type="submit" name="update_description" class="action-btn">Save Changes</button>
                             </div>
                         </form>
                     </div>
@@ -209,8 +209,8 @@ $current_poster = $poster_result->num_rows > 0 ? $poster_result->fetch_assoc()['
                         <form method="POST">
                             <input type="datetime-local" name="event_date_time" value="<?php echo date('Y-m-d\TH:i', strtotime($event['event_date_time'])); ?>" required>
                             <div class="button-group">
-                                <button type="button" class="btn-cancel" onclick="toggleSection('datetime')">Cancel</button>
-                                <button type="submit" name="update_datetime" class="btn-save">Save Changes</button>
+                                <button type="button" class="action-btn" onclick="toggleSection('datetime')">Cancel</button>
+                                <button type="submit" name="update_datetime" class="action-btn">Save Changes</button>
                             </div>
                         </form>
                     </div>
@@ -221,8 +221,8 @@ $current_poster = $poster_result->num_rows > 0 ? $poster_result->fetch_assoc()['
                         <form method="POST">
                             <input type="text" name="event_location" value="<?php echo htmlspecialchars($event['event_location']); ?>" required>
                             <div class="button-group">
-                                <button type="button" class="btn-cancel" onclick="toggleSection('location')">Cancel</button>
-                                <button type="submit" name="update_location" class="btn-save">Save Changes</button>
+                                <button type="button" class="action-btn" onclick="toggleSection('location')">Cancel</button>
+                                <button type="submit" name="update_location" class="action-btn">Save Changes</button>
                             </div>
                         </form>
                     </div>
@@ -244,8 +244,8 @@ $current_poster = $poster_result->num_rows > 0 ? $poster_result->fetch_assoc()['
                                 <option value="Community Gathering" <?php echo ($event['event_type'] == 'Community Gathering') ? 'selected' : ''; ?>>Community Gathering</option>
                             </select>
                             <div class="button-group">
-                                <button type="button" class="btn-cancel" onclick="toggleSection('eventtype')">Cancel</button>
-                                <button type="submit" name="update_type" class="btn-save">Save Changes</button>
+                                <button type="button" class="action-btn" onclick="toggleSection('eventtype')">Cancel</button>
+                                <button type="submit" name="update_type" class="action-btn">Save Changes</button>
                             </div>
                         </form>
                     </div>
@@ -265,8 +265,8 @@ $current_poster = $poster_result->num_rows > 0 ? $poster_result->fetch_assoc()['
                                 <input type="file" name="event_poster" accept="image/*" required>
                             </div>
                             <div class="button-group">
-                                <button type="button" class="btn-cancel" onclick="toggleSection('poster')">Cancel</button>
-                                <button type="submit" name="update_poster" class="btn-save">Save Changes</button>
+                                <button type="button" class="action-btn" onclick="toggleSection('poster')">Cancel</button>
+                                <button type="submit" name="update_poster" class="action-btn">Save Changes</button>
                             </div>
                         </form>
                     </div>
@@ -275,8 +275,8 @@ $current_poster = $poster_result->num_rows > 0 ? $poster_result->fetch_assoc()['
                 
                 <!-- Bottom buttons -->
                 <div class="bottom-buttons">
-                    <a href="organizer_event_view.php" class="btn-secondary">Back to Events</a>
-                    <a href="organizer_event_detail.php?id=<?php echo $event_id; ?>" class="btn-primary">View Event Details</a>
+                    <a href="organizer_event_view.php" class="action-btn">Back to Events</a>
+                    <a href="organizer_event_detail.php?id=<?php echo $event_id; ?>" class="action-btn">View Event Details</a>
                 </div>
             </div>
             

@@ -171,7 +171,7 @@ $time_formatted = date('g:i A', strtotime($event['event_date_time']));
       <!-- ============================== -->
       <div class="detail-actions">
         <a href="organizer_event_edit.php?id=<?php echo $event_id; ?>" class="action-btn">Edit Event</a>
-        <a href="organizer_event_archive.php?id=<?php echo $event_id; ?>" class="action-btn btn-secondary">Archive Event</a>
+        <a href="organizer_event_archive.php?id=<?php echo $event_id; ?>" class="action-btn">Archive Event</a>
         <a href="organizer_event_view.php" class="action-btn btn-outline">Back to Events</a>
       </div>
       
