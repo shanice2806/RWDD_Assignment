@@ -13,16 +13,17 @@ if (!isset($_SESSION["user_id"])) {
 
 $user_id = $_SESSION["user_id"];
 
-$userSql = "SELECT name, eco_points, profile_image FROM users WHERE user_id=? LIMIT 1";
+$userSql = "SELECT name, eco_points
+            FROM users 
+            WHERE user_id=? 
+            LIMIT 1";
 $uStmt = mysqli_prepare($conn, $userSql);
 mysqli_stmt_bind_param($uStmt, "s", $user_id);
 mysqli_stmt_execute($uStmt);
 $uRes  = mysqli_stmt_get_result($uStmt);
-$user  = mysqli_fetch_assoc($uRes) ?: ["name"=>"User","eco_points"=>0,"profile_image"=>""];
+$user  = mysqli_fetch_assoc($uRes) ?: ["name"=>"User","eco_points"=>0];
 mysqli_stmt_close($uStmt);
 
-$profileImg = trim($user["profile_image"] ?? "");
-if ($profileImg === "") $profileImg = "../assets/default-avatar.png";
 
 $catSql = "SELECT content_category_id, content_name
            FROM content_categories
@@ -53,6 +54,8 @@ $catRes = mysqli_query($conn, $catSql);
     }
     .form-row textarea{ min-height:130px; resize:vertical; }
 
+
+
     .modal-bg{ position:fixed; inset:0; background:rgba(0,0,0,.45);
       display:none; align-items:center; justify-content:center; z-index:5000; }
     .modal-uploadbox{ width:min(420px, 92vw); background:#fff; border:1px solid #ddd; border-radius:14px;
@@ -64,15 +67,6 @@ $catRes = mysqli_query($conn, $catSql);
       .card-title{ font-size:22px; }
     }
 
-    .page-btn{
-      display:inline-flex; align-items:center; justify-content:center; gap:8px;
-      padding:10px 16px; border-radius:12px;
-      background:#1e3a34; color:#ffffff; border:1px solid #1e3a34;
-      font-size:15px; font-weight:800; text-decoration:none; cursor:pointer;
-      transition:all .2s ease;
-    }
-    .page-btn:hover{ background:#3ba99c; border-color:#3ba99c; color:#fff; }
-    button.page-btn{ appearance:none; -webkit-appearance:none; outline:none; }
   </style>
 </head>
 
@@ -87,22 +81,20 @@ $catRes = mysqli_query($conn, $catSql);
       <div class="user-top-left">
         <button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
         <div class="user-top-user">
-          <span> Welcome!  <?= htmlspecialchars($_SESSION['name'] ?? 'User') ?> </span>
+          <span> Welcome! <?= htmlspecialchars($_SESSION['name'] ?? 'User') ?> </span>
         </div>
       </div>
 
-        <div class="user-top-center">
-<h1 style="color: white;">Tutorial</h1>
-  </div>
+      <div class="user-top-center">
+        <h1 style="color: white;">Tutorial</h1>
+      </div>
 
       <div class="user-top-right">
-        <span class="user-top-points">
-      🪙 <?php echo (int)$user["eco_points"]; ?> points
-        </span>
-    <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
-    <a class="user-top-btn" href="friends_add.php" title="Add Friend">👥</a>
-    <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
-  </div>
+        <span class="user-top-points">🪙 <?php echo (int)$user["eco_points"]; ?> points</span>
+        <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
+        <a class="user-top-btn" href="friends_add.php" title="Add Friend">👥</a>
+        <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
+      </div>
     </div>
 
     <div class="page-wrap">
@@ -110,19 +102,25 @@ $catRes = mysqli_query($conn, $catSql);
         <div class="card">
           <h2 class="card-title">Upload Tutorial</h2>
 
-          <form id="addForm" action="user_tutorial_process.php" method="POST">
+          <form id="addForm"
+              action="user_tutorial_process.php"
+              method="POST"
+              enctype="multipart/form-data"
+              novalidate>
+
+            
             <div class="form-row">
-              <label>title</label>
-              <input type="text" name="title" required>
+              <label>Title</label>
+              <input type="text" name="title" placeholder="e.g. How to recycle plastic bottles" required>
             </div>
 
             <div class="form-row">
-              <label>body</label>
-              <textarea name="body" required></textarea>
+              <label>Body</label>
+              <textarea name="body" placeholder="Write your steps / explanation..." required></textarea>
             </div>
 
             <div class="form-row">
-              <label>difficultylevel</label>
+              <label>Difficulty Level</label>
               <select name="difficulty_level" required>
                 <option value="Beginner">easy</option>
                 <option value="Intermediate">medium</option>
@@ -131,9 +129,9 @@ $catRes = mysqli_query($conn, $catSql);
             </div>
 
             <div class="form-row">
-              <label>category</label>
+              <label>Category</label>
               <select name="content_category_id" required>
-                <option value="" disabled selected>category</option>
+                <option value="" disabled selected>Select category</option>
                 <?php if ($catRes): ?>
                   <?php while($c = mysqli_fetch_assoc($catRes)): ?>
                     <option value="<?php echo htmlspecialchars($c["content_category_id"]); ?>">
@@ -144,11 +142,22 @@ $catRes = mysqli_query($conn, $catSql);
               </select>
             </div>
 
+            <div class="form-row">
+              <label>Upload Images (optional)</label>
+              <input 
+                type="file" 
+                name="media_files[]" 
+                accept="image/*"
+                multiple
+              >
+            </div>
+
             <div style="display:flex; gap:12px; justify-content:flex-end;">
-              <a class="page-btn" href="tutorial_view.php">Back</a>
-              <button type="button" class="page-btn" id="openConfirm">Upload</button>
+              <a class="btn" href="tutorial_view.php">Back</a>
+              <button type="button" class="btn" id="openConfirm">Upload</button>
             </div>
           </form>
+
         </div>
       </div>
     </div>
@@ -159,21 +168,61 @@ $catRes = mysqli_query($conn, $catSql);
 
 <div class="modal-bg" id="confirmModal">
   <div class="modal-uploadbox">
-    <h3 style="margin:0 0 10px;">Are you Confirm want to Upload the Content?</h3>
+    <h3 style="margin:0 0 10px;">Confirm upload?</h3>
     <div class="modal-actions">
-      <button type="button" class="page-btn" id="noBtn">No</button>
-      <button type="button" class="page-btn" id="yesBtn">Confirm</button>
+      <button type="button" class="btn" id="noBtn">No</button>
+      <button type="button" class="btn" id="yesBtn">Confirm</button>
     </div>
   </div>
 </div>
 
 <script src="../user/user.js"></script>
 <script>
-  const modal = document.getElementById("confirmModal");
-  document.getElementById("openConfirm").onclick = () => modal.style.display = "flex";
-  document.getElementById("noBtn").onclick = () => modal.style.display = "none";
-  document.getElementById("yesBtn").onclick = () => document.getElementById("addForm").submit();
-  modal.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
+  const modal   = document.getElementById("confirmModal");
+  const form    = document.getElementById("addForm");
+
+  const btnOpen = document.getElementById("openConfirm");
+  const btnNo   = document.getElementById("noBtn");
+  const btnYes  = document.getElementById("yesBtn");
+
+  const title = form.querySelector('input[name="title"]');
+  const body  = form.querySelector('textarea[name="body"]');
+  const level = form.querySelector('select[name="difficulty_level"]');
+  const cat   = form.querySelector('select[name="content_category_id"]');
+
+  function showError(msg, el) {
+    alert(msg);
+    if (el) el.focus();
+  }
+
+  btnOpen.addEventListener("click", function (e) {
+    e.preventDefault();
+    modal.style.display = "flex";
+  });
+
+  btnNo.addEventListener("click", function (e) {
+    e.preventDefault();
+    modal.style.display = "none";
+  });
+
+  btnYes.addEventListener("click", function (e) {
+    e.preventDefault();
+
+    if (!title.value.trim()) return showError("Please fill in Title.", title);
+    if (!body.value.trim())  return showError("Please fill in Body.", body);
+    if (!level.value.trim()) return showError("Please select Difficulty Level.", level);
+    if (!cat.value.trim())   return showError("Please select Category.", cat);
+
+    modal.style.display = "none";
+
+    if (form.requestSubmit) form.requestSubmit();
+    else form.submit();
+  });
+
+  modal.addEventListener("click", function (e) {
+    if (e.target === modal) modal.style.display = "none";
+  });
 </script>
+
 </body>
 </html>

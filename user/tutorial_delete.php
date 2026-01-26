@@ -10,62 +10,77 @@ if (!isset($_SESSION["user_id"])) {
   header("Location: ../login/login.php");
   exit();
 }
-
 $user_id = $_SESSION["user_id"];
-$id = trim($_GET["id"] ?? "");
 
-if ($id === "") {
+$post_id = trim($_GET["id"] ?? "");
+if ($post_id === "") {
   header("Location: tutorial_view.php");
   exit();
 }
 
-$check = mysqli_prepare($conn, "SELECT post_id FROM posts WHERE post_id=? AND user_id=? LIMIT 1");
-mysqli_stmt_bind_param($check, "ss", $id, $user_id);
-mysqli_stmt_execute($check);
-$checkRes = mysqli_stmt_get_result($check);
-
-if (!mysqli_fetch_assoc($checkRes)) {
-  mysqli_stmt_close($check);
-  echo "<script>alert('Delete Failed (not yours / not found)'); window.location.href='tutorial_view.php';</script>";
-  exit();
-}
-mysqli_stmt_close($check);
-
 mysqli_begin_transaction($conn);
 
 try {
-  $d1 = mysqli_prepare($conn, "DELETE FROM post_reports WHERE post_id=?");
-  mysqli_stmt_bind_param($d1, "s", $id);
-  mysqli_stmt_execute($d1);
-  mysqli_stmt_close($d1);
+  $ownSql = "SELECT post_id FROM posts WHERE post_id=? AND user_id=? LIMIT 1 FOR UPDATE";
+  $ownStmt = mysqli_prepare($conn, $ownSql);
+  mysqli_stmt_bind_param($ownStmt, "ss", $post_id, $user_id);
+  mysqli_stmt_execute($ownStmt);
+  $ownRes = mysqli_stmt_get_result($ownStmt);
+  $ownRow = mysqli_fetch_assoc($ownRes);
+  mysqli_stmt_close($ownStmt);
 
-  $d2 = mysqli_prepare($conn, "DELETE FROM post_media WHERE post_id=?");
-  mysqli_stmt_bind_param($d2, "s", $id);
-  mysqli_stmt_execute($d2);
-  mysqli_stmt_close($d2);
-
-  $d3 = mysqli_prepare($conn, "DELETE FROM community_comments WHERE post_id=?");
-  mysqli_stmt_bind_param($d3, "s", $id);
-  mysqli_stmt_execute($d3);
-  mysqli_stmt_close($d3);
-
-  $d4 = mysqli_prepare($conn, "DELETE FROM posts WHERE post_id=? AND user_id=?");
-  mysqli_stmt_bind_param($d4, "ss", $id, $user_id);
-  mysqli_stmt_execute($d4);
-
-  $deleted = (mysqli_stmt_affected_rows($d4) > 0);
-  mysqli_stmt_close($d4);
-
-  if (!$deleted) {
-    throw new Exception("Delete failed");
+  if (!$ownRow) {
+    mysqli_rollback($conn);
+    header("Location: tutorial_view.php");
+    exit();
   }
 
+  $paths = [];
+  $mSql = "SELECT file_path, media_type
+           FROM post_media
+           WHERE post_id=?
+           FOR UPDATE";
+  $mStmt = mysqli_prepare($conn, $mSql);
+  mysqli_stmt_bind_param($mStmt, "s", $post_id);
+  mysqli_stmt_execute($mStmt);
+  $mRes = mysqli_stmt_get_result($mStmt);
+  while ($r = mysqli_fetch_assoc($mRes)) {
+    $paths[] = $r;
+  }
+  mysqli_stmt_close($mStmt);
+
+  $delMediaSql = "DELETE FROM post_media WHERE post_id=?";
+  $dmStmt = mysqli_prepare($conn, $delMediaSql);
+  mysqli_stmt_bind_param($dmStmt, "s", $post_id);
+  mysqli_stmt_execute($dmStmt);
+  mysqli_stmt_close($dmStmt);
+
+  $delPostSql = "DELETE FROM posts WHERE post_id=? AND user_id=? LIMIT 1";
+  $dpStmt = mysqli_prepare($conn, $delPostSql);
+  mysqli_stmt_bind_param($dpStmt, "ss", $post_id, $user_id);
+  mysqli_stmt_execute($dpStmt);
+  mysqli_stmt_close($dpStmt);
+
   mysqli_commit($conn);
-  header("Location: tutorial_view.php?del=success");
+
+  foreach ($paths as $p) {
+    $type = $p["media_type"] ?? "";
+    $filePath = trim($p["file_path"] ?? "");
+
+    if ($type === "image" && str_starts_with($filePath, "../images/post_media/")) {
+      $abs = realpath(__DIR__ . "/" . $filePath);
+      $base = realpath(__DIR__ . "/../images/post_media");
+
+      if ($abs && $base && str_starts_with($abs, $base) && file_exists($abs)) {
+        @unlink($abs);
+      }
+    }
+  }
+
+  header("Location: tutorial_view.php");
   exit();
 
 } catch (Throwable $e) {
   mysqli_rollback($conn);
-  echo "<script>alert('Delete Failed'); window.location.href='tutorial_view.php';</script>";
-  exit();
+  die("Delete failed: " . $e->getMessage());
 }

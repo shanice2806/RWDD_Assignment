@@ -1,28 +1,32 @@
 <?php
-session_start();
-require_once "../connect.php";
-
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
+session_start();
+require_once "../connect.php";
 
 if (!isset($_SESSION["user_id"])) {
   header("Location: ../login/login.php");
   exit();
 }
-
 $user_id = $_SESSION["user_id"];
 
-$userSql = "SELECT name, eco_points, profile_image FROM users WHERE user_id=? LIMIT 1";
+function h($str) {
+  return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8');
+}
+function redirectTo($url) {
+  header("Location: " . $url);
+  exit();
+}
+
+$userSql = "SELECT name, eco_points FROM users WHERE user_id=? LIMIT 1";
 $uStmt = mysqli_prepare($conn, $userSql);
 mysqli_stmt_bind_param($uStmt, "s", $user_id);
 mysqli_stmt_execute($uStmt);
-$uRes = mysqli_stmt_get_result($uStmt);
-$user = mysqli_fetch_assoc($uRes) ?: ["name"=>"User","eco_points"=>0,"profile_image"=>""];
+$uRes  = mysqli_stmt_get_result($uStmt);
+$user  = mysqli_fetch_assoc($uRes) ?: ["name"=>"User","eco_points"=>0];
 mysqli_stmt_close($uStmt);
-
-$profileImg = trim($user["profile_image"] ?? "");
-if ($profileImg === "") $profileImg = "../assets/default-avatar.png";
 
 $filterDiff = trim($_GET["diff"] ?? "all");
 $filterCat  = trim($_GET["cat"] ?? "all");
@@ -45,6 +49,7 @@ if ($filterDiff !== "all") {
   $params[] = $filterDiff;
   $types .= "s";
 }
+
 if ($filterCat !== "all") {
   $sql .= " AND content_category_id = ?";
   $params[] = $filterCat;
@@ -70,7 +75,6 @@ if ($flashSuccess) unset($_SESSION["flash_success"]);
 
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/user.css">
-
 
   <style>
     .page-wrap{ padding-top:80px; background:#f5f7f8; min-height:100vh; }
@@ -127,79 +131,62 @@ if ($flashSuccess) unset($_SESSION["flash_success"]);
       .actions .page-btn{ flex:1; text-align:center; }
     }
 
-    .page-btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      padding:10px 16px;
-      border-radius:12px;
-      background:#1e3a34;
-      color:#ffffff;
-      border:1px solid #1e3a34;
-      font-size:15px;
-      font-weight:800;
-      text-decoration:none;
-      cursor:pointer;
-      transition:all .2s ease;
+
+
+    .success-modal-bg{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 6000;
     }
-    .page-btn:hover{ background:#3ba99c; border-color:#3ba99c; color:#fff; }
-    button.page-btn{ appearance:none; -webkit-appearance:none; outline:none; }
-
-.success-modal-bg{
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 6000;
-}
-
-.success-modal-box{
-  width: min(520px, 92vw);
-  background: #fff;
-  border: 2px solid #333;
-  border-radius: 4px;
-  padding: 26px 18px;
-  text-align: center;
-}
-
-.success-modal-box h2{
-  margin: 0 0 10px;
-  font-size: 28px;
-  font-weight: 800;
-  line-height: 1.15;
-}
-
-.success-points{
-  margin: 6px 0 18px;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.success-actions{
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-  margin-top: 10px;
-}
-
-.success-btn{
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 0;
-  border-radius: 6px;
-  background: #444;
-  color: #fff;
-  text-decoration: none;
-  font-weight: 800;
-  border: none;
-  cursor: pointer;
-}
-
+    .success-modal-box{
+      width: min(520px, 92vw);
+      background: #fff;
+      border: 2px solid #333;
+      border-radius: 4px;
+      padding: 26px 18px;
+      text-align: center;
+    }
+    .success-modal-box h2{
+      margin: 0 0 10px;
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.15;
+    }
+    .success-points{
+      margin: 6px 0 18px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .success-actions{
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 10px;
+    }
+    .success-btn{
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 0;
+      border-radius: 6px;
+      background: #444;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+    }
+    .success-btn:hover,
+    .success-btn:focus,
+    .success-btn:active{
+      background:#444;
+      color:#fff;
+    }
   </style>
 </head>
 
@@ -215,22 +202,22 @@ if ($flashSuccess) unset($_SESSION["flash_success"]);
       <div class="user-top-left">
         <button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
         <div class="user-top-user">
-          <span> Welcome! <?= htmlspecialchars($_SESSION['name'] ?? 'User') ?> </span>
+          <span> Welcome! <?= h($_SESSION['name'] ?? 'User') ?> </span>
         </div>
       </div>
 
-<div class="user-top-center">
-<h1 style="color: white;">Tutorial</h1>
-  </div>
+      <div class="user-top-center">
+        <h1 style="color: white;">Tutorial</h1>
+      </div>
 
       <div class="user-top-right">
         <span class="user-top-points">
-      🪙 <?php echo (int)$user["eco_points"]; ?> points
+          🪙 <?= (int)$user["eco_points"]; ?> points
         </span>
-    <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
-    <a class="user-top-btn" href="friends_add.php" title="Add Friend">👥</a>
-    <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
-  </div>
+        <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
+        <a class="user-top-btn" href="friends_add.php" title="Add Friend">👥</a>
+        <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
+      </div>
     </div>
 
     <div class="page-wrap">
@@ -239,24 +226,25 @@ if ($flashSuccess) unset($_SESSION["flash_success"]);
 
           <div class="card-header">
             <h2 class="card-title">My Tutorial</h2>
-            <a href="user_tutorial_add.php" class="page-btn" title="Create Tutorial">＋</a>
+            <a href="user_tutorial_add.php" class="btn" title="Create Tutorial">＋</a>
           </div>
 
           <form method="get" class="filters">
             <select name="diff" onchange="this.form.submit()">
-              <option value="all" <?php echo ($filterDiff==="all")?"selected":""; ?>>All Difficulty</option>
-              <option value="Beginner" <?php echo ($filterDiff==="Beginner")?"selected":""; ?>>Beginner</option>
-              <option value="Intermediate" <?php echo ($filterDiff==="Intermediate")?"selected":""; ?>>Intermediate</option>
-              <option value="Advanced" <?php echo ($filterDiff==="Advanced")?"selected":""; ?>>Advanced</option>
+              <option value="all" <?= ($filterDiff==="all")?"selected":""; ?>>All Difficulty</option>
+              <option value="Beginner" <?= ($filterDiff==="Beginner")?"selected":""; ?>>Beginner</option>
+              <option value="Intermediate" <?= ($filterDiff==="Intermediate")?"selected":""; ?>>Intermediate</option>
+              <option value="Advanced" <?= ($filterDiff==="Advanced")?"selected":""; ?>>Advanced</option>
             </select>
 
             <select name="cat" onchange="this.form.submit()">
-              <option value="all" <?php echo ($filterCat==="all")?"selected":""; ?>>All Category</option>
+              <option value="all" <?= ($filterCat==="all")?"selected":""; ?>>All Category</option>
+
               <?php if ($catRes): ?>
                 <?php while($c = mysqli_fetch_assoc($catRes)): ?>
-                  <option value="<?php echo htmlspecialchars($c["content_category_id"]); ?>"
-                    <?php echo ($filterCat === $c["content_category_id"]) ? "selected" : ""; ?>>
-                    <?php echo htmlspecialchars($c["content_name"]); ?>
+                  <option value="<?= h($c["content_category_id"]); ?>"
+                    <?= ($filterCat === $c["content_category_id"]) ? "selected" : ""; ?>>
+                    <?= h($c["content_name"]); ?>
                   </option>
                 <?php endwhile; ?>
               <?php endif; ?>
@@ -266,23 +254,27 @@ if ($flashSuccess) unset($_SESSION["flash_success"]);
           <?php if (!$result || mysqli_num_rows($result) == 0): ?>
             <p style="margin:14px 0 0;">No tutorial found.</p>
           <?php else: ?>
-            <?php while($row = mysqli_fetch_assoc($result)) { ?>
+            <?php while($row = mysqli_fetch_assoc($result)): ?>
               <div class="list-item">
                 <div class="list-left">
-                  <b><?php echo htmlspecialchars($row["title"]); ?></b>
+                  <b><?= h($row["title"]); ?></b>
                   <small>
-                    Difficulty: <?php echo htmlspecialchars($row["difficulty_level"]); ?>
-                    • <?php echo htmlspecialchars($row["post_created_at"]); ?>
+                    Difficulty: <?= h($row["difficulty_level"]); ?>
+                    • <?= h($row["post_created_at"]); ?>
                   </small>
                 </div>
 
                 <div class="actions">
-                  <a class="page-btn" href="tutorial_detail.php?id=<?php echo urlencode($row["post_id"]); ?>">View</a>
-                  <a class="page-btn" href="tutorial_delete.php?id=<?php echo urlencode($row["post_id"]); ?>"
-                     onclick="return confirm('Delete this tutorial?');">Delete</a>
+                  <a class="btn" href="tutorial_detail.php?id=<?= urlencode($row["post_id"]); ?>">View</a>
+
+                  <a class="btn"
+                     href="tutorial_delete.php?id=<?= urlencode($row["post_id"]); ?>"
+                     onclick="return confirm('Delete this tutorial?');">
+                    Delete
+                  </a>
                 </div>
               </div>
-            <?php } ?>
+            <?php endwhile; ?>
           <?php endif; ?>
 
         </div>
@@ -299,7 +291,7 @@ if ($flashSuccess) unset($_SESSION["flash_success"]);
       <h2>Upload<br>Successful</h2>
 
       <div class="success-points">
-        💰 +<?php echo (int)($flashSuccess["points"] ?? 0); ?> point
+        💰 +<?= (int)($flashSuccess["points"] ?? 0); ?> point
       </div>
 
       <div class="success-actions">
@@ -328,7 +320,6 @@ if ($flashSuccess) unset($_SESSION["flash_success"]);
       if (e.target === successModal) successModal.style.display = "none";
     });
   }
-
 </script>
 </body>
 </html>
