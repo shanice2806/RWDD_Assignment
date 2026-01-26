@@ -121,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $file = $_FILES['event_media'];
                 
                 // Where to save the file
-                $upload_folder = '../uploads/events/';
+                $upload_folder = '../images/events/';
                 
                 // Create folder if it doesn't exist
                 if (!file_exists($upload_folder)) {
@@ -176,7 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                            VALUES (?, ?, ?, ?, 0)";
                             
                             $media_stmt = mysqli_prepare($conn, $media_insert);
-                            $file_path = '/uploads/events/' . $new_filename;
+                            $file_path = 'images/events/' . $new_filename;
                             mysqli_stmt_bind_param($media_stmt, "ssss", $event_media_id, $event_id, $file_path, $user_id);
                             mysqli_stmt_execute($media_stmt);
                         } else {

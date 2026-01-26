@@ -86,8 +86,8 @@ include '../connect.php';
           </div>
         </div>
         <div class="action-grid">
-          <a href="organizer_event_qr.php" class="action-btn">📱 QR Code Attendance</a>
-          <a href="organizer_manual_attendance.php" class="action-btn">✏️ Manual Marking</a>
+          <a href="organizer_attendance_code.php" class="action-btn">📱Code Attendance</a>
+          <a href="organizer_attendance_manual.php" class="action-btn">✏️ Manual Marking</a>
           <a href="organizer_attendance_view.php" class="action-btn">📊 View Attendance List</a>
         </div>
         <div class="submenu">
