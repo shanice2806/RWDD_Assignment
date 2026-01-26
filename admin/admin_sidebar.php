@@ -1,7 +1,26 @@
+<?php include "../connect.php"; ?>
+
 <aside class="admin-sidebar" id="adminSidebar">
 
   <div class="sidebar-profile">
-    <div class="profile-avatar">👤</div>
+    <div class="profile-avatar">
+
+  <?php if (!empty($_SESSION['profile_image'])): ?>
+  <img 
+    src="../images/profile/<?= htmlspecialchars($_SESSION['profile_image']) ?>" 
+    alt="Profile"
+  >
+<?php else: ?>
+  <img 
+    src="../images/profile/default.png" 
+    alt="Profile"
+  >
+<?php endif; ?>
+
+</div>
+
+
+
     <div class="profile-text">
       <strong><?= htmlspecialchars($_SESSION['name'] ?? 'User'); ?></strong>
       <a href="view_profile.php">View Profile</a>

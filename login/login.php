@@ -20,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   if ($identifier === "" || $password === "") {
     $error = "Please enter TP number/email and password.";
   } else {
-    $sql = "SELECT user_id, name, email, role, password, account_status
+    $sql = "SELECT user_id, name, email, role, password, account_status, profile_image
             FROM users
             WHERE email = ? OR user_id = ?
             LIMIT 1";
@@ -52,6 +52,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $_SESSION["name"]    = $row["name"];
             $_SESSION["email"]   = $row["email"];
             $_SESSION["role"]    = $row["role"];
+            $_SESSION['profile_image'] = $row['profile_image'];
+
+
 
             $upd = mysqli_prepare($conn, "UPDATE users SET last_login = NOW() WHERE user_id = ?");
             if ($upd) {

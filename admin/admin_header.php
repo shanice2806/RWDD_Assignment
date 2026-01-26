@@ -20,11 +20,6 @@ session_start();
     <span>Welcome!  <?= htmlspecialchars($_SESSION['name'] ?? 'User') ?> </span>
   </div>
 
-  <div class="search-container">
-    <input type="text" class="search-bar" placeholder="Search...">
-    <button class="search-btn">🔍</button>
-  </div>
-
   <div class="icons">
     <a href="admin_dashboard.php" class="icon-btn">🏠</a>
     <a href="../login/logout.php" class="icon-btn">⎋</a>

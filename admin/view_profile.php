@@ -40,12 +40,16 @@ $badges = array_filter(array_map('trim', explode(',', $user['badges'])));
 
       <!-- Avatar -->
       <div class="profile-avatar-large">
-        <?php if (!empty($user['profile_image'])): ?>
-          <img src="../<?= htmlspecialchars($user['profile_image']) ?>" alt="Profile">
-        <?php else: ?>
-          👤
-        <?php endif; ?>
-      </div>
+  <?php if (!empty($user['profile_image'])): ?>
+    <img 
+      src="../images/profile/<?= htmlspecialchars($user['profile_image']) ?>" 
+      alt="Profile"
+    >
+  <?php else: ?>
+    👤
+  <?php endif; ?>
+</div>
+
 
       <!-- Actions -->
                 <div style="text-align:center; margin-bottom:20px;">
