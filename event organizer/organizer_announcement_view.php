@@ -67,8 +67,10 @@ if ($announcement['is_active'] == 1) {
     <div class="dashboard-container">
         <?php include 'organizer_sidebar.php'; ?>
         
-        <div class="main-content">
-            <!-- Page header -->
+          <div class="main-content">
+    <div class="back-btn-container">
+      <button onclick="history.back()" class="action-btn"> Back</button>
+    </div>            <!-- Page header -->
             <div class="page-header">
                 <h1>Announcement Details</h1>
             </div>

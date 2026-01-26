@@ -32,8 +32,10 @@ $event_id = $_GET['event_id'] ?? null;
   <?php include 'organizer_header.php'; ?>
 
   <!-- Main content -->
-  <div class="main-content">
-    <main class="dashboard">
+    <div class="main-content">
+    <div class="back-btn-container">
+      <button onclick="history.back()" class="action-btn"> Back</button>
+    </div>    <main class="dashboard">
 
       <?php if (!$event_id): ?>
         <!-- ============================================ -->
@@ -98,13 +100,7 @@ $event_id = $_GET['event_id'] ?? null;
         // Check if event exists
         if (!$event) {
           echo "<p>Event not found.</p>";
-        } 
-        // Check if registration is open
-        elseif (strtolower($event['registration_status']) !== 'open') {
-          echo "<p style='color:#b00020; font-weight:600;'>Registration for this event is not open yet.</p>";
-          echo "<a class='btn' href='organizer_event_view.php'>Open Registration</a>";
-        } 
-        else {
+        } else {
           // Get all registrations with user names
           $registrations_query = "
             SELECT r.registration_id, r.user_id, u.name, r.registration_status
@@ -114,9 +110,27 @@ $event_id = $_GET['event_id'] ?? null;
             ORDER BY r.registration_id DESC
           ";
           $registrations = $conn->query($registrations_query);
+          
+          // Get count of registrations
+          $reg_count = $registrations ? $registrations->num_rows : 0;
       ?>
 
         <h2>Registrations for <?= htmlspecialchars($event['event_title']) ?> (<?= htmlspecialchars($event['event_date_time']) ?>)</h2>
+        
+        <?php if (strtolower($event['registration_status']) !== 'open'): ?>
+          <div class="alert alert-error" style="margin-bottom: 20px;">
+            <strong>⚠️ Registration Status: CLOSED</strong><br>
+            Registration for this event is currently closed. You can still view the <?= $reg_count ?> participant(s) who registered below.
+            <?php if ($reg_count > 0): ?>
+              <br><small>To allow new registrations, go to <a href="organizer_registration_control.php">Registration Control</a> to open registration again.</small>
+            <?php endif; ?>
+          </div>
+        <?php else: ?>
+          <div class="alert alert-success" style="margin-bottom: 20px;">
+            <strong>✓ Registration Status: OPEN</strong><br>
+            Registration is currently open. Total registrations: <?= $reg_count ?>
+          </div>
+        <?php endif; ?>
 
         <table class="eco-table">
           <thead>

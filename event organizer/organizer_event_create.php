@@ -223,8 +223,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
   <?php include 'organizer_header.php'; ?>
 
-  <div class="main-content">
-    <div class="create-event-container">
+    <div class="main-content">
+    <div class="back-btn-container">
+      <button onclick="history.back()" class="action-btn"> Back</button>
+    </div>    <div class="create-event-container">
       <h1>Create Event Form</h1>
       
       <?php if (!empty($error_message)): ?>

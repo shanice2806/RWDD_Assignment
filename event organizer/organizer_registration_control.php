@@ -82,11 +82,12 @@ $events_result = $conn->query($events_query);
 <body>
   <?php include 'organizer_header.php'; ?>
 
-  <div class="main-content">
-    <main class="dashboard">
+    <div class="main-content">
+    <div class="back-btn-container">
+      <button onclick="history.back()" class="action-btn"> Back</button>
+    </div>    <main class="dashboard">
       
       <div class="registration-control-container">
-        <a href="organizer_registration_attendance_hub.php" class="action-btn">← Back</a>
         
         <h1>Registration Control</h1>
 

@@ -177,8 +177,10 @@ $current_poster = $poster_result->num_rows > 0 ? $poster_result->fetch_assoc()['
     <div class="dashboard-container">
         <?php include 'organizer_sidebar.php'; ?>
         
-        <div class="main-content">
-            <!-- Page title -->
+          <div class="main-content">
+    <div class="back-btn-container">
+      <button onclick="history.back()" class="action-btn"> Back</button>
+    </div>            <!-- Page title -->
             <div class="page-header">
                 <h1>Edit Event</h1>
                 <p>Event: <strong><?php echo htmlspecialchars($event['event_title']); ?></strong></p>

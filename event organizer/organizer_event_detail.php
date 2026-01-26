@@ -70,8 +70,10 @@ $time_formatted = date('g:i A', strtotime($event['event_date_time']));
 <body>
   <?php include 'organizer_header.php'; ?>
 
-  <div class="main-content">
-    <div class="event-detail-container">
+    <div class="main-content">
+    <div class="back-btn-container">
+      <button onclick="history.back()" class="action-btn"> Back</button>
+    </div>    <div class="event-detail-container">
       
       <!-- ============================== -->
       <!-- Event Title -->

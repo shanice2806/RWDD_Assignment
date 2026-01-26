@@ -104,8 +104,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['send_notification'])) 
     <div class="dashboard-container">
         <?php include 'organizer_sidebar.php'; ?>
         
-        <div class="main-content">
-            <!-- Page header -->
+          <div class="main-content">
+    <div class="back-btn-container">
+      <button onclick="history.back()" class="action-btn"> Back</button>
+    </div>            <!-- Page header -->
             <div class="page-header flex-between">
                 <h1>Send Notification</h1>
                 <a href="organizer_dashboard.php" class="action-btn">Back</a>

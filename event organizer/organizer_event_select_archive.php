@@ -44,8 +44,10 @@ $result = $conn->query($query);
     <div class="dashboard-container">
         <?php include 'organizer_sidebar.php'; ?>
         
-        <div class="main-content">
-            <!-- Page title -->
+          <div class="main-content">
+    <div class="back-btn-container">
+      <button onclick="history.back()" class="action-btn"> Back</button>
+    </div>            <!-- Page title -->
             <div class="page-header">
                 <h1>Select Event to Archive</h1>
                 <p>Choose an event from the list below to archive</p>

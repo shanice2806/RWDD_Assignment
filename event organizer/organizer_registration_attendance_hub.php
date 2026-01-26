@@ -28,7 +28,7 @@ include '../connect.php';
   <?php include 'organizer_header.php'; ?>
 
   <!-- Main content -->
-  <div class="main-content">
+    <div class="main-content">
     <div class="event-management-container">
       <h1 class="page-title">📝 Registration, Attendance & Volunteers Hub</h1>
 
