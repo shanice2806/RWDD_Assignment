@@ -217,4 +217,4 @@ input {
 </body>
 </html>
 
-<?php include "user_footer.php"; ?>
+
