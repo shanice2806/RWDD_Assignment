@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <textarea name="message" rows="4" required></textarea>
             </div>
 
-            <!-- ADD Button -->
+            <!-- Add Button -->
             <div style="text-align:center; margin-top:20px;">
                 <button type="submit" class="btn">Add</button>
             </div>

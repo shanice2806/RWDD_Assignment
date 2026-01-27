@@ -189,7 +189,7 @@ $result = $stmt->get_result();
           <td><?= (int)$row['report_count'] ?></td>
 
           <td class="action-col">
-            <a href="admin_post_view.php?id=<?= $row['post_id'] ?>" class="btn">VIEW</a>
+            <a href="admin_post_view.php?id=<?= $row['post_id'] ?>" class="btn">View</a>
           </td>
         </tr>
       <?php endwhile; ?>

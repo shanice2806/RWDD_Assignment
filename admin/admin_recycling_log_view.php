@@ -137,7 +137,7 @@ $log = $result->fetch_assoc();
          ===================== -->
     <div style="text-align:center; margin-top:25px;">
         <a href="admin_recycling_log_update.php?id=<?= urlencode($log['log_id']) ?>" class="btn">
-            UPDATE
+            Update
         </a>
     </div>
 

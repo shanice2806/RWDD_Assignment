@@ -77,8 +77,8 @@ $result = $stmt->get_result();
             <td><?= htmlspecialchars($row['badges']) ?></td>
             <td><?= htmlspecialchars($row['created_at']) ?></td>
             <td>
-                <a href="admin_user_view.php?id=<?= $row['user_id'] ?>" class="btn">VIEW</a>
-                <a href="admin_user_edit.php?id=<?= $row['user_id'] ?>" class="btn">EDIT</a>
+                <a href="admin_user_view.php?id=<?= $row['user_id'] ?>" class="btn">View</a>
+                <a href="admin_user_edit.php?id=<?= $row['user_id'] ?>" class="btn">Edit</a>
             </td>
           </tr>
         <?php endwhile; ?>

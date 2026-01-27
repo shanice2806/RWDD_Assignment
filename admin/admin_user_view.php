@@ -58,10 +58,10 @@ $profileImage = !empty($user['profile_image'])
                  ">
         </div>
 
-        <!-- EDIT BUTTON -->
+        <!-- Edit BUTTON -->
         <div style="text-align:center; margin-bottom:20px;">
             <a href="admin_user_edit.php?id=<?= urlencode($user['user_id']) ?>" class="btn">
-                EDIT PROFILE
+                Edit Profile
             </a>
         </div>
 
@@ -111,12 +111,12 @@ $profileImage = !empty($user['profile_image'])
             <input type="text" value="<?= htmlspecialchars($user['account_status']) ?>" readonly>
         </div>
 
-        <!-- VIEW ECO POINT TRANSACTIONS -->
+        <!-- View ECO POINT TRANSACTIONS -->
         <div style="text-align:center; margin-bottom:20px;">
             <a href="admin_points_transaction.php?id=<?= urlencode($user['user_id']) ?>"
                class="btn"
                style="background:#3ba99c; color:#fff;">
-                VIEW ECO POINT TRANSACTIONS
+                View Eco Points Transaction
             </a>
         </div>
 

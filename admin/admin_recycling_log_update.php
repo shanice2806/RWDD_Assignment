@@ -173,8 +173,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- BUTTONS -->
         <div style="display:flex; justify-content:center; gap:20px; margin-top:25px;">
-            <a href="admin_recycling_log_view.php?id=<?= urlencode($log_id) ?>" class="btn">CANCEL</a>
-            <button type="submit" class="btn save-btn">UPDATE</button>
+            <a href="admin_recycling_log_view.php?id=<?= urlencode($log_id) ?>" class="btn">Cancel</a>
+            <button type="submit" class="btn save-btn">Update</button>
         </div>
 
     </form>

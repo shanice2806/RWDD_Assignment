@@ -86,10 +86,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                  name="material_description">
         </div>
 
-        <!-- ADD BUTTON -->
+        <!-- Add BUTTON -->
         <div style="text-align:center; margin-top:25px;">
           <button type="submit" class="action-btn">
-            ADD
+            Add
           </button>
         </div>
 

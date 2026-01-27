@@ -12,7 +12,7 @@ $success = "";
 $error   = "";
 
 /* =====================
-   HANDLE ADD REWARD
+   HANDLE Add REWARD
 ===================== */
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
@@ -196,7 +196,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       </div>
 
       <div style="text-align:center; margin-top:25px;">
-        <button type="submit" class="action-btn">ADD</button>
+        <button type="submit" class="action-btn">Add</button>
       </div>
 
     </form>

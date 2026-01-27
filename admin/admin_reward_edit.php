@@ -227,8 +227,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
 
       <div style="display:flex;justify-content:center;gap:12px;margin-top:25px;">
-        <a href="admin_rewards.php" class="action-btn">CANCEL</a>
-        <button type="submit" class="action-btn">EDIT</button>
+        <a href="admin_rewards.php" class="action-btn">Cancel</a>
+        <button type="submit" class="action-btn">Edit</button>
       </div>
 
     </form>

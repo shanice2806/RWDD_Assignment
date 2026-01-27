@@ -186,8 +186,8 @@ $result = $stmt->get_result();
           <td><?= htmlspecialchars($row['event_status']) ?></td>
           <td><?= $row['total_attendance'] ?></td>
           <td class="action-col">
-            <a href="admin_event_view.php?id=<?= urlencode($row['event_id']) ?>" class="btn">VIEW</a>
-            <a href="admin_event_update.php?id=<?= urlencode($row['event_id']) ?>" class="btn">UPDATE</a>
+            <a href="admin_event_view.php?id=<?= urlencode($row['event_id']) ?>" class="btn">View</a>
+            <a href="admin_event_update.php?id=<?= urlencode($row['event_id']) ?>" class="btn">Update</a>
           </td>
         </tr>
       <?php endwhile; ?>

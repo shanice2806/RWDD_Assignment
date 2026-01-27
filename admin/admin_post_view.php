@@ -195,7 +195,7 @@ if ($post['report_count'] > 0) {
 
     <div style="text-align:center; margin-top:25px;">
         <a href="admin_post_update.php?id=<?= urlencode($post_id) ?>" class="btn">
-            UPDATE
+            Update
         </a>
     </div>
 </div>

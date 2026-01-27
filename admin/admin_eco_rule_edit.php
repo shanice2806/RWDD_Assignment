@@ -151,7 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <!-- EDIT BUTTON -->
         <div style="text-align:center; margin-top:25px;">
           <button type="submit" class="action-btn">
-            EDIT
+            Edit
           </button>
         </div>
 

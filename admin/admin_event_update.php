@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <!-- =====================
-     EVENT REVIEW CARD
+     EVENT REView CARD
      ===================== -->
 <div class="section-preview" style="max-width:800px; margin:auto;">
 
@@ -111,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <!-- =====================
-         STATUS (EDITABLE)
+         STATUS (EditABLE)
          ===================== -->
     <div class="form-group">
         <label>Event Status</label>
@@ -132,8 +132,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
          ACTION BUTTONS
          ===================== -->
     <div style="display:flex; justify-content:center; gap:20px; margin-top:30px;">
-        <a href="admin_event.php" class="btn">CANCEL</a>
-        <button type="submit" class="btn">EDIT</button>
+        <a href="admin_event.php" class="btn">Cancel</a>
+        <button type="submit" class="btn">Edit</button>
     </div>
 
 </form>

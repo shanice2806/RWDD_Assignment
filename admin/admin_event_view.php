@@ -161,11 +161,11 @@ $total_attendance = $attendance['total_attendance'] ?? 0;
          ===================== -->
     <div style="text-align:center; margin-top:25px;">
         <a href="admin_event_attendance.php?id=<?= urlencode($event_id) ?>" class="btn">
-            VIEW ATTENDANCE
+            View Attendance
         </a>
 
         <a href="admin_event_update.php?id=<?= urlencode($event_id) ?>" class="btn" style="margin-left:10px;">
-            UPDATE
+            Update
         </a>
     </div>
 

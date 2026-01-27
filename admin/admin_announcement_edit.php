@@ -120,8 +120,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <!-- Buttons -->
             <div style="display:flex; justify-content:center; gap:20px; margin-top:20px;">
-                <a href="admin_announcement_view.php?id=<?= urlencode($announcement_id) ?>" class="btn">CANCEL</a>
-                <button type="submit" class="btn save-btn">SAVE</button>
+                <a href="admin_announcement_view.php?id=<?= urlencode($announcement_id) ?>" class="btn">Cancel</a>
+                <button type="submit" class="btn save-btn">Save</button>
             </div>
 
         </form>

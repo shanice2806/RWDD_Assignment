@@ -80,7 +80,7 @@ $data = $result->fetch_assoc();
             <!-- Edit Button -->
             <div style="text-align:center; margin-top:20px;">
                 <a href="admin_announcement_edit.php?id=<?= urlencode($data['announcement_id']) ?>"
-                class="btn">EDIT</a>
+                class="btn">Edit</a>
             </div>
 
         </div>

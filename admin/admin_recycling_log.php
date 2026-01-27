@@ -247,8 +247,8 @@ $result = $stmt->get_result();
           <td><?= htmlspecialchars($row['points_awarded']) ?></td>
 
           <td class="action-col">
-            <a href="admin_recycling_log_view.php?id=<?= $row['log_id'] ?>" class="btn">VIEW</a>
-            <a href="admin_recycling_log_update.php?id=<?= $row['log_id'] ?>" class="btn">UPDATE</a>
+            <a href="admin_recycling_log_view.php?id=<?= $row['log_id'] ?>" class="btn">View</a>
+            <a href="admin_recycling_log_update.php?id=<?= $row['log_id'] ?>" class="btn">Update</a>
           </td>
         </tr>
       <?php endwhile; ?>
