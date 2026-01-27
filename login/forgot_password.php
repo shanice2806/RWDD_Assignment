@@ -2,7 +2,6 @@
 require_once "../connect.php";
 
 $page_title = "Forgot Password";
-include "user_header.php";
 
 $success = "";
 $error = "";
