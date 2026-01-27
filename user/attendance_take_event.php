@@ -1,10 +1,10 @@
 <?php
-session_start();
-require_once "../connect.php";
-
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
+session_start();
+require_once "../connect.php";
 
 if (!isset($_SESSION["user_id"])) {
   header("Location: ../login/login.php");
@@ -13,78 +13,76 @@ if (!isset($_SESSION["user_id"])) {
 
 $user_id = $_SESSION["user_id"];
 
-$code1 = strtoupper(trim($_POST["code1"] ?? ""));
-$code2 = strtoupper(trim($_POST["code2"] ?? ""));
-$code3 = strtoupper(trim($_POST["code3"] ?? ""));
+function make_id($prefix) {
+  return $prefix . "_" . date("YmdHis") . rand(10, 99);
+}
 
-if ($code1 === "" || $code2 === "" || $code3 === "") {
-  header("Location: user_event.php?att=err");
+$code = strtoupper(trim($_POST["code"] ?? ""));
+if ($code === "") {
+  header("Location: user_event.php?att=fail");
   exit();
 }
 
-function getAllEventCodes() {
-  return [
-    "evt_001" => ["A1B2", "C3D4", "E5F6"],
-    "evt_002" => ["1111", "2222", "3333"],
-    "evt_003" => ["APU1", "APU2", "APU3"],
-    "evt_004" => ["QWER", "ASDF", "ZXCV"],
-    "evt_005" => ["9999", "8888", "7777"],
-  ];
-}
+$stmt = mysqli_prepare($conn, "
+  SELECT event_id
+  FROM events
+  WHERE event_attendance_code = ?
+    AND event_status = 'Approved'
+  LIMIT 1
+");
+mysqli_stmt_bind_param($stmt, "s", $code);
+mysqli_stmt_execute($stmt);
+$res = mysqli_stmt_get_result($stmt);
+$row = mysqli_fetch_assoc($res);
+mysqli_stmt_close($stmt);
 
-$event_id = "";
-$map = getAllEventCodes();
-
-foreach ($map as $evtId => $codes) {
-  if ($code1 === $codes[0] && $code2 === $codes[1] && $code3 === $codes[2]) {
-    $event_id = $evtId;
-    break;
-  }
-}
-
-if ($event_id === "") {
-  header("Location: user_event.php?att=err");
+if (!$row) {
+  header("Location: user_event.php?att=fail");
   exit();
 }
 
-$chkEvt = mysqli_prepare($conn, "SELECT 1 FROM events WHERE event_id=? LIMIT 1");
-mysqli_stmt_bind_param($chkEvt, "s", $event_id);
-mysqli_stmt_execute($chkEvt);
-$evtExists = mysqli_stmt_get_result($chkEvt)->num_rows;
-mysqli_stmt_close($chkEvt);
+$event_id = $row["event_id"];
 
-if ($evtExists == 0) {
-  header("Location: user_event.php?att=err");
+
+$regStmt = mysqli_prepare($conn, "SELECT 1 FROM registrations WHERE user_id=? AND event_id=? LIMIT 1");
+mysqli_stmt_bind_param($regStmt, "ss", $user_id, $event_id);
+mysqli_stmt_execute($regStmt);
+$regRes = mysqli_stmt_get_result($regStmt);
+$registered = (mysqli_num_rows($regRes) > 0);
+mysqli_stmt_close($regStmt);
+
+if (!$registered) {
+  header("Location: user_event.php?att=noreg");
   exit();
 }
 
-$chk = mysqli_prepare($conn, "SELECT 1 FROM attendance WHERE user_id=? AND event_id=? LIMIT 1");
-mysqli_stmt_bind_param($chk, "ss", $user_id, $event_id);
-mysqli_stmt_execute($chk);
-$already = mysqli_stmt_get_result($chk)->num_rows;
-mysqli_stmt_close($chk);
+$dupStmt = mysqli_prepare($conn, "SELECT 1 FROM attendance WHERE user_id=? AND event_id=? LIMIT 1");
+mysqli_stmt_bind_param($dupStmt, "ss", $user_id, $event_id);
+mysqli_stmt_execute($dupStmt);
+$dupRes = mysqli_stmt_get_result($dupStmt);
+$exists = (mysqli_num_rows($dupRes) > 0);
+mysqli_stmt_close($dupStmt);
 
-if ($already > 0) {
+if ($exists) {
   header("Location: user_event.php?att=dup");
   exit();
 }
 
-$newId = "att_" . str_pad((string)rand(1, 999999), 6, "0", STR_PAD_LEFT);
-
-$method = "CODE:$code1-$code2-$code3";
+$att_id = make_id("att");
+$method = "ABC12"; // 之后要改名字再改这里
 
 $ins = mysqli_prepare($conn, "
   INSERT INTO attendance (attendance_id, event_id, user_id, attendance_check_in_time, attendance_method)
   VALUES (?, ?, ?, NOW(), ?)
 ");
-mysqli_stmt_bind_param($ins, "ssss", $newId, $event_id, $user_id, $method);
+mysqli_stmt_bind_param($ins, "ssss", $att_id, $event_id, $user_id, $method);
 $ok = mysqli_stmt_execute($ins);
 mysqli_stmt_close($ins);
 
-if ($ok) {
-  header("Location: user_event.php?att=ok");
+if (!$ok) {
+  header("Location: user_event.php?att=fail");
   exit();
 }
 
-header("Location: user_event.php?att=err");
+header("Location: user_event.php?att=ok");
 exit();
