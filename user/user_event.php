@@ -227,7 +227,7 @@ mysqli_stmt_close($myVolListStmt);
         <span class="user-top-points">🪙 <?= (int)$user["eco_points"]; ?> points</span>
         <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
         <a class="user-top-btn" href="friends_add.php" title="Add Friend">👥</a>
-        <a href="../login/logout.php" class="user-top-btn logout" title="Logout">⎋</a>
+        <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
       </div>
 
     </div>
