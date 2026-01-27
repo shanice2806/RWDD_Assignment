@@ -79,11 +79,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['post_announcement'])) 
     <div class="dashboard-container">
         <?php include 'organizer_sidebar.php'; ?>
         
-        <div class="main-content">
-            <!-- Page header -->
+          <div class="main-content">
+    <div class="back-btn-container">
+      <button onclick="history.back()" class="action-btn"> Back</button>
+    </div>            <!-- Page header -->
             <div class="page-header flex-between">
                 <h1>Post Announcement</h1>
-                <a href="organizer_announcement.php" class="btn-secondary">Back</a>
+                <a href="organizer_announcement.php" class="action-btn">Back</a>
             </div>
             
             <!-- Form container -->
@@ -114,8 +116,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['post_announcement'])) 
                     
                     <!-- Buttons -->
                     <div class="form-actions flex gap-15 flex-center">
-                        <button type="button" class="btn-secondary" onclick="previewAnnouncement()">Preview</button>
-                        <button type="submit" name="post_announcement" class="btn-primary">Post Announcement</button>
+                        <button type="button" class="action-btn" onclick="previewAnnouncement()">Preview</button>
+                        <button type="submit" name="post_announcement" class="action-btn">Post Announcement</button>
                     </div>
                 </form>
             </div>

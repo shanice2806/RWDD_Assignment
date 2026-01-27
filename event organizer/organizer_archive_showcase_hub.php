@@ -28,7 +28,7 @@ include '../connect.php';
   <?php include 'organizer_header.php'; ?>
 
   <!-- Main content -->
-  <div class="main-content">
+    <div class="main-content">
     <div class="event-management-container">
       <h1 class="page-title">📁 Archive & Showcase Hub</h1>
 
@@ -131,7 +131,7 @@ include '../connect.php';
             <p class="section-description">Celebrate your best events and top contributors</p>
           </div>
         </div>
-        <a href="organizer_hall_of_fame.php" class="action-btn primary">⭐ View Hall of Fame</a>
+        <a href="organizer_hall_of_fame.php" class="action-btn">⭐ View Hall of Fame</a>
         <div class="submenu">
           <div class="submenu-title">💡 What's Inside</div>
           <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #555; line-height: 1.6;">

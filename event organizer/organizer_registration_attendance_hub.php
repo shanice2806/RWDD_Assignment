@@ -28,7 +28,7 @@ include '../connect.php';
   <?php include 'organizer_header.php'; ?>
 
   <!-- Main content -->
-  <div class="main-content">
+    <div class="main-content">
     <div class="event-management-container">
       <h1 class="page-title">📝 Registration, Attendance & Volunteers Hub</h1>
 
@@ -63,7 +63,7 @@ include '../connect.php';
           </div>
         </div>
         <div class="action-grid">
-          <a href="organizer_registration_control.php" class="action-btn primary">⚙️ Open/Close Registration</a>
+          <a href="organizer_registration_control.php" class="action-btn">⚙️ Open/Close Registration</a>
           <a href="organizer_registration_list.php" class="action-btn">👥 View Registration List</a>
         </div>
         <div class="submenu">

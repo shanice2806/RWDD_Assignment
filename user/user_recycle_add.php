@@ -6,19 +6,23 @@ error_reporting(E_ALL);
 session_start();
 require_once "../connect.php";
 
-
 if (!isset($_SESSION["user_id"])) {
   header("Location: ../login/login.php");
   exit();
 }
 $user_id = $_SESSION["user_id"];
 
-$userSql = "SELECT name, eco_points, profile_image FROM users WHERE user_id = ? LIMIT 1";
+function redirectErr($code) {
+  header("Location: user_recycle_add.php?err=" . $code);
+  exit();
+}
+
+$userSql = "SELECT name, eco_points FROM users WHERE user_id = ? LIMIT 1";
 $stmt = mysqli_prepare($conn, $userSql);
 mysqli_stmt_bind_param($stmt, "s", $user_id);
 mysqli_stmt_execute($stmt);
-$res = mysqli_stmt_get_result($stmt);
-$user = mysqli_fetch_assoc($res) ?: ["name"=>"User","eco_points"=>0,"profile_image"=>""];
+$res  = mysqli_stmt_get_result($stmt);
+$user = mysqli_fetch_assoc($res) ?: ["name"=>"User","eco_points"=>0];
 mysqli_stmt_close($stmt);
 
 $profileImg = trim($user["profile_image"] ?? "");
@@ -31,62 +35,56 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   $location    = trim($_POST["location"] ?? "");
 
   if ($material_id === "" || $weight_kg === "" || $location === "") {
-    header("Location: user_recycle_add.php?err=1");
-    exit();
+    redirectErr(1); 
   }
 
   if (!isset($_FILES["photo"]) || $_FILES["photo"]["error"] !== UPLOAD_ERR_OK) {
-    header("Location: user_recycle_add.php?err=2");
-    exit();
+    redirectErr(2); 
   }
 
-  $log_id = "rl_" . str_pad((string)rand(1, 999999), 3, "0", STR_PAD_LEFT);
-
   $allowedExt = ["jpg", "jpeg", "png"];
-  $maxSize    = 5 * 1024 * 1024; // 5MB
+  $maxSize    = 5 * 1024 * 1024;
 
   $tmpPath  = $_FILES["photo"]["tmp_name"];
   $origName = $_FILES["photo"]["name"];
   $fileSize = (int)($_FILES["photo"]["size"] ?? 0);
 
   if ($fileSize <= 0 || $fileSize > $maxSize) {
-    header("Location: user_recycle_add.php?err=3");
-    exit();
+    redirectErr(3);
   }
 
   $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
   if (!in_array($ext, $allowedExt)) {
-    header("Location: user_recycle_add.php?err=4");
-    exit();
+    redirectErr(4);
   }
 
-  $imgInfo = @getimagesize($tmpPath);
-  if ($imgInfo === false) {
-    header("Location: user_recycle_add.php?err=5");
-    exit();
+  if (@getimagesize($tmpPath) === false) {
+    redirectErr(5);
   }
 
-  $uploadDir = __DIR__ . "/../uploads/logs/";
+  $uploadDir = __DIR__ . "/../images/recycling_proof/";
   if (!is_dir($uploadDir)) {
     mkdir($uploadDir, 0777, true);
   }
 
-  $newFileName = $log_id . "." . $ext;
+  $log_id = "rl_" . uniqid();
 
-  $destFullPath = $uploadDir . $newFileName;
+  $newFileName   = $log_id . "." . $ext;
+  $destFullPath  = $uploadDir . $newFileName;
 
-  $photo_path = "uploads/logs/" . $newFileName;
+
+  $photo_path = "images/recycling_proof/" . $newFileName;
 
   if (!move_uploaded_file($tmpPath, $destFullPath)) {
-    header("Location: user_recycle_add.php?err=6");
-    exit();
+    redirectErr(6);
   }
-  $event_id = NULL;
-  $submitted_at = date("Y-m-d H:i:s");
-  $status = "PENDING";
-  $points_awarded = 0;
-  $is_flagged = 0;
-  $flag_reason = NULL;
+
+  $event_id        = NULL;
+  $submitted_at    = date("Y-m-d H:i:s");
+  $status          = "pending"; 
+  $points_awarded  = 0;
+  $is_flagged      = 0;
+  $flag_reason     = NULL;
 
   $sql = "
     INSERT INTO recycling_log
@@ -102,22 +100,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     die("SQL prepare error: " . mysqli_error($conn));
   }
 
-mysqli_stmt_bind_param(
-  $ins,
-  "sssssssssiis",
-  $log_id,
-  $user_id,
-  $material_id,
-  $event_id,
-  $weight_kg,
-  $location,
-  $photo_path,
-  $submitted_at,
-  $status,
-  $points_awarded,
-  $is_flagged,
-  $flag_reason
-);
+  mysqli_stmt_bind_param(
+    $ins,
+    "sssssssssiis",
+    $log_id,
+    $user_id,
+    $material_id,
+    $event_id,
+    $weight_kg,
+    $location,
+    $photo_path,
+    $submitted_at,
+    $status,
+    $points_awarded,
+    $is_flagged,
+    $flag_reason
+  );
+
   if (!mysqli_stmt_execute($ins)) {
     @unlink($destFullPath);
     die("Insert error: " . mysqli_stmt_error($ins));
@@ -224,7 +223,7 @@ $locPrev = trim($_POST["location"] ?? "");
         <button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
 
         <div class="user-top-user">
-          <span class="user-top-name"><span> Welcome!  <?= htmlspecialchars($_SESSION['name'] ?? 'User') ?> </span>
+          <span class="user-top-name"> Welcome! <?= htmlspecialchars($_SESSION['name'] ?? 'User') ?> </span>
         </div>
       </div>
 
@@ -352,7 +351,7 @@ $locPrev = trim($_POST["location"] ?? "");
   btnYes.addEventListener("click", () => {
     allowSubmit = true;
     modal.style.display = "none";
-    form.submit(); 
+    form.submit();
   });
 
   modal.addEventListener("click", (e) => {

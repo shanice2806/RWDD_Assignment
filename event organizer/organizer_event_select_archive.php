@@ -44,8 +44,10 @@ $result = $conn->query($query);
     <div class="dashboard-container">
         <?php include 'organizer_sidebar.php'; ?>
         
-        <div class="main-content">
-            <!-- Page title -->
+          <div class="main-content">
+    <div class="back-btn-container">
+      <button onclick="history.back()" class="action-btn"> Back</button>
+    </div>            <!-- Page title -->
             <div class="page-header">
                 <h1>Select Event to Archive</h1>
                 <p>Choose an event from the list below to archive</p>
@@ -87,7 +89,7 @@ $result = $conn->query($query);
                     ?>
                     <div class="no-events">
                         <p>You don't have any events to archive.</p>
-                        <a href="organizer_event_create.php" class="btn-primary">Create New Event</a>
+                        <a href="organizer_event_create.php" class="action-btn">Create New Event</a>
                     </div>
                     <?php
                 }
@@ -96,7 +98,7 @@ $result = $conn->query($query);
             
             <!-- Back button -->
             <div class="text-center mt-20">
-                <a href="organizer_event_management.php" class="btn-secondary">← Back to Event Management</a>
+                <a href="organizer_event_management.php" class="action-btn">← Back to Event Management</a>
             </div>
         </div>
     </div>

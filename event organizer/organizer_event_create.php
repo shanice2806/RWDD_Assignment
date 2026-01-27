@@ -223,8 +223,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
   <?php include 'organizer_header.php'; ?>
 
-  <div class="main-content">
-    <div class="create-event-container">
+    <div class="main-content">
+    <div class="back-btn-container">
+      <button onclick="history.back()" class="action-btn"> Back</button>
+    </div>    <div class="create-event-container">
       <h1>Create Event Form</h1>
       
       <?php if (!empty($error_message)): ?>
@@ -295,8 +297,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
         
         <div class="form-actions">
-          <button type="submit" name="status" value="draft" class="btn btn-secondary">Save Draft</button>
-          <button type="submit" name="status" value="pending" class="btn btn-primary">Submit for Approval</button>
+          <button type="submit" name="status" value="draft" class="action-btn">Save Draft</button>
+          <button type="submit" name="status" value="pending" class="action-btn">Submit for Approval</button>
         </div>
       </form>
     </div>

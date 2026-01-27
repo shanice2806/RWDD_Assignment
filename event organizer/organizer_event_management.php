@@ -28,7 +28,7 @@ include '../connect.php';
   <?php include 'organizer_header.php'; ?>
 
   <!-- Main content -->
-  <div class="main-content">
+    <div class="main-content">
     <div class="event-management-container">
       <h1 class="page-title">📅 Event Management Hub</h1>
 
@@ -62,7 +62,7 @@ include '../connect.php';
             <p class="section-description">Plan and set up a new sustainability event</p>
           </div>
         </div>
-        <a href="organizer_event_create.php" class="action-btn primary">+ Create Event</a>
+        <a href="organizer_event_create.php" class="action-btn">+ Create Event</a>
       </div>
 
       <!-- Section 2: Manage Events -->

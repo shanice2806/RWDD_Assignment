@@ -67,8 +67,10 @@ if ($announcement['is_active'] == 1) {
     <div class="dashboard-container">
         <?php include 'organizer_sidebar.php'; ?>
         
-        <div class="main-content">
-            <!-- Page header -->
+          <div class="main-content">
+    <div class="back-btn-container">
+      <button onclick="history.back()" class="action-btn"> Back</button>
+    </div>            <!-- Page header -->
             <div class="page-header">
                 <h1>Announcement Details</h1>
             </div>
@@ -111,8 +113,8 @@ if ($announcement['is_active'] == 1) {
                 
                 <!-- Action buttons -->
                 <div class="flex gap-15 flex-center mt-20">
-                    <a href="organizer_announcement.php" class="btn-secondary">Back to Announcements</a>
-                    <a href="organizer_announcement_edit.php?id=<?php echo $announcement_id; ?>" class="btn-primary">Edit Announcement</a>
+                    <a href="organizer_announcement.php" class="action-btn">Back to Announcements</a>
+                    <a href="organizer_announcement_edit.php?id=<?php echo $announcement_id; ?>" class="action-btn">Edit Announcement</a>
                 </div>
             </div>
         </div>

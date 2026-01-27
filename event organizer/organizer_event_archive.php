@@ -77,8 +77,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_archive'])) {
     <div class="dashboard-container">
         <?php include 'organizer_sidebar.php'; ?>
         
-        <div class="main-content">
-            <!-- Page title -->
+          <div class="main-content">
+    <div class="back-btn-container">
+      <button onclick="history.back()" class="action-btn"> Back</button>
+    </div>            <!-- Page title -->
             <div class="page-header">
                 <h1><?php echo htmlspecialchars($event['event_title']); ?></h1>
             </div>
@@ -118,8 +120,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_archive'])) {
                     
                     <form method="POST" class="confirmation-form">
                         <div class="flex gap-15 flex-center">
-                            <a href="organizer_event_select_archive.php" class="btn-secondary">Cancel</a>
-                            <button type="submit" name="confirm_archive" class="btn-primary">Archive Event</button>
+                            <a href="organizer_event_select_archive.php" class="action-btn">Cancel</a>
+                            <button type="submit" name="confirm_archive" class="action-btn">Archive Event</button>
                         </div>
                     </form>
                 </div>

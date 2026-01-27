@@ -98,11 +98,13 @@ $events_result = $conn->query($events_query);
 <body>
   <?php include 'organizer_header.php'; ?>
 
-  <div class="main-content">
-    <main class="dashboard">
+    <div class="main-content">
+    <div class="back-btn-container">
+      <button onclick="history.back()" class="action-btn"> Back</button>
+    </div>    <main class="dashboard">
       
       <div class="manual-attendance-container">
-        <a href="organizer_registration_attendance_hub.php" class="btn">← Back</a>
+        <a href="organizer_registration_attendance_hub.php" class="action-btn">← Back</a>
         
         <h1>Manual Attendance</h1>
 
@@ -169,7 +171,7 @@ $events_result = $conn->query($events_query);
             </table>
 
             <!-- Submit Button -->
-            <button type="submit" name="save_attendance" class="btn btn-primary">Save Attendance</button>
+            <button type="submit" name="save_attendance" class="action-btn">Save Attendance</button>
 
           <?php elseif ($selected_event && count($participants) == 0): ?>
             <p class="no-data">No registered participants for this event.</p>
@@ -179,8 +181,8 @@ $events_result = $conn->query($events_query);
         <?php if ($selected_event): ?>
           <!-- Action Buttons -->
           <div class="action-buttons">
-            <a href="organizer_attendance_code.php?event_id=<?= $selected_event['event_id'] ?>" class="btn btn-secondary">Show Code</a>
-            <a href="organizer_attendance_view.php?event_id=<?= $selected_event['event_id'] ?>" class="btn btn-primary">View Attendance List</a>
+            <a href="organizer_attendance_code.php?event_id=<?= $selected_event['event_id'] ?>" class="action-btn">Show Code</a>
+            <a href="organizer_attendance_view.php?event_id=<?= $selected_event['event_id'] ?>" class="action-btn">View Attendance List</a>
           </div>
         <?php endif; ?>
       </div>

@@ -28,7 +28,7 @@ include '../connect.php';
   <?php include 'organizer_header.php'; ?>
 
   <!-- Main content -->
-  <div class="main-content">
+    <div class="main-content">
     <div class="event-management-container">
       <h1 class="page-title">🌱 Sustainability Tracking Hub</h1>
 
@@ -62,7 +62,7 @@ include '../connect.php';
             <p class="section-description">Manually log recyclables collected during events</p>
           </div>
         </div>
-        <a href="organizer_recycling_log.php" class="action-btn primary">📝 Log Recyclables</a>
+        <a href="organizer_recycling_log.php" class="action-btn">📝 Log Recyclables</a>
         <div class="submenu">
           <div class="submenu-title">💡 Quick Tips</div>
           <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #555; line-height: 1.6;">
@@ -83,7 +83,7 @@ include '../connect.php';
             <p class="section-description">View comprehensive sustainability metrics for your events</p>
           </div>
         </div>
-        <a href="organizer_event_impact.php" class="action-btn primary">📈 View Event Impact</a>
+        <a href="organizer_event_impact.php" class="action-btn">📈 View Event Impact</a>
         <div class="submenu">
           <div class="submenu-title">💡 What You'll See</div>
           <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #555; line-height: 1.6;">

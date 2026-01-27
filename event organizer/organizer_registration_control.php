@@ -82,11 +82,12 @@ $events_result = $conn->query($events_query);
 <body>
   <?php include 'organizer_header.php'; ?>
 
-  <div class="main-content">
-    <main class="dashboard">
+    <div class="main-content">
+    <div class="back-btn-container">
+      <button onclick="history.back()" class="action-btn"> Back</button>
+    </div>    <main class="dashboard">
       
       <div class="registration-control-container">
-        <a href="organizer_registration_attendance_hub.php" class="btn">← Back</a>
         
         <h1>Registration Control</h1>
 
@@ -138,7 +139,7 @@ $events_result = $conn->query($events_query);
             </div>
 
             <!-- Submit Button -->
-            <button type="submit" name="save_status" class="btn btn-primary">Save Changes</button>
+            <button type="submit" name="save_status" class="action-btn">Save Changes</button>
           <?php endif; ?>
         </form>
       </div>

@@ -294,17 +294,6 @@ aside.organizer-sidebar.open {
   width: 100%;
 }
 
-/* Back Button */
-.back-btn-container {
-  margin-top: 15px;
-  margin-bottom: 20px;
-}
-
-.back-btn-container .action-btn {
-  padding: 8px 16px;
-  font-size: 13px;
-}
-
 /* ============================================ */
 /* FORMS */
 /* ============================================ */

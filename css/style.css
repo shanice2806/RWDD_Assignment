@@ -91,6 +91,7 @@ nav a:hover {
 
 /* Buttons */
 button, .btn {
+  text-decoration: none;
   background-color: var(--color-secondary);
   color: #fff;
   border: none;

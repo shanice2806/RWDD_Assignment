@@ -104,11 +104,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['send_notification'])) 
     <div class="dashboard-container">
         <?php include 'organizer_sidebar.php'; ?>
         
-        <div class="main-content">
-            <!-- Page header -->
+          <div class="main-content">
+    <div class="back-btn-container">
+      <button onclick="history.back()" class="action-btn"> Back</button>
+    </div>            <!-- Page header -->
             <div class="page-header flex-between">
                 <h1>Send Notification</h1>
-                <a href="organizer_dashboard.php" class="btn-secondary">Back</a>
+                <a href="organizer_dashboard.php" class="action-btn">Back</a>
             </div>
             
             <!-- Form container -->
@@ -166,7 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['send_notification'])) 
                     
                     <!-- Submit button -->
                     <div class="text-center">
-                        <button type="submit" name="send_notification" class="btn-primary btn-large">Send Notification</button>
+                        <button type="submit" name="send_notification" class="action-btn">Send Notification</button>
                     </div>
                 </form>
             </div>
