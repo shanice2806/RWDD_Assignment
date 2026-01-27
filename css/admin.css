@@ -55,6 +55,7 @@
   /* Main content */
   .main-content {
     padding: 15px;
+    
   }
 
   /* Cards */
@@ -87,8 +88,8 @@ body {
 }
 
 .main-content {
-  padding-top: 80px;   /* 60px header + spacing */
-}
+  padding: 80px ;
+  padding-bottom: 40px;}
 
 .top-bar {
   display: flex;

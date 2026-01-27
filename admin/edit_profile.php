@@ -113,7 +113,7 @@ while ($row = $badgeResult->fetch_assoc()) {
 
       <!-- ACTION BUTTONS -->
       <div style="display:flex;justify-content:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
-        <a href="change_profile_photo.php" class="action-btn" style="min-width:180px;">
+        <a href="change_profile.php" class="action-btn" style="min-width:180px;">
           Change Profile Photo
         </a>
         <a href="change_password.php" class="action-btn" style="min-width:180px;">
