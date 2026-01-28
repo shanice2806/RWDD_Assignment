@@ -50,7 +50,7 @@ $most_redeemed_id   = $most_redeemed['reward_id'] ?? '';
 <main class="dashboard">
 <div class="main-content">
 
-<h2>Eco-Points & Rewards</h2>
+<h2>Rewards</h2>
 
 <!-- =====================
      QUICK VIEW
