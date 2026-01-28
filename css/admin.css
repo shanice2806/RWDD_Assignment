@@ -538,20 +538,35 @@ main.dashboard {
   .main-content {
     padding: 15px;
   }
+ .admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: -100vw;          /* fully hidden */
+    width: 100vw;          /* 🔥 FULL WIDTH */
+    height: 100vh;         /* 🔥 FULL HEIGHT */
 
-  .admin-sidebar {
-    width: 240px;
-    left: -240px;
-    top: 60px; /* Assuming header height adjustments */
+    padding-top: 80px;     /* space for top bar */
+    background-color: var(--color-primary);
+
+    overflow-y: auto;
+    z-index: 2000;         /* above header & content */
   }
 
   .admin-sidebar.open {
     left: 0;
   }
-  
+
+  /* Prevent content scroll when sidebar open */
+  body.sidebar-open {
+    overflow: hidden;
+  }
+
+  /* Main content should NOT move */
   .sidebar-open .main-content {
     margin-left: 0;
   }
+
+
 
   /* Search */
   .search-container {

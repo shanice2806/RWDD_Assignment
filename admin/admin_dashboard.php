@@ -3,6 +3,9 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 include '../connect.php';
+$page_title = "Admin Dashboard";
+include 'admin_header.php'; 
+
 
 function getCount($conn, $query, $label) {
     $result = $conn->query($query);
@@ -21,16 +24,6 @@ $total_reported_content = getCount($conn, "SELECT COUNT(*) as total_reported_con
 ?>
 
 
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard</title>
-  <?php include 'admin_header.php'; ?>
-</head>
-<body>
   <div class="main-content">
     <main class="dashboard">
 
@@ -149,5 +142,4 @@ $total_reported_content = getCount($conn, "SELECT COUNT(*) as total_reported_con
     <script src="chart.js"></script> 
 
 <?php include 'admin_footer.php'; ?>
-</body>
-</html>
+

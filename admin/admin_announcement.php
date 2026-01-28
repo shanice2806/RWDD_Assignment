@@ -1,5 +1,7 @@
 <?php
 include "../connect.php";
+$page_title = "Announcements";
+include 'admin_header.php'; 
 
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
@@ -29,15 +31,6 @@ $sql = "
 $result = $conn->query($sql);
 
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Announcement</title>
-    <?php include 'admin_header.php'; ?>
-</head>
-<body>
     <div class="main-content">
     <main class="dashboard">
         <h2>Announcements</h2>
@@ -126,5 +119,3 @@ $result = $conn->query($sql);
     </main>
 
 <?php include 'admin_footer.php'; // Include the new footer ?>
-</body>
-</html>

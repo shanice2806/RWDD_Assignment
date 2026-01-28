@@ -17,7 +17,7 @@ session_start();
 <header class="top-bar">
   <div class="left">
     <button class="menu-toggle" id="menuToggle">☰</button>
-    <span>Welcome!  <?= htmlspecialchars($_SESSION['name'] ?? 'User') ?> </span>
+    <span><?= htmlspecialchars($_SESSION['name'] ?? 'User') ?> </span>
   </div>
 
   <div class="icons">
