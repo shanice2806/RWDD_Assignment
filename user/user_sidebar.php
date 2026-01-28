@@ -1,3 +1,4 @@
+
 <aside class="user-sidebar collapsed" id="userSidebar">
 
   <div class="user-sidebar-profile">

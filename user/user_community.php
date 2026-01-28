@@ -13,9 +13,6 @@ if (!isset($_SESSION["user_id"])) {
 
 $user_id = $_SESSION["user_id"];
 
-/* =========================
-   1) 取当前登录用户资料（用于 topbar + sidebar）
-========================= */
 $userSql = "SELECT name, eco_points, profile_image FROM users WHERE user_id = ? LIMIT 1";
 $uStmt = mysqli_prepare($conn, $userSql);
 mysqli_stmt_bind_param($uStmt, "s", $user_id);
@@ -24,30 +21,30 @@ $uRes  = mysqli_stmt_get_result($uStmt);
 $user  = mysqli_fetch_assoc($uRes) ?: ["name" => "User", "eco_points" => 0, "profile_image" => ""];
 mysqli_stmt_close($uStmt);
 
-$profileImg = trim($user["profile_image"] ?? "");
-if ($profileImg === "") $profileImg = "../assets/default-avatar.png";
+$profileImg = "../images/profile.png";
 
-/* =========================
-   2) 分类筛选 + 分页
-========================= */
+if (!empty($user["profile_image"])) {
+  $try = "../" . ltrim($user["profile_image"], "/");
+  $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
+  if (file_exists($disk)) {
+    $profileImg = $try;
+  }
+}
+
 $selectedCat = trim($_GET["category"] ?? "all");
 
 $page = (int)($_GET["page"] ?? 1);
 if ($page < 1) $page = 1;
 
-$pageSize = 1; // 你原本就是 1（一次一篇），我保留
+$pageSize = 1; 
 $offset   = ($page - 1) * $pageSize;
 
-/* 分类下拉 */
 $catSql = "SELECT content_category_id, content_name
            FROM content_categories
            WHERE is_active = 1
            ORDER BY content_name ASC";
 $catRes = mysqli_query($conn, $catSql);
 
-/* =========================
-   3) 先算总数（为了分页）
-========================= */
 $countSql = "SELECT COUNT(*) AS total FROM posts p WHERE p.post_status = 'Public'";
 if ($selectedCat !== "all") $countSql .= " AND p.content_category_id = ?";
 
@@ -72,9 +69,7 @@ if ($page > $totalPages) {
 $hasPrev = $page > 1;
 $hasNext = $page < $totalPages;
 
-/* =========================
-   4) 取当前页的 post（Public）
-========================= */
+
 $sql = "
   SELECT p.post_id, p.title, p.body, p.difficulty_level, p.post_created_at,
          p.content_category_id,
@@ -127,11 +122,14 @@ function youtube_to_embed($url) {
   return $url; 
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Community</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/user.css">
@@ -325,6 +323,7 @@ function youtube_to_embed($url) {
       .pager-info{ font-size:15px; }
       .pager-btn{ font-size:16px; padding:12px 16px; min-width:120px; }
     }
+    
   </style>
 </head>
 

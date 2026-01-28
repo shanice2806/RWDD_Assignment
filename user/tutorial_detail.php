@@ -14,15 +14,25 @@ if (!isset($_SESSION["user_id"])) {
 $user_id = $_SESSION["user_id"];
 $post_id = trim($_GET["id"] ?? "");
 
-$userSql = "SELECT name, eco_points
+$userSql = "SELECT name, eco_points , profile_image
             FROM users
             WHERE user_id=? LIMIT 1";
 $uStmt = mysqli_prepare($conn, $userSql);
 mysqli_stmt_bind_param($uStmt, "s", $user_id);
 mysqli_stmt_execute($uStmt);
 $uRes  = mysqli_stmt_get_result($uStmt);
-$user  = mysqli_fetch_assoc($uRes) ?: ["name"=>"User","eco_points"=>0,];
+$user  = mysqli_fetch_assoc($uRes) ?: ["name"=>"User","eco_points"=>0,"profile_image" => ""];
 mysqli_stmt_close($uStmt);
+
+$profileImg = "../images/profile.png";
+
+if (!empty($user["profile_image"])) {
+  $try = "../" . ltrim($user["profile_image"], "/");
+  $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
+  if (file_exists($disk)) {
+    $profileImg = $try;
+  }
+}
 
 $post = null;
 
@@ -74,6 +84,8 @@ function h($s){ return htmlspecialchars($s ?? "", ENT_QUOTES, 'UTF-8'); }
 <head>
   <meta charset="UTF-8">
   <title>Tutorial Detail</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/user.css">
@@ -182,8 +194,7 @@ function h($s){ return htmlspecialchars($s ?? "", ENT_QUOTES, 'UTF-8'); }
       <div class="user-top-left">
         <button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
         <div class="user-top-user">
-          <img src="<?php echo h($profileImg); ?>" class="user-top-avatar" alt="Avatar">
-          <span class="user-top-name"><?php echo h($user["name"]); ?></span>
+          <span class="user-top-name">Welcome! <?php echo h($user["name"]); ?></span>
         </div>
       </div>
 

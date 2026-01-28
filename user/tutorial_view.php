@@ -20,13 +20,24 @@ function redirectTo($url) {
   exit();
 }
 
-$userSql = "SELECT name, eco_points FROM users WHERE user_id=? LIMIT 1";
+
+$userSql = "SELECT name, eco_points , profile_image FROM users WHERE user_id=? LIMIT 1";
 $uStmt = mysqli_prepare($conn, $userSql);
 mysqli_stmt_bind_param($uStmt, "s", $user_id);
 mysqli_stmt_execute($uStmt);
 $uRes  = mysqli_stmt_get_result($uStmt);
-$user  = mysqli_fetch_assoc($uRes) ?: ["name"=>"User","eco_points"=>0];
+$user  = mysqli_fetch_assoc($uRes) ?: ["name"=>"User","eco_points"=>0,"profile_image" => "" ];
 mysqli_stmt_close($uStmt);
+
+$profileImg = "../images/profile.png";
+
+if (!empty($user["profile_image"])) {
+  $try = "../" . ltrim($user["profile_image"], "/");
+  $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
+  if (file_exists($disk)) {
+    $profileImg = $try;
+  }
+}
 
 $filterDiff = trim($_GET["diff"] ?? "all");
 $filterCat  = trim($_GET["cat"] ?? "all");
@@ -67,11 +78,14 @@ mysqli_stmt_close($stmt);
 $flashSuccess = $_SESSION["flash_success"] ?? null;
 if ($flashSuccess) unset($_SESSION["flash_success"]);
 ?>
+
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>My Tutorial</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/user.css">

@@ -15,15 +15,25 @@ $user_id = $_SESSION["user_id"];
 $post_id = trim($_GET["id"] ?? "");
 
 
-$userSql = "SELECT name, eco_points
+$userSql = "SELECT name, eco_points , profile_image
             FROM users
             WHERE user_id=? LIMIT 1";
 $uStmt = mysqli_prepare($conn, $userSql);
 mysqli_stmt_bind_param($uStmt, "s", $user_id);
 mysqli_stmt_execute($uStmt);
 $uRes  = mysqli_stmt_get_result($uStmt);
-$user  = mysqli_fetch_assoc($uRes) ?: ["name"=>"User","eco_points"=>0];
+$user  = mysqli_fetch_assoc($uRes) ?: ["name"=>"User","eco_points"=>0,"profile_image" => ""];
 mysqli_stmt_close($uStmt);
+
+$profileImg = "../images/profile.png";
+
+if (!empty($user["profile_image"])) {
+  $try = "../" . ltrim($user["profile_image"], "/");
+  $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
+  if (file_exists($disk)) {
+    $profileImg = $try;
+  }
+}
 
 $catSql = "SELECT content_category_id, content_name
            FROM content_categories
@@ -68,6 +78,8 @@ function h($s){ return htmlspecialchars($s ?? "", ENT_QUOTES, "UTF-8"); }
 <head>
   <meta charset="UTF-8">
   <title>Edit Tutorial</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/user.css">
@@ -220,9 +232,9 @@ function h($s){ return htmlspecialchars($s ?? "", ENT_QUOTES, "UTF-8"); }
               <div class="row">
                 <label>Difficulty Level</label>
                 <select name="difficulty_level" required>
-                  <option value="Beginner" <?php echo ($post["difficulty_level"]==="Beginner")?"selected":""; ?>>easy</option>
-                  <option value="Intermediate" <?php echo ($post["difficulty_level"]==="Intermediate")?"selected":""; ?>>medium</option>
-                  <option value="Advanced" <?php echo ($post["difficulty_level"]==="Advanced")?"selected":""; ?>>hard</option>
+                  <option value="Beginner" <?php echo ($post["difficulty_level"]==="Beginner")?"selected":""; ?>>Beginner</option>
+                  <option value="Intermediate" <?php echo ($post["difficulty_level"]==="Intermediate")?"selected":""; ?>>Intermediate</option>
+                  <option value="Advanced" <?php echo ($post["difficulty_level"]==="Advanced")?"selected":""; ?>>Advanced</option>
                 </select>
               </div>
 
@@ -248,7 +260,7 @@ function h($s){ return htmlspecialchars($s ?? "", ENT_QUOTES, "UTF-8"); }
               </div>
 
               <div class="btn-row">
-                <a class="btn secondary" href="tutorial_detail.php">Back</a>
+                <a class="btn secondary" href="tutorial_view.php">Back</a>
                 <button type="submit" class="btn">Save Changes</button>
               </div>
             </form>

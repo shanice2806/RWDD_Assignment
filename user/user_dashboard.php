@@ -27,6 +27,16 @@ $userRes = mysqli_stmt_get_result($userStmt);
 $user = mysqli_fetch_assoc($userRes);
 mysqli_stmt_close($userStmt);
 
+$profileImg = "../images/profile.png";
+
+if (!empty($user["profile_image"])) {
+  $try = "../" . ltrim($user["profile_image"], "/");
+  $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
+  if (file_exists($disk)) {
+    $profileImg = $try;
+  }
+}
+
 if (!$user) {
   session_unset();
   session_destroy();
@@ -34,9 +44,7 @@ if (!$user) {
   exit();
 }
 
-$profileImg = $user["profile_image"]
-  ? "../" . $user["profile_image"]
-  : "../images/diz1jrk-e0114a7d-478f-4478-94e5-cbe3a8cc7cc2.png";
+
 
 
 function getCount($conn, $sql, $user_id) {

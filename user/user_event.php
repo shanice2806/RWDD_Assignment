@@ -36,21 +36,20 @@ $userRes = mysqli_stmt_get_result($userStmt);
 $user = mysqli_fetch_assoc($userRes);
 mysqli_stmt_close($userStmt);
 
-if (!$user) {
-  session_unset();
-  session_destroy();
-  header("Location: ../login/login.php");
-  exit();
-}
-
 $profileImg = "../images/profile.png";
-
 if (!empty($user["profile_image"])) {
   $try = "../" . ltrim($user["profile_image"], "/");
   $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
   if (file_exists($disk)) {
     $profileImg = $try;
   }
+}
+
+if (!$user) {
+  session_unset();
+  session_destroy();
+  header("Location: ../login/login.php");
+  exit();
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["join_event_id"])) {
@@ -161,10 +160,16 @@ while ($r = mysqli_fetch_assoc($myRegRes)) {
 mysqli_stmt_close($myRegStmt);
 
 $myListStmt = mysqli_prepare($conn,
-  "SELECT e.event_id, e.event_title,
-          e.event_date_time, e.event_location
+  "SELECT e.event_id, 
+          e.event_title,
+          e.event_date_time, 
+          e.event_location,
+          a.attendance_id
    FROM registrations r
    JOIN events e ON e.event_id = r.event_id
+   LEFT JOIN attendance a
+   ON a.event_id = e.event_id
+   AND a.user_id = r.user_id
    WHERE r.user_id=?
    ORDER BY e.event_date_time DESC"
 );
@@ -260,6 +265,7 @@ $join = $_GET["join"] ?? "";
       if (att === "ok") alert("✅ Attendance recorded successfully!");
       else if (att === "dup") alert("ℹ️ You already checked in for this event.");
       else if (att === "noreg") alert("❌ You are not registered for this event.");
+      else if (att === "badcode") alert("❌ Invalid attendance code.");
       else alert("❌ Attendance failed. Please check the code and try again.");
     }
 
@@ -278,10 +284,13 @@ $join = $_GET["join"] ?? "";
 
       <?php if ($eventsRes && mysqli_num_rows($eventsRes) > 0): ?>
         <?php while ($e = mysqli_fetch_assoc($eventsRes)): ?>
+
           <?php
             $eventId = trim($e["event_id"]);
             $already = isset($myRegs[$eventId]);
+            $isOpen  = (strtolower(trim($e["registration_status"] ?? "")) === "open");
           ?>
+
           <div class="feed-card">
             <h3><?= h($e["event_title"]); ?></h3>
             <p><strong>Date & Time:</strong> <?= h($e["event_date_time"]); ?></p>
@@ -291,11 +300,16 @@ $join = $_GET["join"] ?? "";
 
             <?php if ($already): ?>
               <span class="btn" style="margin-left:10px;opacity:.7;cursor:default;">✅ Registered</span>
+
+            <?php elseif (!$isOpen): ?>
+               <span class="btn" style="margin-left:10px;opacity:.6;cursor:not-allowed;">🔒 Closed</span>
+
             <?php else: ?>
               <form method="POST" style="display:inline;">
                 <input type="hidden" name="join_event_id" value="<?= h($eventId); ?>">
                 <button type="submit" class="btn" style="margin-left:10px;">✅ Join</button>
               </form>
+
             <?php endif; ?>
 
           </div>
@@ -313,6 +327,7 @@ $join = $_GET["join"] ?? "";
           <th>Event</th>
           <th>Date & Time</th>
           <th>Location</th>
+          <th>Attendance</th>
           <th>Action</th>
         </tr>
 
@@ -322,6 +337,13 @@ $join = $_GET["join"] ?? "";
               <td><?= h($r["event_title"]); ?></td>
               <td><?= h($r["event_date_time"]); ?></td>
               <td><?= h($r["event_location"]); ?></td>
+              <td>
+            <?php if (!empty($r["attendance_id"])): ?>
+              <span style="color:green;">Attended</span>
+            <?php else: ?>
+              <span style="color:brown;">Not Yet</span>
+            <?php endif; ?>
+              </td>
               <td>
                 <form method="POST" onsubmit="return confirm('Cancel this registration?');">
                   <input type="hidden" name="cancel_event_id" value="<?= h($r["event_id"]); ?>">
@@ -340,7 +362,7 @@ $join = $_GET["join"] ?? "";
 </div>
 
 <div class="section-preview">
-  <h2>My Volunteer Registrations</h2>
+  <h2>My Volunteer Assignments</h2>
 
   <table>
     <tr>
@@ -362,7 +384,7 @@ $join = $_GET["join"] ?? "";
         </tr>
       <?php endwhile; ?>
     <?php else: ?>
-      <tr><td colspan="5">No volunteer registrations yet.</td></tr>
+      <tr><td colspan="5">No registrations yet.</td></tr>
     <?php endif; ?>
   </table>
 </div>

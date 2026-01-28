@@ -26,13 +26,6 @@ $userRes = mysqli_stmt_get_result($userStmt);
 $user = mysqli_fetch_assoc($userRes);
 mysqli_stmt_close($userStmt);
 
-if (!$user) {
-  session_unset();
-  session_destroy();
-  header("Location: ../login/login.php");
-  exit();
-}
-
 $profileImg = "../images/profile.png";
 if (!empty($user["profile_image"])) {
   $try = "../" . ltrim($user["profile_image"], "/");
@@ -40,6 +33,13 @@ if (!empty($user["profile_image"])) {
   if (file_exists($disk)) {
     $profileImg = $try;
   }
+}
+
+if (!$user) {
+  session_unset();
+  session_destroy();
+  header("Location: ../login/login.php");
+  exit();
 }
 
 $event_id = trim($_GET["event_id"] ?? "");
@@ -153,6 +153,14 @@ $regOpen = (strtolower($event["registration_status"]) === "open");
   <title><?= h($event["event_title"]); ?> | Event Details</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/user.css">
+  <style>
+    .event-actions{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+  </style>
 </head>
 
 <body class="sidebar-collapsed">
@@ -193,7 +201,7 @@ $regOpen = (strtolower($event["registration_status"]) === "open");
 
       <p><strong>Event:</strong>
         <?= $isPast
-          ? '<span style="color:#b45309;">Past</span>'
+          ? '<span style="color:brown;">Past</span>'
           : '<span style="color:green;">Upcoming</span>' ?>
       </p>
 
@@ -205,14 +213,17 @@ $regOpen = (strtolower($event["registration_status"]) === "open");
         <strong>Registration:</strong>
         <?= $regOpen
           ? '<span style="color:green;">Open</span>'
-          : '<span style="color:#b45309;">Closed</span>' ?>
+          : '<span style="color:brown;">Closed</span>' ?>
       </p>
 
       <p style="margin-top:12px;">
         <?= nl2br(h($event["event_description"])); ?>
       </p>
 
-      <div style="margin-top:14px; padding:12px; border:1px solid #eee; border-radius:12px;">
+      <div style="margin-top:20px; 
+                  padding:20px; 
+                  border:2px solid #000000;
+                border-radius:12px;">
         <h3>My Status</h3>
 
         <p>
@@ -232,16 +243,20 @@ $regOpen = (strtolower($event["registration_status"]) === "open");
           <p><strong>Hours:</strong> <?= h($volHours); ?></p>
         <?php endif; ?>
       </div>
+      
+<div class="event-actions">
 
-      <?php if (!$isPast && $regOpen && !$isRegistered): ?>
-        <form method="POST" action="user_event.php" style="margin-top:12px;">
-          <input type="hidden" name="join_event_id" value="<?= h($event_id); ?>">
-          <button type="submit" class="btn">✅ Join This Event</button>
-        </form>
-      <?php endif; ?>
+  <a class="btn" href="user_event.php">Back</a>
 
-      <a class="btn" href="user_event.php" style="margin-top:12px;">← Back</a>
-    </div>
+  <?php if (!$isPast && $regOpen && !$isRegistered): ?>
+    <form method="POST" action="user_event.php" class="join-form">
+      <input type="hidden" name="join_event_id" value="<?= h($event_id); ?>">
+      <button type="submit" class="btn">✅ Join This Event</button>
+    </form>
+  <?php endif; ?>
+  </div>
+</div>
+
 
     <?php if ($mediaRes && mysqli_num_rows($mediaRes) > 0): ?>
       <div class="section-preview">

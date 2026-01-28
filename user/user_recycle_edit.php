@@ -20,14 +20,23 @@ function goErr($log_id, $errCode) {
   go("recycle_edit.php?log_id=" . urlencode($log_id) . "&err=" . (int)$errCode);
 }
 
-$userSql = "SELECT user_id, name, role, eco_points, profile_image
-            FROM users WHERE user_id = ? LIMIT 1";
-$userStmt = mysqli_prepare($conn, $userSql);
-mysqli_stmt_bind_param($userStmt, "s", $user_id);
-mysqli_stmt_execute($userStmt);
-$userRes = mysqli_stmt_get_result($userStmt);
-$user = mysqli_fetch_assoc($userRes) ?: ["name"=>"User","eco_points"=>0,"profile_image"=>""];
-mysqli_stmt_close($userStmt);
+$userSql = "SELECT name, eco_points, profile_image FROM users WHERE user_id = ? LIMIT 1";
+$uStmt = mysqli_prepare($conn, $userSql);
+mysqli_stmt_bind_param($uStmt, "s", $user_id);
+mysqli_stmt_execute($uStmt);
+$uRes  = mysqli_stmt_get_result($uStmt);
+$user  = mysqli_fetch_assoc($uRes) ?: ["name" => "User", "eco_points" => 0, "profile_image" => ""];
+mysqli_stmt_close($uStmt);
+
+$profileImg = "../images/profile.png";
+
+if (!empty($user["profile_image"])) {
+  $try = "../" . ltrim($user["profile_image"], "/");
+  $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
+  if (file_exists($disk)) {
+    $profileImg = $try;
+  }
+}
 
 $log_id = trim($_GET["log_id"] ?? "");
 if ($log_id === "") {
@@ -126,13 +135,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["save_log"])) {
   }
   mysqli_stmt_close($updStmt);
 
-  // success
   go("user_recycle.php?updated=1&edit=1");
 }
 
-/* =========================
-   11) FORM DEFAULT VALUES
-========================= */
 $matVal   = $log["material_id"] ?? "";
 $wVal     = $log["weight_kg"] ?? "";
 $locVal   = $log["location"] ?? "";

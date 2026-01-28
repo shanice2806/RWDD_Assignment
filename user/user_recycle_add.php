@@ -17,16 +17,22 @@ function redirectErr($code) {
   exit();
 }
 
-$userSql = "SELECT name, eco_points FROM users WHERE user_id = ? LIMIT 1";
+$userSql = "SELECT name, eco_points , profile_image FROM users WHERE user_id = ? LIMIT 1";
 $stmt = mysqli_prepare($conn, $userSql);
 mysqli_stmt_bind_param($stmt, "s", $user_id);
 mysqli_stmt_execute($stmt);
 $res  = mysqli_stmt_get_result($stmt);
-$user = mysqli_fetch_assoc($res) ?: ["name"=>"User","eco_points"=>0];
+$user = mysqli_fetch_assoc($res) ?: ["name"=>"User","eco_points"=>0,"profile_image"=>""];
 mysqli_stmt_close($stmt);
 
-$profileImg = trim($user["profile_image"] ?? "");
-$profileImg = ($profileImg !== "") ? ("../" . $profileImg) : "../images/apu.png";
+$profileImg = "../images/profile.png";
+if (!empty($user["profile_image"])) {
+  $try = "../" . ltrim($user["profile_image"], "/");
+  $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
+  if (file_exists($disk)) {
+    $profileImg = $try;
+  }
+}
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 

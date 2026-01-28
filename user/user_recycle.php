@@ -27,13 +27,20 @@ $userRes = mysqli_stmt_get_result($userStmt);
 $user = mysqli_fetch_assoc($userRes);
 mysqli_stmt_close($userStmt);
 
+$profileImg = "../images/profile.png";
+if (!empty($user["profile_image"])) {
+  $try = "../" . ltrim($user["profile_image"], "/");
+  $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
+  if (file_exists($disk)) {
+    $profileImg = $try;
+  }
+}
+
 if (!$user) {
   session_destroy();
   header("Location: ../login/login.php");
   exit();
 }
-
-$profileImg = !empty($user["profile_image"]) ? "../" . $user["profile_image"] : "../images/profile.png";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["remove_log_id"])) {
   $log_id = trim($_POST["remove_log_id"]);
@@ -78,10 +85,9 @@ mysqli_stmt_close($logsStmt);
     .toolbar h2{ margin:0; }
     table{ width:100%; border-collapse:collapse; }
     th, td{ padding:10px 8px; border-bottom:1px solid #eee; text-align:left; font-size:14px; vertical-align:top; }
-    th{ background:#f7f7f7; }
-    .btn{ display:inline-block; padding:8px 10px; border-radius:10px; border:0; cursor:pointer; font-weight:700; text-decoration:none; }
-    .btn-gray{ background:#111827; color:#fff; }
-    .btn-red{ background:#ef4444; color:#fff; }
+    .btn{ display:inline-block; padding:8px 10px; border-radius:10px; cursor:pointer; font-weight:700;}
+    .btn-gray{ background:gray;}
+    .btn-red{ background:red;}
     .btn-outline{ background:#fff; border:1px solid #ddd; color:#111827; }
     .msg{ margin:10px 0; padding:10px 12px; border-radius:10px; }
     .msg-ok{ background:#e9ffef; color:#0b6b2b; }

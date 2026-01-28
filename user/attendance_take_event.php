@@ -11,78 +11,114 @@ if (!isset($_SESSION["user_id"])) {
   exit();
 }
 
+$role = strtolower(trim($_SESSION["role"] ?? ""));
+if ($role === "admin") {
+  header("Location: ../admin/admin_dashboard.php");
+  exit();
+}
+
 $user_id = $_SESSION["user_id"];
 
-function make_id($prefix) {
-  return $prefix . "_" . date("YmdHis") . rand(10, 99);
+function redirect_att($status) {
+  header("Location: user_event.php?att=" . urlencode($status));
+  exit();
+}
+
+function make_att_id() {
+  return "att_" . date("YmdHis") . rand(10, 99);
+}
+
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+  redirect_att("fail");
 }
 
 $code = strtoupper(trim($_POST["code"] ?? ""));
 if ($code === "") {
-  header("Location: user_event.php?att=fail");
-  exit();
+  redirect_att("fail");
 }
 
-$stmt = mysqli_prepare($conn, "
+$evtStmt = mysqli_prepare($conn, "
   SELECT event_id
   FROM events
   WHERE event_attendance_code = ?
     AND event_status = 'Approved'
   LIMIT 1
 ");
-mysqli_stmt_bind_param($stmt, "s", $code);
-mysqli_stmt_execute($stmt);
-$res = mysqli_stmt_get_result($stmt);
-$row = mysqli_fetch_assoc($res);
-mysqli_stmt_close($stmt);
+if (!$evtStmt) redirect_att("fail");
 
-if (!$row) {
-  header("Location: user_event.php?att=fail");
-  exit();
+mysqli_stmt_bind_param($evtStmt, "s", $code);
+mysqli_stmt_execute($evtStmt);
+$evtRes = mysqli_stmt_get_result($evtStmt);
+$evtRow = mysqli_fetch_assoc($evtRes);
+mysqli_stmt_close($evtStmt);
+
+if (!$evtRow) {
+  redirect_att("badcode");
 }
 
-$event_id = $row["event_id"];
+$event_id = trim($evtRow["event_id"]);
 
+$regStmt = mysqli_prepare($conn, "
+  SELECT registration_status
+  FROM registrations
+  WHERE user_id = ?
+    AND event_id = ?
+  LIMIT 1
+");
+if (!$regStmt) redirect_att("fail");
 
-$regStmt = mysqli_prepare($conn, "SELECT 1 FROM registrations WHERE user_id=? AND event_id=? LIMIT 1");
 mysqli_stmt_bind_param($regStmt, "ss", $user_id, $event_id);
 mysqli_stmt_execute($regStmt);
 $regRes = mysqli_stmt_get_result($regStmt);
-$registered = (mysqli_num_rows($regRes) > 0);
+$regRow = mysqli_fetch_assoc($regRes);
 mysqli_stmt_close($regStmt);
 
-if (!$registered) {
-  header("Location: user_event.php?att=noreg");
-  exit();
+if (!$regRow) {
+  redirect_att("noreg");
 }
 
-$dupStmt = mysqli_prepare($conn, "SELECT 1 FROM attendance WHERE user_id=? AND event_id=? LIMIT 1");
+$regStatus = strtolower(trim($regRow["registration_status"] ?? "registered"));
+if ($regStatus === "cancelled") {
+  redirect_att("noreg");
+}
+
+$dupStmt = mysqli_prepare($conn, "
+  SELECT attendance_id
+  FROM attendance
+  WHERE user_id = ?
+    AND event_id = ?
+  LIMIT 1
+");
+if (!$dupStmt) redirect_att("fail");
+
 mysqli_stmt_bind_param($dupStmt, "ss", $user_id, $event_id);
 mysqli_stmt_execute($dupStmt);
 $dupRes = mysqli_stmt_get_result($dupStmt);
-$exists = (mysqli_num_rows($dupRes) > 0);
+$dup = (mysqli_num_rows($dupRes) > 0);
 mysqli_stmt_close($dupStmt);
 
-if ($exists) {
-  header("Location: user_event.php?att=dup");
-  exit();
+if ($dup) {
+  redirect_att("dup");
 }
 
-$att_id = make_id("att");
-$method = "ABC12"; // 之后要改名字再改这里
+$att_id = make_att_id();
 
-$ins = mysqli_prepare($conn, "
-  INSERT INTO attendance (attendance_id, event_id, user_id, attendance_check_in_time, attendance_method)
-  VALUES (?, ?, ?, NOW(), ?)
+$method = "Code";
+
+$insStmt = mysqli_prepare($conn, "
+  INSERT INTO attendance
+    (attendance_id, event_id, user_id, attendance_check_in_time, attendance_method)
+  VALUES
+    (?, ?, ?, NOW(), ?)
 ");
-mysqli_stmt_bind_param($ins, "ssss", $att_id, $event_id, $user_id, $method);
-$ok = mysqli_stmt_execute($ins);
-mysqli_stmt_close($ins);
+if (!$insStmt) redirect_att("fail");
+
+mysqli_stmt_bind_param($insStmt, "ssss", $att_id, $event_id, $user_id, $method);
+$ok = mysqli_stmt_execute($insStmt);
+mysqli_stmt_close($insStmt);
 
 if (!$ok) {
-  header("Location: user_event.php?att=fail");
-  exit();
+  redirect_att("fail");
 }
 
-header("Location: user_event.php?att=ok");
-exit();
+redirect_att("ok");
