@@ -11,7 +11,7 @@ $announcement_id = $_GET['id'];
 
 /* Fetch announcement */
 $stmt = $conn->prepare("
-    SELECT announcement_id, title, message, start_date, end_date,
+    SELECT announcement_id, title, message, end_date,
            is_active, created_at, created_by
     FROM announcements
     WHERE announcement_id = ?
@@ -41,12 +41,7 @@ $data = $result->fetch_assoc();
                 <label>Announcement ID :</label>
                 <input type="text" value="<?= htmlspecialchars($data['announcement_id']) ?>" readonly>
             </div>
-
-            <div class="form-group">
-                <label>Start Date :</label>
-                <input type="text" value="<?= htmlspecialchars($data['start_date']) ?>" readonly>
-            </div>
-
+            
             <div class="form-group">
                 <label>End Date :</label>
                 <input type="text" value="<?= htmlspecialchars($data['end_date']) ?>" readonly>

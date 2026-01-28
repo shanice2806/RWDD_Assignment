@@ -71,9 +71,9 @@ $total_attendance = $attendance['total_attendance'] ?? 0;
 
 ?>
 
-<!-- =====================
-     PAGE TITLE BAR
-     ===================== -->
+
+<div class="main-content">
+<main class="dashboard">
 <div class="page-title-bar">
     <a href="admin_event.php" class="icon-btn back-btn">↩</a>
     <h2><?= htmlspecialchars($event['event_id']) ?></h2>
@@ -170,5 +170,7 @@ $total_attendance = $attendance['total_attendance'] ?? 0;
     </div>
 
 </div>
+</div>
+            </main>
 
 <?php include "admin_footer.php"; ?>

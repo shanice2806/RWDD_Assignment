@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- PAGE TITLE -->
     <div class="page-title-bar">
         <a href="admin_recycling_log_view.php?id=<?= urlencode($log_id) ?>" class="icon-btn back-btn">↩</a>
-        <h2>Log ID : <?= htmlspecialchars($log_id) ?></h2>
+        <h2><?= htmlspecialchars($log_id) ?></h2>
     </div>
 
     <!-- UPDATE FORM -->

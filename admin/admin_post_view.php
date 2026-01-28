@@ -87,11 +87,12 @@ if ($post['report_count'] > 0) {
 }
 ?>
 
-<!-- =====================
-     PAGE TITLE BAR
-===================== -->
+
+<div class="main-content">
+<main class="dashboard">
+
 <div class="page-title-bar">
-    <a href="admin_manage_posts.php" class="icon-btn back-btn">↩</a>
+    <a href="admin_manage_post.php" class="icon-btn back-btn">↩</a>
     <h2><?= htmlspecialchars($post['post_id']) ?></h2>
 </div>
 
@@ -257,13 +258,15 @@ echo htmlspecialchars(implode("\n", $reasons));
 
     <div style="display:flex; justify-content:center; gap:20px; margin-top:25px;">
         <a href="admin_post_view.php?id=<?= urlencode($post_id) ?>&action=valid" class="btn">
-            VALID
+            Valid
         </a>
         <a href="admin_post_update.php?id=<?= urlencode($post_id) ?>&action=invalid" class="btn">
-            INVALID
+            Invalid
         </a>
     </div>
 </div>
+</div>
+</main>
 
 <?php endif; ?>
 

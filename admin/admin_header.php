@@ -22,7 +22,8 @@ session_start();
 
   <div class="icons">
     <a href="admin_dashboard.php" class="icon-btn">🏠</a>
-    <a href="../login/logout.php" class="icon-btn">⎋</a>
+    <a href="../login/logout.php"class="icon-btn" onclick="return confirm('Logout now?');">
+      ⎋</a>
   </div>
 </header>
 

@@ -240,7 +240,6 @@ $result = $stmt->get_result();
           <td>
             <?= htmlspecialchars($row['status']) ?>
             <?php if ($row['is_flagged']): ?>
-              ⚠️
             <?php endif; ?>
           </td>
 

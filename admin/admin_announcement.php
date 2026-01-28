@@ -78,7 +78,7 @@ $result = $conn->query($sql);
 
         <!-- ➕ Add button -->
         <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
-            <a href="admin_announcement_add.php" class="btn">+ Add Announcement</a>
+            <a href="admin_announcement_add.php" class="btn">+</a>
         </div>
 
         <!-- 📋 Announcement Table -->

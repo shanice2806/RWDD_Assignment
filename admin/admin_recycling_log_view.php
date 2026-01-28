@@ -42,9 +42,9 @@ if ($result->num_rows === 0) {
 $log = $result->fetch_assoc();
 ?>
 
-<!-- =====================
-     PAGE TITLE BAR
-     ===================== -->
+<div class="main-content">
+<main class="dashboard">
+
 <div class="page-title-bar">
     <a href="admin_recycling_log.php" class="icon-btn back-btn">↩</a>
     <h2><?= htmlspecialchars($log['log_id']) ?></h2>
@@ -142,5 +142,7 @@ $log = $result->fetch_assoc();
     </div>
 
 </div>
+</div>
+</main>
 
 <?php include "admin_footer.php"; ?>

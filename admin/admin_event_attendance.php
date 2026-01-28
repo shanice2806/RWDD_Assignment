@@ -48,9 +48,8 @@ $stmt->execute();
 $result = $stmt->get_result();
 ?>
 
-<!-- =====================
-     PAGE TITLE BAR
-===================== -->
+<div class="main-content">
+<main class="dashboard">
 <div class="page-title-bar">
     <a href="admin_event_view.php?id=<?= urlencode($event_id) ?>" class="icon-btn back-btn">↩</a>
     <h2><?= htmlspecialchars($event_id) ?></h2>
@@ -109,5 +108,7 @@ $result = $stmt->get_result();
     </tbody>
 </table>
 </div>
+        </div>
+</main>
 
 <?php include "admin_footer.php"; ?>

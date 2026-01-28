@@ -202,7 +202,7 @@ $result = $conn->query($sql);
   ?>
 
   <img src="<?= htmlspecialchars($rewardImage) ?>"
-       width="60"
+       width="150"
        alt="Reward Image">
 </td>
 

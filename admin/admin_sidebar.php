@@ -36,6 +36,10 @@
     <a href="admin_rewards.php" class="menu-item">🎁 Rewards</a>
     <a href="admin_announcement.php" class="menu-item">📢 Announcement</a>
     <a href="admin_system_settings.php" class="menu-item">⚙️ System Settings</a>
+    <a href="../login/logout.php"class="menu-item" onclick="return confirm('Logout now?');">
+      🚪 Logout</a>
   </nav>
+
+
 
 </aside>
