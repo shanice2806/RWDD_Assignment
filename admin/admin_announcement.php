@@ -21,7 +21,7 @@ $next_expiry = $nextExpiryRow['next_expiry'] ?? null;
 $searchEscaped = $conn->real_escape_string($search);
 
 $sql = "
-    SELECT announcement_id, title, start_date, end_date, is_active, created_at, created_by
+    SELECT announcement_id, title, end_date, is_active, created_at, created_by
     FROM announcements
     WHERE title LIKE '%$searchEscaped%' OR announcement_id LIKE '%$searchEscaped%'
     ORDER BY created_at DESC
@@ -88,7 +88,6 @@ $result = $conn->query($sql);
                     <th>No.</th>
                     <th>Announcement ID</th>
                     <th>Title</th>
-                    <th>Start Date</th>
                     <th>End Date</th>
                     <th>Status</th>
                     <th>Created At</th>
@@ -105,7 +104,6 @@ $result = $conn->query($sql);
                         <td><?= $no++ ?></td>
                         <td><?= htmlspecialchars($row['announcement_id']) ?></td>
                         <td><?= htmlspecialchars($row['title']) ?></td>
-                        <td><?= htmlspecialchars($row['start_date']) ?></td>
                         <td><?= htmlspecialchars($row['end_date']) ?></td>
                         <td>
                         <?= ((int)$row['is_active'] === 1) ? "Active" : "Inactive" ?>
