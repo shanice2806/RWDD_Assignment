@@ -113,7 +113,7 @@ include '../connect.php';
           <a href="organizer_recruit_volunteers.php" class="action-btn">➕ Recruit Volunteers</a>
           <a href="organizer_assign_volunteer_task.php" class="action-btn">🎯 Assign Tasks</a>
           <a href="organizer_volunteer_hours.php" class="action-btn">⏱️ Log Hours</a>
-          <a href="organizer_award_badges.php" class="action-btn">🏅 Award Badges</a>
+          <a href="organizer_award_ecopoints.php" class="action-btn">🌟 Award Eco-Points</a>
           <a href="organizer_volunteer_list.php" class="action-btn">📋 View Volunteer List</a>
         </div>
         <div class="submenu">
@@ -122,7 +122,7 @@ include '../connect.php';
             <li>Recruit volunteers with different skill interests</li>
             <li>Assign specific tasks and time slots to volunteers</li>
             <li>Track volunteer hours for recognition and future events</li>
-            <li>Award badges to motivate and celebrate volunteer contributions</li>
+            <li>Award eco-points to motivate and celebrate volunteer contributions</li>
           </ul>
         </div>
       </div>
