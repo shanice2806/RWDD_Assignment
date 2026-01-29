@@ -39,25 +39,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_log'])) {
         $user_result = $conn->query($user_check);
         
         if ($user_result && $user_result->num_rows > 0) {
-            // Generate unique log ID
-            $log_id = 'rl_' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
+            // Generate sequential log ID
+            $last_id_query = "SELECT log_id FROM recycling_log ORDER BY log_id DESC LIMIT 1";
+            $last_id_result = $conn->query($last_id_query);
             
-            while (true) {
-                $check_query = "SELECT log_id FROM recycling_log WHERE log_id = '$log_id'";
-                $check_result = $conn->query($check_query);
-                if ($check_result->num_rows == 0) {
-                    break;
-                }
-                $log_id = 'rl_' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
+            if ($last_id_result && $last_id_result->num_rows > 0) {
+                $last_id = $last_id_result->fetch_assoc()['log_id'];
+                $number = intval(substr($last_id, 3)) + 1;
+                $log_id = 'rl_' . str_pad($number, 3, '0', STR_PAD_LEFT);
+            } else {
+                $log_id = 'rl_001';
             }
             
             // Calculate points based on material type (example: 10 points per kg)
             $points = intval($weight_kg * 10);
             
+            // Handle event_id - use NULL if empty
+            $event_id_sql = (empty($event_id) || $event_id == '') ? "NULL" : "'$event_id'";
+            
+            // Handle location
+            $location_sql = empty($location) ? '' : $location;
+            
             // Insert recycling log (photo_path is NULL for organizer entries)
             $insert_query = "INSERT INTO recycling_log 
                            (log_id, user_id, material_id, event_id, weight_kg, location, photo_path, status, points_awarded, is_flagged) 
-                           VALUES ('$log_id', '$user_id_input', '$material_id', '$event_id', '$weight_kg', '$location', NULL, 'VALID', $points, 0)";
+                           VALUES ('$log_id', '$user_id_input', '$material_id', $event_id_sql, '$weight_kg', '$location_sql', NULL, 'VALID', $points, 0)";
             
             if ($conn->query($insert_query)) {
                 // Generate unique transaction ID for eco_points_transactions
@@ -99,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_log'])) {
                     $error_message = "Log created but failed to create transaction: " . $conn->error;
                 }
             } else {
-                $error_message = "Error submitting log: " . $conn->error;
+                $error_message = "Error submitting log to database: " . $conn->error;
             }
         } else {
             $error_message = "User ID not found in the system.";
