@@ -8,169 +8,251 @@ if (!isset($_SESSION["user_id"])) {
 }
 $user_id = $_SESSION["user_id"];
 
-$userSql = "SELECT user_id, name, role, eco_points, profile_image
-            FROM users WHERE user_id = ? LIMIT 1";
+// --- 1. HANDLE REDEMPTION AJAX ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_redeem'])) {
+    $r_id = $_POST['reward_id'];
+    $pts_required = (int)$_POST['points'];
+
+    // Check current points first
+    $checkQuery = mysqli_query($conn, "SELECT eco_points FROM users WHERE user_id = '$user_id'");
+    $userData = mysqli_fetch_assoc($checkQuery);
+    $current_balance = (int)$userData['eco_points'];
+
+    mysqli_begin_transaction($conn);
+    try {
+        $r_count_res = mysqli_query($conn, "SELECT COUNT(*) as total FROM reward_redemptions");
+        $r_count = mysqli_fetch_assoc($r_count_res)['total'] + 1;
+        $new_rdp = "rdp_" . str_pad($r_count, 3, "0", STR_PAD_LEFT);
+
+        $t_count_res = mysqli_query($conn, "SELECT COUNT(*) as total FROM eco_points_transactions");
+        $t_count = mysqli_fetch_assoc($t_count_res)['total'] + 1;
+        $new_ept = "ept_" . str_pad($t_count, 3, "0", STR_PAD_LEFT);
+
+        if ($current_balance >= $pts_required) {
+            // SUCCESSFUL PATH
+            mysqli_query($conn, "INSERT INTO reward_redemptions (redemption_id, user_id, reward_id, redemption_date_time, status, points_spent) VALUES ('$new_rdp', '$user_id', '$r_id', NOW(), 'Approved', $pts_required)");
+            mysqli_query($conn, "INSERT INTO eco_points_transactions (transaction_id, user_id, source_id, points_change, description) VALUES ('$new_ept', '$user_id', '$new_rdp', -$pts_required, 'Redeemed Reward Item')");
+            mysqli_query($conn, "UPDATE users SET eco_points = eco_points - $pts_required WHERE user_id = '$user_id'");
+            mysqli_query($conn, "UPDATE reward_catalog SET stock = stock - 1 WHERE reward_id = '$r_id'");
+            mysqli_commit($conn);
+            echo "success";
+        } else {
+            // INSUFFICIENT POINTS PATH (REJECTED)
+            mysqli_query($conn, "INSERT INTO reward_redemptions (redemption_id, user_id, reward_id, redemption_date_time, status, points_spent) VALUES ('$new_rdp', '$user_id', '$r_id', NOW(), 'Rejected', 0)");
+            mysqli_query($conn, "INSERT INTO eco_points_transactions (transaction_id, user_id, source_id, points_change, description) VALUES ('$new_ept', '$user_id', '$new_rdp', 0, 'Failed Redemption - Insufficient Points')");
+            mysqli_commit($conn);
+            echo "insufficient";
+        }
+        exit;
+    } catch (Exception $e) {
+        mysqli_rollback($conn);
+        echo "error"; exit;
+    }
+}
+
+// --- 2. GET USER DATA ---
+$userSql = "SELECT user_id, name, eco_points FROM users WHERE user_id = ? LIMIT 1";
 $userStmt = mysqli_prepare($conn, $userSql);
 mysqli_stmt_bind_param($userStmt, "s", $user_id);
 mysqli_stmt_execute($userStmt);
-$userRes = mysqli_stmt_get_result($userStmt);
-$user = mysqli_fetch_assoc($userRes) ?: ["name"=>"User","eco_points"=>0,"profile_image"=>""];
-mysqli_stmt_close($userStmt);
+$user = mysqli_fetch_assoc(mysqli_stmt_get_result($userStmt));
+$current_points = (int)$user['eco_points'];
+
+$view = isset($_GET['view']) ? $_GET['view'] : 'catalog';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Reward Function | ReLife Hub</title>
+    <title>Reward | ReLife Hub</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/user.css">
     <style>
-        .reward-card { max-width: 900px; margin: 30px auto; background: #fff; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.08); padding: 25px; }
-        .reward-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .record-btn { background: #333; color: white; padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; }
-        .points-balance-text { font-size: 20px; font-weight: 500; color: #444; }
-        .points-req-box { border: 1px solid #ccc; padding: 5px 10px; border-radius: 5px; font-size: 13px; text-align: center; line-height: 1.2; }
+        .user-layout { display: flex; min-height: 100vh; width: 100%; }
+        .user-content { flex: 1; display: flex; flex-direction: column; background: #f9f9f9; }
+        .reward-card { max-width: 900px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.08); padding: 25px; width: 90%; }
+        .reward-header-flex { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-bottom: 20px; }
+        .btn-toggle { background: #333; color: white; padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; width: fit-content; }
+        .mid-label { font-size: 24px; font-weight: bold; color: #000; text-align: center; }
+        .points-display-group { text-align: right; }
+        .balance-label { font-size: 15px; color: #000; margin-bottom: 5px; }
+        .balance-label b { font-weight: bold; }
+        .points-box { border: 1px solid #000; padding: 6px 12px; border-radius: 6px; font-size: 16px; font-weight: bold; background: #fff; display: inline-block; }
         .reward-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .reward-table th { border: 1px solid #000; background-color: #f2f2f2; padding: 10px; text-align: center; font-weight: bold; color: #000000; }
-        .reward-table td { border: 1px solid #000; padding: 12px; vertical-align: middle; }
-        .item-row { display: flex; align-items: center; gap: 15px; }
-        .item-icon { font-size: 24px; font-weight: bold; min-width: 40px; text-align: center; }
-        .item-desc h4 { margin: 0; font-size: 16px; text-transform: lowercase; color: #000000; }
-        .item-desc p { margin: 2px 0 0; font-size: 12px; color: #666; }
-
-        /* THE ONLY EDIT: Changed background-color to match your theme */
+        .reward-table th { border: 1px solid #000; background-color: #f2f2f2; padding: 10px; text-align: center; font-weight: bold; color: #000; }
+        .reward-table td { border: 1px solid #000; padding: 12px; vertical-align: middle; color: #333; }
+        .item-row { display: flex; align-items: center; gap: 25px; }
+        .reward-img { width: 65px; height: 65px; object-fit: contain; background: #fff; border-radius: 4px; border: 1px solid #ddd; }
         .btn-redeem { background-color: #26a69a; color: white; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-redeem:disabled { background-color: #ccc; cursor: not-allowed; }
         
-        .out-stock { color: #888; font-weight: bold; }
-        
-        /* POPUP STYLES */
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 10000; }
-        .popup-box { background: white; padding: 40px; border-radius: 10px; text-align: center; width: 400px; }
-        .popup-btns { display: flex; justify-content: center; gap: 15px; margin-top: 25px; }
-        .btn-pop { padding: 10px 25px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; color: white; }
-        .btn-no-back { background-color: #4db6ac; }
-        .btn-confirm-ok { background-color: #26a69a; }
+        .popup-box { background: white; padding: 40px; border-radius: 10px; text-align: center; width: 420px; font-family: inherit; }
+        .pop-btn-container { display: flex; justify-content: center; gap: 20px; margin-top: 30px; }
+        .pop-btn { width: 130px; padding: 12px 0; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; border: none; font-family: inherit; transition: opacity 0.2s; }
+        .btn-no { background: #1f5147; color: white; }
+        .btn-confirm { background: #1f5147; color: white; }
+        .btn-ok { background: #333; color: white; width: 150px; }
+        .pop-btn:hover { opacity: 0.9; }
         .hidden { display: none !important; }
-        footer { text-align: center; padding: 20px; color: #888; font-size: 14px; }
+        footer { text-align: center; padding: 20px; color: #888; font-size: 14px; margin-top: auto; }
     </style>
 </head>
 <body class="sidebar-collapsed">
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
 <div class="user-layout">
-    <?php include __DIR__ . "/user_sidebar.php"; ?>
+    <?php include "user_sidebar.php"; ?>
     <div class="user-content">
         <div class="user-top-bar">
             <div class="user-top-left">
-                <button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
-                <div class="user-top-user"><span class="user-top-name"> Welcome! <?= htmlspecialchars($user['name']) ?> </span></div>
+                <button class="sidebar-toggle" id="userSidebarToggle">☰</button>
+                <div class="user-top-user">Welcome! <?= htmlspecialchars($user['name']) ?></div>
             </div>
             <div class="user-top-center"><h1 style="color: white; margin: 0;">Reward</h1></div>
             <div class="user-top-right">
-                <span class="user-top-points">🪙 <?php echo (int)$user["eco_points"]; ?> points</span>
-                <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
-                <a href="user_profile.php" class="user-top-btn" title="Profile">👤</a>
-                <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
+                <a class="user-top-btn" href="user_profile.php">👤</a>
+                <a href="user_dashboard.php" class="user-top-btn">🏠</a>
+                <a href="../login/logout.php" class="user-top-btn logout">❌</a>
             </div>
         </div>
 
         <div class="reward-card">
             <div class="reward-header-flex">
-                <div style="display: flex; align-items: center; gap: 20px;"><a href="reward_history.php" class="record-btn">Record</a><span class="points-balance-text">User point balance</span></div>
-                <div class="points-req-box">Points<br>Required</div>
+                <a href="user_reward.php?view=<?= ($view === 'record') ? 'catalog' : 'record' ?>" class="btn-toggle">
+                    <?= ($view === 'record') ? 'Back' : 'Record' ?>
+                </a>
+                <div class="mid-label"><?= ($view === 'record') ? 'Reward redemptions' : 'Points Required' ?></div>
+                <div class="points-display-group">
+                    <div class="balance-label"><b>User point balance :</b></div>
+                    <div class="points-box">🪙 <?= $current_points ?> points</div>
+                </div>
             </div>
+
             <table class="reward-table">
-                <thead><tr><th style="width: 45%;">Redeem item</th><th style="width: 10%;">Stock</th><th style="width: 15%;">Date</th><th style="width: 30%;">Availability</th></tr></thead>
-                <tbody>
-                    <tr id="item-apspace">
-                        <td><div class="item-row"><div class="item-icon">🪙</div><div class="item-desc"><h4>rm10 apspace</h4><p>100point needed<br>Use before 1/1/26<br>(only for platinum user)</p></div></div></td>
-                        <td align="center">10</td><td align="center">12/12/25</td>
-                        <td align="center"><button class="btn-redeem" onclick="handleRedeem('item-apspace', 'Rm10 apspace', 'success')">Redeem</button></td>
-                    </tr>
-                    <tr id="item-parking">
-                        <td><div class="item-row"><div class="item-icon" style="color: red;">P</div><div class="item-desc"><h4>free parking(one week)</h4><p>500point needed<br>limited for this month(Use before 30/12/25)</p></div></div></td>
-                        <td align="center">2</td><td align="center">5/12/25</td>
-                        <td align="center"><button class="btn-redeem" onclick="handleRedeem('item-parking', 'Free parking', 'fail')">Redeem</button></td>
-                    </tr>
-                    <tr>
-                        <td><div class="item-row"><div class="item-icon">🥪</div><div class="item-desc"><h4>Subway</h4><p>900point need</p></div></div></td>
-                        <td align="center">0</td><td align="center">24/5/25</td><td align="center"><span class="out-stock">Out of Stock</span></td>
-                    </tr>
-                    <tr id="item-drink">
-                        <td><div class="item-row"><div class="item-icon">☕</div><div class="item-desc"><h4>free cafeteria drink</h4><p>50point needed<br>Applicable for Coffee/Tea only</p></div></div></td>
-                        <td align="center">50</td><td align="center">15/01/26</td>
-                        <td align="center"><button class="btn-redeem" onclick="handleRedeem('item-drink', 'Free cafeteria drink', 'success')">Redeem</button></td>
-                    </tr>
-                    <tr id="item-print">
-                        <td><div class="item-row"><div class="item-icon">🖨️</div><div class="item-desc"><h4>rm5 printing credit</h4><p>80point needed<br>For library black & white printing</p></div></div></td>
-                        <td align="center">100</td><td align="center">01/02/26</td>
-                        <td align="center"><button class="btn-redeem" onclick="handleRedeem('item-print', 'Rm5 printing credit', 'success')">Redeem</button></td>
-                    </tr>
-                </tbody>
+                <?php if ($view === 'record'): ?>
+                    <thead>
+                        <tr>
+                            <th style="width: 40%;">Redeem Item</th>
+                            <th style="width: 20%;">Used Points</th>
+                            <th style="width: 20%;">Status</th>
+                            <th style="width: 20%;">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php 
+                        $histRes = mysqli_query($conn, "SELECT r.*, c.reward_name, c.image_path FROM reward_redemptions r JOIN reward_catalog c ON r.reward_id = c.reward_id WHERE r.user_id = '$user_id' ORDER BY r.redemption_date_time DESC");
+                        while($h = mysqli_fetch_assoc($histRes)): ?>
+                        <tr>
+                            <td>
+                                <div class="item-row">
+                                    <img src="..<?= $h['image_path'] ?>" class="reward-img">
+                                    <b style="color: #000;"><?= htmlspecialchars($h['reward_name']) ?></b>
+                                </div>
+                            </td>
+                            <td align="center" style="color: #d32f2f; font-weight: bold;">-<?= $h['points_spent'] ?> pts</td>
+                            <td align="center" style="font-weight:bold; color:<?= $h['status'] === 'Rejected' ? '#f44336' : '#2e7d32' ?>;"><?= $h['status'] ?></td>
+                            <td align="center"><?= date("d/m/Y", strtotime($h['redemption_date_time'])) ?></td>
+                        </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                <?php else: ?>
+                    <thead>
+                        <tr>
+                            <th style="width: 45%;">Redeem item</th>
+                            <th style="width: 15%;">Points</th>
+                            <th style="width: 15%;">Stock</th>
+                            <th style="width: 25%;">Availability</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php 
+                        $catRes = mysqli_query($conn, "SELECT * FROM reward_catalog WHERE reward_id NOT IN (SELECT reward_id FROM reward_redemptions WHERE user_id = '$user_id' AND status = 'Approved') ORDER BY points_required ASC");
+                        while($row = mysqli_fetch_assoc($catRes)): 
+                        ?>
+                        <tr>
+                            <td>
+                                <div class="item-row">
+                                    <img src="..<?= $row['image_path'] ?>" class="reward-img">
+                                    <div>
+                                        <b style="color: #000;"><?= htmlspecialchars($row['reward_name']) ?></b><br>
+                                        <small style="color: #666;"><?= htmlspecialchars($row['description']) ?></small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td align="center"><?= $row['points_required'] ?> pts</td>
+                            <td align="center"><?= $row['stock'] ?></td>
+                            <td align="center">
+                                <button class="btn-redeem" onclick="handleRedeem('<?= $row['reward_id'] ?>', '<?= addslashes($row['reward_name']) ?>', <?= $row['points_required'] ?>)" <?= $row['stock'] <= 0 ? 'disabled' : '' ?>>
+                                    <?= $row['stock'] <= 0 ? 'Out of Stock' : 'Redeem' ?>
+                                </button>
+                            </td>
+                        </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                <?php endif; ?>
             </table>
-            <footer>© 2026 ReLife Hub</footer>
         </div>
+        <footer>© 2026 ReLife Hub</footer>
     </div>
 </div>
 
 <div class="overlay hidden" id="popConfirm">
     <div class="popup-box">
-        <p style="font-size: 18px; line-height: 1.5;">Confirm to redeem?<br><span id="itemNameText" style="font-weight:bold;"></span></p>
-        <div class="popup-btns">
-            <button class="btn-pop btn-no-back" onclick="hidePop('popConfirm')">No</button>
-            <button class="btn-pop btn-confirm-ok" id="confirmActionBtn">Confirm</button>
+        <p style="font-size: 1.2rem; color: #333;">Confirm to redeem?</p>
+        <p id="itemNameText" style="font-weight:bold; color: #26a69a; margin-top: -10px; font-size: 1.2rem;"></p>
+        <div class="pop-btn-container">
+            <button class="pop-btn btn-no" onclick="document.getElementById('popConfirm').classList.add('hidden')">No</button>
+            <button class="pop-btn btn-confirm" id="confirmActionBtn">Confirm</button>
         </div>
     </div>
 </div>
 
 <div class="overlay hidden" id="popSuccess">
     <div class="popup-box">
-        <p style="font-size: 20px; font-weight:500;">Redeemed Successfully</p>
-        <div class="popup-btns">
-            <button class="btn-pop btn-no-back" id="successBackBtn">Back</button>
-            <button class="btn-pop btn-confirm-ok" id="successOkBtn">Ok</button>
+        <p style="font-size: 1.4rem; font-weight: bold; color: #26a69a;">Redeem Successful!</p>
+        <div class="pop-btn-container">
+            <button class="pop-btn btn-ok" onclick="location.reload()">OK</button>
         </div>
     </div>
 </div>
 
 <div class="overlay hidden" id="popFail">
     <div class="popup-box">
-        <p style="font-size: 18px; line-height: 1.5;">Unable to Redeem<br>*Not enough point*</p>
-        <div class="popup-btns">
-            <button class="btn-pop btn-no-back" onclick="hidePop('popFail')">Back</button>
-            <button class="btn-pop btn-confirm-ok" onclick="hidePop('popFail')">Ok</button>
+        <p style="font-size: 1.3rem; font-weight: bold; color: #f44336;">Redeem Unsuccessful</p>
+        <p style="color: #333; margin-top: -5px;"><b>* not enough points *</b></p>
+        <div class="pop-btn-container">
+            <button class="pop-btn btn-no" onclick="location.reload()">Noted</button>
         </div>
     </div>
 </div>
 
-<script src="../user/user.js"></script>
 <script>
-    let currentItemId = '';
+    let currentRewardId = '', currentPoints = 0;
+    const toggleBtn = document.getElementById('userSidebarToggle');
+    const sidebar = document.getElementById('userSidebar');
+    if (toggleBtn && sidebar) { toggleBtn.addEventListener('click', () => { sidebar.classList.toggle('collapsed'); }); }
 
-    function hidePop(id) { document.getElementById(id).classList.add('hidden'); }
-    function showPop(id) { document.getElementById(id).classList.remove('hidden'); }
-
-    function handleRedeem(rowId, name, outcome) {
-        currentItemId = rowId;
-        if (outcome === 'fail') {
-            showPop('popFail');
-        } else {
-            document.getElementById('itemNameText').innerText = name;
-            showPop('popConfirm');
-            document.getElementById('confirmActionBtn').onclick = function() {
-                hidePop('popConfirm');
-                showPop('popSuccess');
-            };
-        }
+    function handleRedeem(id, name, pts) {
+        currentRewardId = id; currentPoints = pts;
+        document.getElementById('itemNameText').innerText = name;
+        document.getElementById('popConfirm').classList.remove('hidden');
     }
 
-    function removeAndClose() {
-        if(currentItemId) { document.getElementById(currentItemId).remove(); }
-        hidePop('popSuccess');
-    }
-
-    document.getElementById('successBackBtn').onclick = removeAndClose;
-    document.getElementById('successOkBtn').onclick = removeAndClose;
+    document.getElementById('confirmActionBtn').onclick = function() {
+        let params = new URLSearchParams({ ajax_redeem: '1', reward_id: currentRewardId, points: currentPoints });
+        fetch('user_reward.php', { method: 'POST', body: params })
+        .then(res => res.text())
+        .then(data => { 
+            document.getElementById('popConfirm').classList.add('hidden');
+            if(data.trim() === 'success') { 
+                document.getElementById('popSuccess').classList.remove('hidden');
+            } else if(data.trim() === 'insufficient') {
+                document.getElementById('popFail').classList.remove('hidden');
+            } else { 
+                alert("Database Error!"); 
+            } 
+        });
+    };
 </script>
 </body>
 </html>
