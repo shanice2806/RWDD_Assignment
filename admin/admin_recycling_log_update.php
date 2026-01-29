@@ -5,7 +5,7 @@ include "admin_header.php";
 
 /* =====================
    VALIDATE ID
-   ===================== */
+===================== */
 if (!isset($_GET['id'])) {
     header("Location: admin_recycling_log.php");
     exit;
@@ -15,7 +15,7 @@ $log_id = $_GET['id'];
 
 /* =====================
    FETCH LOG DATA
-   ===================== */
+===================== */
 $stmt = $conn->prepare("
     SELECT *
     FROM recycling_log
@@ -33,15 +33,38 @@ $data = $result->fetch_assoc();
 
 /* =====================
    HANDLE UPDATE
-   ===================== */
+===================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $status = $_POST['status'];
     $flag_reason = $_POST['flag_reason'] ?? NULL;
 
-    /* Auto logic */
+    /* =====================
+       GET POINTS PER KG FROM RULE
+    ===================== */
+    $points_per_kg = 0;
+
+    if (!empty($data['rule_id'])) {
+        $rule_stmt = $conn->prepare("
+            SELECT points_per_kg
+            FROM eco_points_rules
+            WHERE rule_id = ? AND is_active = 1
+        ");
+        $rule_stmt->bind_param("s", $data['rule_id']);
+        $rule_stmt->execute();
+        $rule_result = $rule_stmt->get_result();
+
+        if ($rule_result->num_rows > 0) {
+            $rule_data = $rule_result->fetch_assoc();
+            $points_per_kg = (int)$rule_data['points_per_kg'];
+        }
+    }
+
+    /* =====================
+       AUTO LOGIC
+    ===================== */
     if ($status === 'VALID') {
-        $points = round($data['weight_kg'] * 10);
+        $points = round($data['weight_kg'] * $points_per_kg);
         $is_flagged = 0;
         $flag_reason = NULL;
     } elseif ($status === 'INVALID') {
@@ -54,6 +77,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $flag_reason = NULL;
     }
 
+    /* =====================
+       UPDATE RECYCLING LOG
+    ===================== */
     $update = $conn->prepare("
         UPDATE recycling_log
         SET status = ?, points_awarded = ?, is_flagged = ?, flag_reason = ?
@@ -69,8 +95,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     );
     $update->execute();
 
-    header("Location: admin_recycling_log_view.php?id=" . urlencode($log_id));
-    exit;
+    /* =====================
+       RECORD ECO POINTS TRANSACTION
+    ===================== */
+    if ($status === 'VALID' && $points > 0) {
+
+        // Prevent duplicate transaction
+        $check = $conn->prepare("
+            SELECT 1 FROM eco_points_transactions WHERE source_id = ?
+        ");
+        $check->bind_param("s", $log_id);
+        $check->execute();
+        $check->store_result();
+
+        if ($check->num_rows === 0) {
+
+            $count_result = $conn->query("
+                SELECT COUNT(*) AS total FROM eco_points_transactions
+            ");
+            $count = $count_result->fetch_assoc()['total'] + 1;
+            $transaction_id = 'ept_' . str_pad($count, 3, '0', STR_PAD_LEFT);
+
+            $user_id = $data['user_id'];
+            $source_id = $log_id;
+            $points_change = $points;
+            $description = "Points awarded for recycling based on material and weight.";
+
+            $insert = $conn->prepare("
+                INSERT INTO eco_points_transactions
+                (transaction_id, user_id, source_id, points_change, description, created_at)
+                VALUES (?, ?, ?, ?, ?, NOW())
+            ");
+
+            $insert->bind_param(
+                "sssds",
+                $transaction_id,
+                $user_id,
+                $source_id,
+                $points_change,
+                $description
+            );
+
+            $insert->execute();
+        }
+    }
+
 }
 ?>
 
@@ -116,59 +185,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="text" value="<?= htmlspecialchars($data['weight_kg']) ?>" readonly class="readonly">
         </div>
 
-        
-    <!-- =====================
-         PHOTO PROOF
-    ===================== -->
-    <div class="form-group">
-        <label>Photo Proof</label>
-
-        <div style="
-            border:1px solid #ccc;
-            padding:15px;
-            text-align:center;
-            border-radius:6px;
-            background:#fafafa;
-        ">
-            <?php if (!empty($data['photo_path'])): ?>
-                <img
-                    src="../images/recycling_proof/<?= htmlspecialchars($data['photo_path']) ?>"
-                    alt="Recycling Proof"
-                    style="max-width:100%; max-height:300px; object-fit:contain;"
-                >
-            <?php else: ?>
-                <p style="color:#777;">No photo uploaded</p>
-            <?php endif; ?>
+        <!-- PHOTO -->
+        <div class="form-group">
+            <label>Photo Proof</label>
+            <div style="border:1px solid #ccc; padding:15px; text-align:center; border-radius:6px;">
+                <?php if (!empty($data['photo_path'])): ?>
+                    <img src="../images/recycling_proof/<?= htmlspecialchars($data['photo_path']) ?>"
+                         style="max-width:100%; max-height:300px;">
+                <?php else: ?>
+                    <p>No photo uploaded</p>
+                <?php endif; ?>
+            </div>
         </div>
-    </div>
+
         <!-- STATUS -->
         <div class="form-group">
             <label>Status :</label>
             <select name="status" id="statusSelect" required>
                 <option value="PENDING" <?= $data['status'] === 'PENDING' ? 'selected' : '' ?>>PENDING</option>
-                <option value="VALID"   <?= $data['status'] === 'VALID'   ? 'selected' : '' ?>>VALID</option>
+                <option value="VALID" <?= $data['status'] === 'VALID' ? 'selected' : '' ?>>VALID</option>
                 <option value="INVALID" <?= $data['status'] === 'INVALID' ? 'selected' : '' ?>>INVALID</option>
             </select>
         </div>
 
-        <!-- FLAG REASON -->
+        <!-- REASON -->
         <div class="form-group">
             <label>Reason :</label>
-            <textarea
-                name="flag_reason"
-                id="flagReason"
-                rows="3"
-                <?= $data['status'] !== 'INVALID' ? 'readonly class="readonly"' : '' ?>
-                placeholder="State reason if invalid"><?= htmlspecialchars($data['flag_reason'] ?? '') ?></textarea>
+            <textarea name="flag_reason" id="flagReason" rows="3"
+                <?= $data['status'] !== 'INVALID' ? 'readonly class="readonly"' : '' ?>>
+                <?= htmlspecialchars($data['flag_reason'] ?? '') ?>
+            </textarea>
         </div>
 
         <!-- POINTS -->
         <div class="form-group">
             <label>Points Awarded :</label>
-            <input type="text"
-                   value="<?= htmlspecialchars($data['points_awarded']) ?>"
-                   readonly
-                   class="readonly">
+            <input type="text" value="<?= htmlspecialchars($data['points_awarded']) ?>" readonly class="readonly">
         </div>
 
         <!-- BUTTONS -->
@@ -183,17 +235,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <script>
 const statusSelect = document.getElementById('statusSelect');
-const flagReason   = document.getElementById('flagReason');
+const flagReason = document.getElementById('flagReason');
 
 function toggleFlagReason() {
     if (statusSelect.value === 'INVALID') {
         flagReason.removeAttribute('readonly');
-        flagReason.classList.remove('readonly');
         flagReason.focus();
     } else {
         flagReason.value = '';
         flagReason.setAttribute('readonly', true);
-        flagReason.classList.add('readonly');
     }
 }
 statusSelect.addEventListener('change', toggleFlagReason);

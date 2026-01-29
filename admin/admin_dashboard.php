@@ -19,7 +19,7 @@ $total_users = getCount($conn, "SELECT COUNT(*) as total_users FROM users", 'tot
 $total_recycling_log = getCount($conn, "SELECT COUNT(*) as total_recycling_log FROM recycling_log", 'total_recycling_log');
 $total_post = getCount($conn, "SELECT COUNT(*) as total_post FROM posts", 'total_post');
 $total_events = getCount($conn, "SELECT COUNT(*) as total_events FROM events", 'total_events');
-$total_flagged_log = getCount($conn, "SELECT COUNT(*) as total_flagged_log FROM posts WHERE is_flagged = 1", 'total_flagged_log');
+$total_flagged_log = getCount($conn, "SELECT COUNT(*) as total_flagged_log FROM recycling_log WHERE is_flagged = \"1\"", 'total_flagged_log');
 $total_reported_content = getCount($conn, "SELECT COUNT(*) as total_reported_content FROM post_reports", 'total_reported_content');
 ?>
 

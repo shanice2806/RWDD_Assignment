@@ -294,6 +294,11 @@ button:hover {
   font-weight: 600;
 }
 
+.action-btn {
+  box-sizing: border-box;
+}
+
+
 a.btn {
   text-decoration: none;
 }
@@ -353,6 +358,8 @@ textarea[readonly] {
   text-align: center;
   margin-top: 25px;
 }
+
+
 
 /* Announcement Search Form */
 .announcement-search-wrapper {

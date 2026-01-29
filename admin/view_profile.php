@@ -19,7 +19,7 @@ $user_id = $_SESSION["user_id"];
    FETCH USER
 ===================== */
 $userStmt = $conn->prepare("
-    SELECT user_id, name, email, role, eco_points,
+    SELECT user_id, name, email, role,
            created_at, account_status, last_login, profile_image
     FROM users
     WHERE user_id = ?
@@ -28,29 +28,6 @@ $userStmt->bind_param("s", $user_id);
 $userStmt->execute();
 $user = $userStmt->get_result()->fetch_assoc();
 
-/* =====================
-   FETCH USER BADGES (JOIN TABLE)
-===================== */
-$badgeStmt = $conn->prepare("
-    SELECT 
-        b.badge_id,
-        b.badge_name,
-        b.icon_path,
-        ub.date_awarded
-    FROM user_badges ub
-    JOIN badges b ON ub.badge_id = b.badge_id
-    WHERE ub.user_id = ?
-      AND b.is_active = 1
-    ORDER BY ub.date_awarded ASC
-");
-$badgeStmt->bind_param("s", $user_id);
-$badgeStmt->execute();
-$badgeResult = $badgeStmt->get_result();
-
-$badges = [];
-while ($row = $badgeResult->fetch_assoc()) {
-    $badges[] = $row;
-}
 ?>
 
 <main class="dashboard">
@@ -101,44 +78,7 @@ while ($row = $badgeResult->fetch_assoc()) {
           <label>Role :</label>
           <input type="text" value="<?= htmlspecialchars($user['role']) ?>" readonly>
         </div>
-
-        <div class="form-group">
-          <label>Eco Points :</label>
-          <input type="text" value="<?= htmlspecialchars($user['eco_points']) ?>" readonly>
-        </div>
-
-        <!-- BADGES -->
-        <div class="form-group">
-          <label>Badges :</label>
-
-          <div style="display:flex; gap:14px; overflow-x:auto;">
-
-            <?php if (!empty($badges)): ?>
-              <?php foreach ($badges as $badge): ?>
-                <div style="
-                  width:100px;
-                  height: 80px;
-                  background:#f2f2f2;
-                  border-radius:10px;
-                  display:flex;
-                  align-items:center;
-                  justify-content:center;
-                ">
-                  <img
-                    src="../images/badges/<?= htmlspecialchars($badge['icon_path']) ?>"
-                    alt="<?= htmlspecialchars($badge['badge_name']) ?>"
-                    title="<?= htmlspecialchars($badge['badge_name']) ?> (Awarded: <?= htmlspecialchars($badge['date_awarded']) ?>)"
-                    style="max-width:80px; max-height:80px; object-fit:contain;"
-                  >
-                </div>
-              <?php endforeach; ?>
-            <?php else: ?>
-              <span style="color:#777;">No badges earned yet</span>
-            <?php endif; ?>
-
-          </div>
-        </div>
-
+        
         <div class="form-group">
           <label>Last Login :</label>
           <input type="text" value="<?= htmlspecialchars($user['last_login']) ?>" readonly>
