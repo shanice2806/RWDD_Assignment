@@ -26,7 +26,8 @@ $stmt = $conn->prepare("
         event_location,
         event_created_by,
         event_status,
-        event_qr_code_url
+        registration_status,
+        event_attendance_code
     FROM events
     WHERE event_id = ?
 ");
@@ -35,7 +36,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
-    die("Event not found.");
+    die('Event not found.');
 }
 
 $event = $result->fetch_assoc();
@@ -47,12 +48,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $new_status = $_POST['event_status'];
 
-    $update_stmt = $conn->prepare("
-        UPDATE events
-        SET event_status = ?
-        WHERE event_id = ?
-    ");
-    $update_stmt->bind_param("ss", $new_status, $event_id);
+    if ($new_status === 'Approved') {
+
+        // Approved → Registration Open
+        $update_stmt = $conn->prepare("
+            UPDATE events
+            SET event_status = ?, registration_status = 'Open'
+            WHERE event_id = ?
+        ");
+        $update_stmt->bind_param("ss", $new_status, $event_id);
+
+    } elseif ($new_status === 'Cancelled') {
+
+        // Cancelled → Registration Closed
+        $update_stmt = $conn->prepare("
+            UPDATE events
+            SET event_status = ?, registration_status = 'Closed'
+            WHERE event_id = ?
+        ");
+        $update_stmt->bind_param("ss", $new_status, $event_id);
+
+    } else {
+
+        // Pending / Rejected → only update event status
+        $update_stmt = $conn->prepare("
+            UPDATE events
+            SET event_status = ?
+            WHERE event_id = ?
+        ");
+        $update_stmt->bind_param("ss", $new_status, $event_id);
+    }
+
     $update_stmt->execute();
 
     header("Location: admin_event_view.php?id=" . urlencode($event_id));
@@ -60,17 +86,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
+<div class="main-content">
+<main class="dashboard">
 
-  <div class="main-content">
-    <main class="dashboard">
 <div class="page-title-bar">
     <a href="admin_event.php" class="icon-btn back-btn">↩</a>
     <h2><?= htmlspecialchars($event['event_id']) ?></h2>
 </div>
 
 <!-- =====================
-     EVENT REView CARD
-     ===================== -->
+     EVENT REVIEW CARD
+===================== -->
 <div class="section-preview" style="max-width:800px; margin:auto;">
 
 <form method="POST">
@@ -110,9 +136,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="text" value="<?= htmlspecialchars($event['event_created_by']) ?>" readonly>
     </div>
 
+    <div class="form-group">
+        <label>Registration Status</label>
+        <input type="text" value="<?= htmlspecialchars($event['registration_status']) ?>" readonly>
+    </div>
+
+    <div class="form-group">
+        <label>Attendance Code</label>
+        <input type="text" value="<?= htmlspecialchars($event['event_attendance_code']) ?>" readonly>
+    </div>
+
     <!-- =====================
-         STATUS (EditABLE)
-         ===================== -->
+         STATUS (EDITABLE)
+    ===================== -->
     <div class="form-group">
         <label>Event Status</label>
         <select name="event_status" required>
@@ -123,22 +159,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </select>
     </div>
 
-    <div class="form-group">
-        <label>Event QR Code</label>
-        <input type="text" value="<?= htmlspecialchars($event['event_qr_code_url']) ?>" readonly>
-    </div>
-
     <!-- =====================
          ACTION BUTTONS
-         ===================== -->
+    ===================== -->
     <div style="display:flex; justify-content:center; gap:20px; margin-top:30px;">
         <a href="admin_event.php" class="btn">Cancel</a>
-        <button type="submit" class="btn">Edit</button>
+        <button type="submit" class="btn">Update</button>
     </div>
 
 </form>
+
 </div>
-    </main>
-  </div>
+</main>
+</div>
 
 <?php include "admin_footer.php"; ?>

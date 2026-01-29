@@ -26,7 +26,8 @@ $stmt = $conn->prepare("
         event_location,
         event_created_by,
         event_status,
-        event_qr_code_url
+        registration_status,
+        event_attendance_code
     FROM events
     WHERE event_id = ?
 ");
@@ -53,7 +54,6 @@ $media_stmt->bind_param("s", $event_id);
 $media_stmt->execute();
 $media_result = $media_stmt->get_result();
 
-
 /* =====================
    FETCH TOTAL ATTENDANCE
 ===================== */
@@ -67,21 +67,19 @@ $att_stmt->execute();
 $attendance = $att_stmt->get_result()->fetch_assoc();
 
 $total_attendance = $attendance['total_attendance'] ?? 0;
-
-
 ?>
-
 
 <div class="main-content">
 <main class="dashboard">
+
 <div class="page-title-bar">
     <a href="admin_event.php" class="icon-btn back-btn">↩</a>
     <h2><?= htmlspecialchars($event['event_id']) ?></h2>
 </div>
 
 <!-- =====================
-     EVENT DETAILS CARD
-     ===================== -->
+     EVENT DETAILS
+===================== -->
 <div class="section-preview" style="max-width:800px; margin:auto;">
 
     <div class="form-group">
@@ -125,19 +123,23 @@ $total_attendance = $attendance['total_attendance'] ?? 0;
     </div>
 
     <div class="form-group">
-    <label>Total Attendance</label>
-    <input type="text" value="<?= htmlspecialchars($total_attendance) ?>" readonly>
-</div>
-
+        <label>Registration Status</label>
+        <input type="text" value="<?= htmlspecialchars($event['registration_status']) ?>" readonly>
+    </div>
 
     <div class="form-group">
-        <label>Event QR Code</label>
-        <input type="text" value="<?= htmlspecialchars($event['event_qr_code_url']) ?>" readonly>
+        <label>Attendance Code</label>
+        <input type="text" value="<?= htmlspecialchars($event['event_attendance_code']) ?>" readonly>
+    </div>
+
+    <div class="form-group">
+        <label>Total Attendance</label>
+        <input type="text" value="<?= htmlspecialchars($total_attendance) ?>" readonly>
     </div>
 
     <!-- =====================
          EVENT MEDIA
-         ===================== -->
+    ===================== -->
     <div class="form-group">
         <label>Event Media</label>
 
@@ -145,9 +147,9 @@ $total_attendance = $attendance['total_attendance'] ?? 0;
             <?php if ($media_result->num_rows > 0): ?>
                 <?php while ($media = $media_result->fetch_assoc()): ?>
                     <img
-                      src="<?= htmlspecialchars($media['event_media_file_path']) ?>"
-                      alt="Event Media"
-                      style="width:150px; height:150px; object-fit:cover; border:1px solid #ccc;"
+                        src="<?= htmlspecialchars($media['event_media_file_path']) ?>"
+                        alt="Event Media"
+                        style="width:150px; height:150px; object-fit:cover; border:1px solid #ccc;"
                     >
                 <?php endwhile; ?>
             <?php else: ?>
@@ -158,7 +160,7 @@ $total_attendance = $attendance['total_attendance'] ?? 0;
 
     <!-- =====================
          ACTION BUTTONS
-         ===================== -->
+    ===================== -->
     <div style="text-align:center; margin-top:25px;">
         <a href="admin_event_attendance.php?id=<?= urlencode($event_id) ?>" class="btn">
             View Attendance
@@ -170,7 +172,7 @@ $total_attendance = $attendance['total_attendance'] ?? 0;
     </div>
 
 </div>
+</main>
 </div>
-            </main>
 
 <?php include "admin_footer.php"; ?>

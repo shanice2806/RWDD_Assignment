@@ -213,7 +213,7 @@ body {
 }
 
 .menu-first {
-  margin-top: 80px;
+  margin-top: 150px;
 }
 
 .sidebar-open .main-content {
@@ -534,7 +534,6 @@ main.dashboard {
     padding: 10px 12px;
     flex-wrap: wrap;
   }
-
   .main-content {
     padding: 15px;
   }
