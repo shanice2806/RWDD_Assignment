@@ -128,7 +128,7 @@ $log = $result->fetch_assoc();
     </div>
 
     <div class="form-group">
-        <label>Flag Reason</label>
+        <label>Reason</label>
         <input type="text" value="<?= htmlspecialchars($log['flag_reason'] ?? '-') ?>" readonly>
     </div>
 

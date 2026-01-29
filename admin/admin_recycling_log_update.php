@@ -153,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- FLAG REASON -->
         <div class="form-group">
-            <label>Flag Reason :</label>
+            <label>Reason :</label>
             <textarea
                 name="flag_reason"
                 id="flagReason"
