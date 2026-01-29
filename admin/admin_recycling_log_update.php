@@ -137,6 +137,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
 
             $insert->execute();
+
+                /* =====================
+                UPDATE USER ECO POINTS (+points)
+                ===================== */
+                $updateUserPoints = $conn->prepare("
+                    UPDATE users
+                    SET eco_points = eco_points + ?
+                    WHERE user_id = ?
+                ");
+
+                $updateUserPoints->bind_param(
+                    "is",
+                    $points_change,   // positive points
+                    $user_id          // owner of the recycling log
+                );
+
+                $updateUserPoints->execute();
+
+                if ($updateUserPoints->affected_rows === 0) {
+                    throw new Exception("Failed to update user eco points.");
+                }
+
+
+            
         }
     }
 
