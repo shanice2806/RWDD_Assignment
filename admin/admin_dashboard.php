@@ -89,36 +89,50 @@ $total_reported_content = getCount($conn, "SELECT COUNT(*) as total_reported_con
         </tr>
     </thead>
     <tbody>
-    <?php
-    $top_users_query = "
-        SELECT user_id, name, eco_points, badges
-        FROM users
-        ORDER BY eco_points DESC
-        LIMIT 5
-    ";
-    $top_users_result = $conn->query($top_users_query);
+   <?php
+$top_users_query = "
+    SELECT 
+        u.user_id,
+        u.name,
+        u.badges,
+        COALESCE(SUM(ept.points_change), 0) AS total_points
+    FROM users u
+    LEFT JOIN eco_points_transactions ept
+        ON u.user_id = ept.user_id
+    GROUP BY u.user_id, u.name, u.badges
+    ORDER BY total_points DESC
+    LIMIT 5
+";
 
-    if ($top_users_result && $top_users_result->num_rows > 0) {
-        $rank = 1;
-        while ($user = $top_users_result->fetch_assoc()) {
-            echo "<tr>";
-            echo "<td>" . $rank++ . "</td>";
-            echo "<td>" . htmlspecialchars($user['name']) . "</td>";
-            echo "<td>" . htmlspecialchars($user['user_id']) . "</td>";
-            echo "<td>" . htmlspecialchars($user['eco_points']) . "</td>";
-            echo "<td>" . htmlspecialchars($user['badges']) . "</td>";
-            echo "<td>
-                    <a href='admin_points_transaction.php?id=" . urlencode($user['user_id']) . "' 
-                       class='action-btn'>
-                       View
-                    </a>
-                  </td>";
-            echo "</tr>";
-        }
-    } else {
-        echo "<tr><td colspan='6'>No top users found.</td></tr>";
+$top_users_result = $conn->query($top_users_query);
+
+if ($top_users_result && $top_users_result->num_rows > 0) {
+    $rank = 1;
+    while ($user = $top_users_result->fetch_assoc()) {
+
+        // ✅ Handle NULL / empty badges
+        $badges = (!empty($user['badges'])) ? $user['badges'] : '-';
+
+        echo "<tr>";
+        echo "<td>" . $rank++ . "</td>";
+        echo "<td>" . htmlspecialchars($user['name']) . "</td>";
+        echo "<td>" . htmlspecialchars($user['user_id']) . "</td>";
+        echo "<td>" . htmlspecialchars($user['total_points']) . "</td>";
+        echo "<td>" . htmlspecialchars($badges) . "</td>";
+        echo "<td>
+                <a href='admin_points_transaction.php?id=" . urlencode($user['user_id']) . "' 
+                   class='action-btn'>
+                   View
+                </a>
+              </td>";
+        echo "</tr>";
     }
-    ?>
+} else {
+    echo "<tr><td colspan='6'>No top users found.</td></tr>";
+}
+?>
+
+
     </tbody>
 </table>
 

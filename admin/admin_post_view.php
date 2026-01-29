@@ -17,14 +17,182 @@ $post_id = $_GET['id'];
    HANDLE VALID ACTION
 ===================== */
 if (isset($_GET['action']) && $_GET['action'] === 'valid') {
-    $update = $conn->prepare("
-        UPDATE posts
-        SET is_flagged = 0,
-            report_count = 0
-        WHERE post_id = ?
-    ");
-    $update->bind_param("s", $post_id);
-    $update->execute();
+
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    if (!isset($_SESSION['user_id'])) {
+        die("You must be logged in to validate reports.");
+    }
+
+    $admin_id = $_SESSION['user_id'];
+
+    $conn->begin_transaction();
+
+    try {
+        /* Update POSTS */
+        $stmt1 = $conn->prepare("
+            UPDATE posts
+            SET report_valid_status = 'VALID',
+                is_flagged = 1,
+                post_status = 'Hidden',
+                validated_by = ?
+            WHERE post_id = ?
+        ");
+        $stmt1->bind_param("ss", $admin_id, $post_id);
+        $stmt1->execute();
+
+        /* Update POST_REPORTS */
+        $stmt2 = $conn->prepare("
+            UPDATE post_reports
+            SET is_valid = 1,
+                validated_by = ?
+            WHERE post_id = ?
+        ");
+        $stmt2->bind_param("ss", $admin_id, $post_id);
+        $stmt2->execute();
+
+
+/* =====================
+   HANDLE INVALID ACTION
+===================== */
+if (isset($_GET['action']) && $_GET['action'] === 'invalid') {
+
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    if (!isset($_SESSION['user_id'])) {
+        die("You must be logged in to validate reports.");
+    }
+
+    $admin_id = $_SESSION['user_id'];
+
+    $conn->begin_transaction();
+
+    try {
+        /* Update POSTS (mark report as NOT valid) */
+        $stmt1 = $conn->prepare("
+            UPDATE posts
+            SET report_valid_status = 'NOT_VALID',
+                is_flagged = 0,
+                validated_by = ?
+            WHERE post_id = ?
+        ");
+        $stmt1->bind_param("ss", $admin_id, $post_id);
+        $stmt1->execute();
+
+        /* Update POST_REPORTS (mark all reports as invalid) */
+        $stmt2 = $conn->prepare("
+            UPDATE post_reports
+            SET is_valid = 0,
+                validated_by = ?
+            WHERE post_id = ?
+        ");
+        $stmt2->bind_param("ss", $admin_id, $post_id);
+        $stmt2->execute();
+
+        $conn->commit();
+
+        header("Location: admin_post_view.php?id=" . urlencode($post_id));
+        exit();
+
+    } catch (Exception $e) {
+        $conn->rollback();
+        die("Invalid action failed: " . $e->getMessage());
+    }
+}
+
+
+        
+        /* =====================
+   DEDUCT ECO POINTS (-15)
+===================== */
+
+/* Get post owner */
+$ownerStmt = $conn->prepare("
+    SELECT user_id
+    FROM posts
+    WHERE post_id = ?
+");
+$ownerStmt->bind_param("s", $post_id);
+$ownerStmt->execute();
+$ownerResult = $ownerStmt->get_result();
+
+if ($ownerResult->num_rows === 0) {
+    throw new Exception("Post owner not found.");
+}
+
+$post_owner_id = $ownerResult->fetch_assoc()['user_id'];
+
+/* =====================
+   GENERATE TRANSACTION ID
+===================== */
+$count_result = $conn->query("
+    SELECT COUNT(*) AS total
+    FROM eco_points_transactions
+");
+$count = $count_result->fetch_assoc()['total'] + 1;
+$transaction_id = 'ept_' . str_pad($count, 3, '0', STR_PAD_LEFT);
+
+/* Eco points values */
+$points_change = -15;
+$description = "Points deducted due to a valid report on post {$post_id}";
+
+/* Insert eco points transaction */
+$insert = $conn->prepare("
+    INSERT INTO eco_points_transactions
+        (transaction_id, user_id, source_id, points_change, description, created_at)
+    VALUES (?, ?, ?, ?, ?, NOW())
+");
+
+$insert->bind_param(
+    "sssds",
+    $transaction_id,
+    $post_owner_id,
+    $post_id,
+    $points_change,
+    $description
+);
+
+$insert->execute();
+
+if ($insert->affected_rows === 0) {
+    throw new Exception("Eco points transaction insert failed.");
+}
+
+/* =====================
+   UPDATE USER ECO POINTS (-15)
+===================== */
+$updateUserPoints = $conn->prepare("
+    UPDATE users
+    SET eco_points = eco_points + ?
+    WHERE user_id = ?
+");
+
+$updateUserPoints->bind_param(
+    "is",
+    $points_change,   // this is -15
+    $post_owner_id
+);
+
+$updateUserPoints->execute();
+
+if ($updateUserPoints->affected_rows === 0) {
+    throw new Exception("Failed to update user eco points.");
+}
+
+
+        $conn->commit();
+
+        header("Location: admin_post_view.php?id=" . urlencode($post_id));
+        exit();
+
+    } catch (Exception $e) {
+        $conn->rollback();
+        die("Validation failed: " . $e->getMessage());
+    }
 }
 
 /* =====================
@@ -42,6 +210,8 @@ $stmt = $conn->prepare("
         like_count,
         comment_count,
         report_count,
+        report_valid_status,
+        validated_by,
         is_flagged,
         post_created_at
     FROM posts
@@ -71,7 +241,7 @@ $mStmt->execute();
 $mediaResult = $mStmt->get_result();
 
 /* =====================
-   FETCH REPORTS (IF ANY)
+   FETCH REPORTS
 ===================== */
 $reports = [];
 if ($post['report_count'] > 0) {
@@ -86,7 +256,6 @@ if ($post['report_count'] > 0) {
     $reports = $rStmt->get_result();
 }
 ?>
-
 
 <div class="main-content">
 <main class="dashboard">
@@ -111,12 +280,10 @@ if ($post['report_count'] > 0) {
         <input type="text" value="<?= htmlspecialchars($post['post_created_at']) ?>" readonly>
     </div>
 
-    <?php if (!isset($_GET['action']) || $_GET['action'] !== 'valid'): ?>
     <div class="form-group">
-        <label>Status</label>
+        <label>Post Status</label>
         <input type="text" value="<?= htmlspecialchars($post['post_status']) ?>" readonly>
     </div>
-    <?php endif; ?>
 
     <div class="form-group">
         <label>Category ID</label>
@@ -132,74 +299,31 @@ if ($post['report_count'] > 0) {
         <label>Post Content</label>
         <textarea rows="6" readonly><?= htmlspecialchars($post['body']) ?></textarea>
     </div>
-<!-- =====================
-     POST MEDIA
-===================== -->
+
 <?php if ($mediaResult->num_rows > 0): ?>
 <div class="form-group">
     <label>Post Media</label>
-
-    <div style="
-    display:flex;
-    flex-direction:column;
-    gap:25px;
-    align-items:center;
-    margin-top:15px;
-">
-
-
-    <?php while ($media = $mediaResult->fetch_assoc()): ?>
-
-        <?php if ($media['media_type'] === 'image' && !empty($media['file_path'])): ?>
-
-            <img
-                src="../images/post_media/<?= htmlspecialchars($media['file_path']) ?>"
-                alt="Post Image"
-                style="
-                    max-width:420px;
-                    max-height:380px;
-                    object-fit:cover;
-                    border-radius:8px;
-                    border:1px solid #ccc;
-                "
-            >
-
-        <?php elseif ($media['media_type'] === 'video' && !empty($media['video_url'])): ?>
-
-            <iframe
-                width="280"
-                height="160"
-                src="<?= htmlspecialchars(str_replace('watch?v=', 'embed/', $media['video_url'])) ?>"
-                frameborder="0"
-                allowfullscreen
-                style="border-radius:8px; border:1px solid #ccc;"
-            ></iframe>
-
-        <?php endif; ?>
-
-    <?php endwhile; ?>
-
+    <div style="display:flex; flex-direction:column; gap:20px; align-items:center;">
+        <?php while ($media = $mediaResult->fetch_assoc()): ?>
+            <?php if ($media['media_type'] === 'image'): ?>
+                <img src="../images/post_media/<?= htmlspecialchars($media['file_path']) ?>"
+                     style="max-width:420px; border-radius:8px;">
+            <?php elseif ($media['media_type'] === 'video'): ?>
+                <iframe width="280" height="160"
+                        src="<?= htmlspecialchars(str_replace('watch?v=', 'embed/', $media['video_url'])) ?>"
+                        allowfullscreen></iframe>
+            <?php endif; ?>
+        <?php endwhile; ?>
     </div>
 </div>
 <?php endif; ?>
 
-
-    <div class="form-group">
-        <label>Like Count</label>
-        <input type="text" value="<?= (int)$post['like_count'] ?>" readonly>
-    </div>
-
-    <div class="form-group">
-        <label>Comment Count</label>
-        <input type="text" value="<?= (int)$post['comment_count'] ?>" readonly>
-    </div>
 </div>
 
 <!-- =====================
      REPORT SUMMARY
 ===================== -->
 <?php if ($post['report_count'] > 0): ?>
-
 <div class="section-preview" style="max-width:800px; margin:auto; margin-top:30px;">
 
     <h3 style="text-align:center;">Report Summary</h3>
@@ -210,27 +334,35 @@ if ($post['report_count'] > 0) {
     </div>
 
     <div class="form-group">
+        <label>Report Validation Status</label>
+        <input type="text" value="<?= $post['report_valid_status'] ?? 'Pending Review' ?>" readonly>
+    </div>
+
+    <div class="form-group">
+        <label>Validated By</label>
+        <input type="text" value="<?= $post['validated_by'] ?? '-' ?>" readonly>
+    </div>
+
+    <div class="form-group">
         <label>Report Reasons</label>
-        <textarea rows="3" readonly>
-<?php
-$reasons = [];
-$reports->data_seek(0);
-while ($r = $reports->fetch_assoc()) {
-    $reasons[] = "- " . $r['report_reason'];
-}
-echo htmlspecialchars(implode("\n", $reasons));
-?>
-        </textarea>
+        <textarea rows="4" readonly><?php
+            $reasons = [];
+            $reports->data_seek(0);
+            while ($r = $reports->fetch_assoc()) {
+                $reasons[] = "- " . $r['report_reason'];
+            }
+            echo htmlspecialchars(implode("\n", $reasons));
+        ?></textarea>
     </div>
 
     <div class="form-group">
         <label>Report Details</label>
-        <div style="max-height:180px; overflow:auto; border:1px solid #ccc;">
+        <div style="max-height:180px; overflow:auto;">
             <table class="eco-table">
                 <thead>
                     <tr>
                         <th>User ID</th>
-                        <th>Reported Date</th>
+                        <th>Date</th>
                         <th>Reason</th>
                     </tr>
                 </thead>
@@ -250,18 +382,21 @@ echo htmlspecialchars(implode("\n", $reasons));
         </div>
     </div>
 
-    <div style="display:flex; justify-content:center; gap:20px; margin-top:25px;">
-        <a href="admin_post_view.php?id=<?= urlencode($post_id) ?>&action=valid" class="btn">
-            Valid
-        </a>
-        <a href="admin_post_update.php?id=<?= urlencode($post_id) ?>&action=invalid" class="btn">
-            Invalid
-        </a>
-    </div>
+<?php if (empty($post['report_valid_status'])): ?>
+<div style="display:flex; justify-content:center; gap:20px; margin-top:25px;">
+    <a href="admin_post_view.php?id=<?= urlencode($post_id) ?>&action=valid" class="btn">Valid</a>
+    <a href="admin_post_update.php?id=<?= urlencode($post_id) ?>&action=invalid" class="btn">Invalid</a>
 </div>
-</div>
-</main>
-
+<?php else: ?>
+<p style="text-align:center; margin-top:20px; color:#555;">
+    This report has already been reviewed.
+</p>
 <?php endif; ?>
+
+</div>
+<?php endif; ?>
+
+</main>
+</div>
 
 <?php include "admin_footer.php"; ?>
