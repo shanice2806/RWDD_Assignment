@@ -75,10 +75,18 @@ if (!empty($selected_event_id)) {
         }
     }
 }
-
-include 'organizer_header.php';
-include 'organizer_sidebar.php';
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Volunteer Hours - Event Organizer</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/organizer.css">
+</head>
+<body>
+  <?php include 'organizer_header.php'; ?>
 
 <div class="dashboard-container">
     <div class="main-content">
@@ -173,7 +181,7 @@ include 'organizer_sidebar.php';
                 </form>
 
                 <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center;">
-                    <a href="organizer_award_badges.php?event_id=<?= $selected_event_id ?>" class="action-btn">Award Badges</a>
+                    <a href="organizer_award_ecopoints.php?event_id=<?= $selected_event_id ?>" class="action-btn">Award Eco-Points</a>
                     <a href="organizer_volunteer_list.php?event_id=<?= $selected_event_id ?>" class="action-btn">View Volunteer List</a>
                 </div>
             <?php else: ?>
@@ -208,3 +216,5 @@ function updateVolunteerInfo() {
 </script>
 
 <?php include 'organizer_footer.php'; ?>
+</body>
+</html>
