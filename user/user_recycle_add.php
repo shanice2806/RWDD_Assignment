@@ -17,7 +17,9 @@ function redirectErr($code) {
   exit();
 }
 
-$userSql = "SELECT name, eco_points , profile_image FROM users WHERE user_id = ? LIMIT 1";
+$AUTO_APPROVE_MAX_KG = 5.0; 
+
+$userSql = "SELECT name, eco_points, profile_image FROM users WHERE user_id = ? LIMIT 1";
 $stmt = mysqli_prepare($conn, $userSql);
 mysqli_stmt_bind_param($stmt, "s", $user_id);
 mysqli_stmt_execute($stmt);
@@ -27,11 +29,19 @@ mysqli_stmt_close($stmt);
 
 $profileImg = "../images/profile.png";
 if (!empty($user["profile_image"])) {
-  $try = "../" . ltrim($user["profile_image"], "/");
+  $try  = "../" . ltrim($user["profile_image"], "/");
   $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
-  if (file_exists($disk)) {
-    $profileImg = $try;
-  }
+  if (file_exists($disk)) $profileImg = $try;
+}
+
+$materials = [];
+$matSql = "SELECT material_id, materials_name
+           FROM materials
+           WHERE is_active = 1
+           ORDER BY materials_name ASC";
+$matRes = mysqli_query($conn, $matSql);
+if ($matRes) {
+  while ($row = mysqli_fetch_assoc($matRes)) $materials[] = $row;
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -41,11 +51,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   $location    = trim($_POST["location"] ?? "");
 
   if ($material_id === "" || $weight_kg === "" || $location === "") {
-    redirectErr(1); 
+    redirectErr(1);
   }
 
+  if (!is_numeric($weight_kg)) redirectErr(7);
+  $weight_kg = (float)$weight_kg;
+  if ($weight_kg <= 0) redirectErr(8);
+
   if (!isset($_FILES["photo"]) || $_FILES["photo"]["error"] !== UPLOAD_ERR_OK) {
-    redirectErr(2); 
+    redirectErr(2);
   }
 
   $allowedExt = ["jpg", "jpeg", "png"];
@@ -55,83 +69,145 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   $origName = $_FILES["photo"]["name"];
   $fileSize = (int)($_FILES["photo"]["size"] ?? 0);
 
-  if ($fileSize <= 0 || $fileSize > $maxSize) {
-    redirectErr(3);
-  }
+  if ($fileSize <= 0 || $fileSize > $maxSize) redirectErr(3);
 
   $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
-  if (!in_array($ext, $allowedExt)) {
-    redirectErr(4);
+  if (!in_array($ext, $allowedExt)) redirectErr(4);
+
+  if (@getimagesize($tmpPath) === false) redirectErr(5);
+
+
+  $rule_id = "";
+  $points_per_kg = 0;
+
+  $ruleSql = "SELECT rule_id, points_per_kg
+              FROM eco_points_rules
+              WHERE is_active = 1
+                AND rule_type = 'RECYCLE'
+                AND material_id = ?
+              LIMIT 1";
+  $rStmt = mysqli_prepare($conn, $ruleSql);
+  mysqli_stmt_bind_param($rStmt, "s", $material_id);
+  mysqli_stmt_execute($rStmt);
+  $rRes = mysqli_stmt_get_result($rStmt);
+  $ruleRow = mysqli_fetch_assoc($rRes);
+  mysqli_stmt_close($rStmt);
+
+  if (!$ruleRow) {
+    redirectErr(9);
   }
 
-  if (@getimagesize($tmpPath) === false) {
-    redirectErr(5);
+  $rule_id = $ruleRow["rule_id"];
+  $points_per_kg = (float)$ruleRow["points_per_kg"];
+
+  $material_name = $material_id;
+  $mnSql = "SELECT materials_name FROM materials WHERE material_id=? LIMIT 1";
+  $mnStmt = mysqli_prepare($conn, $mnSql);
+  mysqli_stmt_bind_param($mnStmt, "s", $material_id);
+  mysqli_stmt_execute($mnStmt);
+  $mnRes = mysqli_stmt_get_result($mnStmt);
+  if ($mnRow = mysqli_fetch_assoc($mnRes)) $material_name = $mnRow["materials_name"];
+  mysqli_stmt_close($mnStmt);
+
+
+  $status = "VALID";
+  $is_flagged = 0;
+  $flag_reason = NULL;
+
+  if ($weight_kg > $AUTO_APPROVE_MAX_KG) {
+    $status = "PENDING";
+    $is_flagged = 1;
+    $flag_reason = "Weight exceeds " . $AUTO_APPROVE_MAX_KG . "kg. Pending admin approval.";
+  }
+
+  $points_awarded = 0;
+  if ($status === "VALID") {
+    $points_awarded = (int) round($weight_kg * $points_per_kg);
+    if ($points_awarded < 0) $points_awarded = 0;
   }
 
   $uploadDir = __DIR__ . "/../images/recycling_proof/";
-  if (!is_dir($uploadDir)) {
-    mkdir($uploadDir, 0777, true);
-  }
-
+if (!is_dir($uploadDir)) {
+  die("Upload folder not found: ../images/recycling_proof/");
+}
   $log_id = "rl_" . uniqid();
 
-  $newFileName   = $log_id . "." . $ext;
-  $destFullPath  = $uploadDir . $newFileName;
+  $newFileName  = $log_id . "." . $ext;
+  $destFullPath = $uploadDir . $newFileName;
 
+  $photo_path = "imagess/recycling_proof/" . $newFileName;
 
-  $photo_path = "images/recycling_proof/" . $newFileName;
+  if (!move_uploaded_file($tmpPath, $destFullPath)) redirectErr(6);
 
-  if (!move_uploaded_file($tmpPath, $destFullPath)) {
-    redirectErr(6);
-  }
+  $event_id     = NULL;
+  $submitted_at = date("Y-m-d H:i:s");
 
-  $event_id        = NULL;
-  $submitted_at    = date("Y-m-d H:i:s");
-  $status          = "pending"; 
-  $points_awarded  = 0;
-  $is_flagged      = 0;
-  $flag_reason     = NULL;
+  mysqli_begin_transaction($conn);
 
-  $sql = "
-    INSERT INTO recycling_log
-    (log_id, user_id, material_id, event_id, weight_kg, location, photo_path,
-     submitted_at, status, points_awarded, is_flagged, flag_reason)
-    VALUES
-    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  ";
+  try {
+    $insSql = "
+      INSERT INTO recycling_log
+      (log_id, user_id, material_id, rule_id, event_id, weight_kg, location, photo_path,
+       submitted_at, status, points_awarded, is_flagged, flag_reason)
+      VALUES
+      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ";
+    $ins = mysqli_prepare($conn, $insSql);
+    if (!$ins) throw new Exception("Prepare failed: " . mysqli_error($conn));
 
-  $ins = mysqli_prepare($conn, $sql);
-  if (!$ins) {
+    mysqli_stmt_bind_param(
+      $ins,
+      "sssssdssssiis",
+      $log_id,
+      $user_id,
+      $material_id,
+      $rule_id,
+      $event_id,
+      $weight_kg,
+      $location,
+      $photo_path,
+      $submitted_at,
+      $status,
+      $points_awarded,
+      $is_flagged,
+      $flag_reason
+    );
+
+    if (!mysqli_stmt_execute($ins)) throw new Exception("Insert log failed: " . mysqli_stmt_error($ins));
+    mysqli_stmt_close($ins);
+
+    if ($status === "VALID" && $points_awarded > 0) {
+
+      $upSql = "UPDATE users SET eco_points = eco_points + ? WHERE user_id = ? LIMIT 1";
+      $up = mysqli_prepare($conn, $upSql);
+      mysqli_stmt_bind_param($up, "is", $points_awarded, $user_id);
+      if (!mysqli_stmt_execute($up)) throw new Exception("Update points failed: " . mysqli_stmt_error($up));
+      mysqli_stmt_close($up);
+
+      $transaction_id = "ept_" . uniqid();
+      $source_id = $log_id;
+      $desc = "Points awarded for recycling " . $material_name . " (" . number_format($weight_kg, 2) . " kg).";
+
+      $txSql = "
+        INSERT INTO eco_points_transactions
+        (transaction_id, user_id, source_id, points_change, description, created_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+      ";
+      $tx = mysqli_prepare($conn, $txSql);
+      mysqli_stmt_bind_param($tx, "sssiss", $transaction_id, $user_id, $source_id, $points_awarded, $desc, $submitted_at);
+      if (!mysqli_stmt_execute($tx)) throw new Exception("Insert transaction failed: " . mysqli_stmt_error($tx));
+      mysqli_stmt_close($tx);
+    }
+
+    mysqli_commit($conn);
+    header("Location: user_recycle.php?submitted=1");
+    exit();
+
+  } catch (Exception $e) {
+    mysqli_rollback($conn);
     @unlink($destFullPath);
-    die("SQL prepare error: " . mysqli_error($conn));
+    die("Error: " . htmlspecialchars($e->getMessage()));
   }
-
-  mysqli_stmt_bind_param(
-    $ins,
-    "sssssssssiis",
-    $log_id,
-    $user_id,
-    $material_id,
-    $event_id,
-    $weight_kg,
-    $location,
-    $photo_path,
-    $submitted_at,
-    $status,
-    $points_awarded,
-    $is_flagged,
-    $flag_reason
-  );
-
-  if (!mysqli_stmt_execute($ins)) {
-    @unlink($destFullPath);
-    die("Insert error: " . mysqli_stmt_error($ins));
-  }
-
-  mysqli_stmt_close($ins);
-
-  header("Location: user_recycle.php?submitted=1");
-  exit();
 }
 
 $matPrev = trim($_POST["material_id"] ?? "");
@@ -261,6 +337,9 @@ $locPrev = trim($_POST["location"] ?? "");
           if ($err === 4) $msg = "❌ Only JPG / JPEG / PNG allowed.";
           if ($err === 5) $msg = "❌ File is not a valid image.";
           if ($err === 6) $msg = "❌ Upload failed, please try again.";
+          if ($err === 7) $msg = "❌ Weight must be a number.";
+          if ($err === 8) $msg = "❌ Weight must be more than 0.";
+          if ($err === 9) $msg = "❌ No points rule found for this material. (Admin need set eco_points_rules)";
         ?>
         <div class="msg msg-error"><?php echo $msg; ?></div>
       <?php endif; ?>
@@ -278,11 +357,12 @@ $locPrev = trim($_POST["location"] ?? "");
         <label for="material_id">Materials</label>
         <select id="material_id" name="material_id" required>
           <option value="">-- Select Materials Type --</option>
-          <option value="mat_001" <?php if($matPrev==="mat_001") echo "selected"; ?>>mat_001 (Plastic)</option>
-          <option value="mat_002" <?php if($matPrev==="mat_002") echo "selected"; ?>>mat_002 (Tin)</option>
-          <option value="mat_003" <?php if($matPrev==="mat_003") echo "selected"; ?>>mat_003 (Paper)</option>
-          <option value="mat_004" <?php if($matPrev==="mat_004") echo "selected"; ?>>mat_004 (Glass)</option>
-          <option value="mat_005" <?php if($matPrev==="mat_005") echo "selected"; ?>>mat_005 (Others)</option>
+          <?php foreach ($materials as $m): ?>
+            <option value="<?php echo htmlspecialchars($m["material_id"]); ?>"
+              <?php if ($matPrev === $m["material_id"]) echo "selected"; ?>>
+              <?php echo htmlspecialchars($m["material_id"] . " (" . $m["materials_name"] . ")"); ?>
+            </option>
+          <?php endforeach; ?>
         </select>
 
         <label for="location">Location (Recycle Point)</label>

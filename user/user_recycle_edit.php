@@ -17,8 +17,11 @@ function go($url) {
   exit();
 }
 function goErr($log_id, $errCode) {
-  go("recycle_edit.php?log_id=" . urlencode($log_id) . "&err=" . (int)$errCode);
+  go("user_recycle_edit.php?log_id=" . urlencode($log_id) . "&err=" . (int)$errCode);
 }
+
+
+$AUTO_APPROVE_MAX_KG = 5.0;
 
 $userSql = "SELECT name, eco_points, profile_image FROM users WHERE user_id = ? LIMIT 1";
 $uStmt = mysqli_prepare($conn, $userSql);
@@ -29,20 +32,23 @@ $user  = mysqli_fetch_assoc($uRes) ?: ["name" => "User", "eco_points" => 0, "pro
 mysqli_stmt_close($uStmt);
 
 $profileImg = "../images/profile.png";
-
 if (!empty($user["profile_image"])) {
   $try = "../" . ltrim($user["profile_image"], "/");
   $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
-  if (file_exists($disk)) {
-    $profileImg = $try;
-  }
+  if (file_exists($disk)) $profileImg = $try;
+}
+
+$materials = [];
+$matSql = "SELECT material_id, materials_name FROM materials WHERE is_active=1 ORDER BY materials_name ASC";
+$matRes = mysqli_query($conn, $matSql);
+if ($matRes) {
+  while ($row = mysqli_fetch_assoc($matRes)) $materials[] = $row;
 }
 
 $log_id = trim($_GET["log_id"] ?? "");
-if ($log_id === "") {
-  go("user_recycle.php");
-}
-$getSql = "SELECT log_id, material_id, weight_kg, location, photo_path, status
+if ($log_id === "") go("user_recycle.php");
+
+$getSql = "SELECT log_id, material_id, rule_id, weight_kg, location, photo_path, status, points_awarded
            FROM recycling_log
            WHERE log_id=? AND user_id=?
            LIMIT 1";
@@ -53,8 +59,29 @@ $getRes = mysqli_stmt_get_result($getStmt);
 $log = mysqli_fetch_assoc($getRes);
 mysqli_stmt_close($getStmt);
 
-if (!$log) {
-  go("user_recycle.php");
+if (!$log) go("user_recycle.php");
+
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["delete_photo"])) {
+
+  $current = trim($log["photo_path"] ?? "");
+
+  if ($current !== "" && str_starts_with($current, "images/recycling_proof/")) {
+    $full = __DIR__ . "/../" . $current;
+    if (is_file($full)) {
+      @unlink($full);
+    }
+  }
+
+  $updPhotoSql = "UPDATE recycling_log
+                  SET photo_path=NULL
+                  WHERE log_id=? AND user_id=?
+                  LIMIT 1";
+  $pStmt = mysqli_prepare($conn, $updPhotoSql);
+  mysqli_stmt_bind_param($pStmt, "ss", $log_id, $user_id);
+  mysqli_stmt_execute($pStmt);
+  mysqli_stmt_close($pStmt);
+
+  go("user_recycle_edit.php?log_id=" . urlencode($log_id) . "&photo_deleted=1");
 }
 
 
@@ -68,50 +95,90 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["save_log"])) {
     goErr($log_id, 1);
   }
 
-  $photo_path = $log["photo_path"] ?? "";
+  if (!is_numeric($weight_kg)) goErr($log_id, 7);
+  $weight_kg = (float)$weight_kg;
+  if ($weight_kg <= 0) goErr($log_id, 8);
 
+  $oldStatus = strtoupper(trim($log["status"] ?? "PENDING"));
+  $oldPoints = (int)($log["points_awarded"] ?? 0);
+
+  $rule_id = "";
+  $points_per_kg = 0;
+
+  $ruleSql = "SELECT rule_id, points_per_kg
+              FROM eco_points_rules
+              WHERE is_active = 1
+                AND rule_type = 'RECYCLE'
+                AND material_id = ?
+              LIMIT 1";
+  $rStmt = mysqli_prepare($conn, $ruleSql);
+  mysqli_stmt_bind_param($rStmt, "s", $material_id);
+  mysqli_stmt_execute($rStmt);
+  $rRes = mysqli_stmt_get_result($rStmt);
+  $ruleRow = mysqli_fetch_assoc($rRes);
+  mysqli_stmt_close($rStmt);
+
+  if (!$ruleRow) goErr($log_id, 9);
+
+  $rule_id = $ruleRow["rule_id"];
+  $points_per_kg = (float)$ruleRow["points_per_kg"];
+
+  $material_name = $material_id;
+  $mnSql = "SELECT materials_name FROM materials WHERE material_id=? LIMIT 1";
+  $mnStmt = mysqli_prepare($conn, $mnSql);
+  mysqli_stmt_bind_param($mnStmt, "s", $material_id);
+  mysqli_stmt_execute($mnStmt);
+  $mnRes = mysqli_stmt_get_result($mnStmt);
+  if ($mnRow = mysqli_fetch_assoc($mnRes)) $material_name = $mnRow["materials_name"];
+  mysqli_stmt_close($mnStmt);
+
+  $status = "VALID";
+  $is_flagged = 0;
+  $flag_reason = NULL;
+
+  if ($weight_kg > $AUTO_APPROVE_MAX_KG) {
+    $status = "PENDING";
+    $is_flagged = 1;
+    $flag_reason = "Weight exceeds " . $AUTO_APPROVE_MAX_KG . "kg. Pending admin approval.";
+  }
+
+  $points_awarded = 0;
+  if ($status === "VALID") {
+    $points_awarded = (int) round($weight_kg * $points_per_kg);
+    if ($points_awarded < 0) $points_awarded = 0;
+  }
+
+  $photo_path = $log["photo_path"] ?? "";
   $hasNewPhoto = isset($_FILES["photo"]) && $_FILES["photo"]["error"] !== UPLOAD_ERR_NO_FILE;
 
   if ($hasNewPhoto) {
-
-    if ($_FILES["photo"]["error"] !== UPLOAD_ERR_OK) {
-      goErr($log_id, 2);
-    }
+    if ($_FILES["photo"]["error"] !== UPLOAD_ERR_OK) goErr($log_id, 2);
 
     $allowedExt = ["jpg", "jpeg", "png"];
-    $maxSize    = 5 * 1024 * 1024; 
+    $maxSize    = 5 * 1024 * 1024;
 
     $tmpPath  = $_FILES["photo"]["tmp_name"];
     $origName = $_FILES["photo"]["name"];
     $fileSize = (int)($_FILES["photo"]["size"] ?? 0);
 
-    if ($fileSize <= 0 || $fileSize > $maxSize) {
-      goErr($log_id, 3);
-    }
+    if ($fileSize <= 0 || $fileSize > $maxSize) goErr($log_id, 3);
 
     $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
-    if (!in_array($ext, $allowedExt)) {
-      goErr($log_id, 4);
-    }
+    if (!in_array($ext, $allowedExt)) goErr($log_id, 4);
 
-    if (@getimagesize($tmpPath) === false) {
-      goErr($log_id, 5);
-    }
+    if (@getimagesize($tmpPath) === false) goErr($log_id, 5);
 
     $uploadDir = __DIR__ . "/../images/recycling_proof/";
     if (!is_dir($uploadDir)) {
-      mkdir($uploadDir, 0777, true);
+      die("Upload folder not found: ../images/recycling_proof/");
     }
 
     $newFileName  = $log_id . "_" . date("Ymd_His") . "." . $ext;
     $destFullPath = $uploadDir . $newFileName;
 
-
     $newPhotoPath = "images/recycling_proof/" . $newFileName;
 
-    if (!move_uploaded_file($tmpPath, $destFullPath)) {
-      goErr($log_id, 6);
-    }
+    if (!move_uploaded_file($tmpPath, $destFullPath)) goErr($log_id, 6);
 
     $old = trim($log["photo_path"] ?? "");
     if ($old !== "" && str_starts_with($old, "images/recycling_proof/")) {
@@ -119,23 +186,87 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["save_log"])) {
       if (is_file($oldFull)) @unlink($oldFull);
     }
 
-
     $photo_path = $newPhotoPath;
   }
 
-  $updSql = "UPDATE recycling_log
-             SET material_id=?, weight_kg=?, location=?, photo_path=?
-             WHERE log_id=? AND user_id=?
-             LIMIT 1";
-  $updStmt = mysqli_prepare($conn, $updSql);
-  mysqli_stmt_bind_param($updStmt, "ssssss", $material_id, $weight_kg, $location, $photo_path, $log_id, $user_id);
+  mysqli_begin_transaction($conn);
 
-  if (!mysqli_stmt_execute($updStmt)) {
-    die("Update error: " . mysqli_stmt_error($updStmt));
+  try {
+    $updSql = "UPDATE recycling_log
+               SET material_id=?,
+                   rule_id=?,
+                   weight_kg=?,
+                   location=?,
+                   photo_path=?,
+                   status=?,
+                   points_awarded=?,
+                   is_flagged=?,
+                   flag_reason=?
+               WHERE log_id=? AND user_id=?
+               LIMIT 1";
+    $updStmt = mysqli_prepare($conn, $updSql);
+    if (!$updStmt) throw new Exception("Prepare update failed: " . mysqli_error($conn));
+mysqli_stmt_bind_param(
+  $updStmt,
+  "ssdsssiisss",
+  $material_id,
+  $rule_id,
+  $weight_kg,
+  $location,
+  $photo_path,
+  $status,
+  $points_awarded,
+  $is_flagged,
+  $flag_reason,
+  $log_id,
+  $user_id
+);
+
+    if (!mysqli_stmt_execute($updStmt)) throw new Exception("Update failed: " . mysqli_stmt_error($updStmt));
+    mysqli_stmt_close($updStmt);
+
+    $newStatus = strtoupper($status);
+
+    $diff = 0;
+    if ($oldStatus === "VALID") {
+      if ($newStatus === "VALID") $diff = $points_awarded - $oldPoints;
+      else $diff = 0 - $oldPoints; 
+    } else {
+      if ($newStatus === "VALID") $diff = $points_awarded;
+      else $diff = 0;
+    }
+
+    if ($diff != 0) {
+      $upSql = "UPDATE users SET eco_points = eco_points + ? WHERE user_id=? LIMIT 1";
+      $up = mysqli_prepare($conn, $upSql);
+      mysqli_stmt_bind_param($up, "is", $diff, $user_id);
+      if (!mysqli_stmt_execute($up)) throw new Exception("Update user points failed: " . mysqli_stmt_error($up));
+      mysqli_stmt_close($up);
+
+      $transaction_id = "ept_" . uniqid();
+      $source_id = $log_id;
+
+      $desc = "Points adjustment for recycle log " . $log_id . " after edit. Material: " .
+              $material_name . ", Weight: " . number_format($weight_kg, 2) . " kg, Status: " . $newStatus;
+
+      $created_at = date("Y-m-d H:i:s");
+
+      $txSql = "INSERT INTO eco_points_transactions
+                (transaction_id, user_id, source_id, points_change, description, created_at)
+                VALUES (?, ?, ?, ?, ?, ?)";
+      $tx = mysqli_prepare($conn, $txSql);
+      mysqli_stmt_bind_param($tx, "sssiss", $transaction_id, $user_id, $source_id, $diff, $desc, $created_at);
+      if (!mysqli_stmt_execute($tx)) throw new Exception("Insert transaction failed: " . mysqli_stmt_error($tx));
+      mysqli_stmt_close($tx);
+    }
+
+    mysqli_commit($conn);
+    go("user_recycle.php?updated=1&edit=1");
+
+  } catch (Exception $e) {
+    mysqli_rollback($conn);
+    die("Error: " . htmlspecialchars($e->getMessage()));
   }
-  mysqli_stmt_close($updStmt);
-
-  go("user_recycle.php?updated=1&edit=1");
 }
 
 $matVal   = $log["material_id"] ?? "";
@@ -213,6 +344,9 @@ $photoVal = $log["photo_path"] ?? "";
           if ($err === 4) $msg = "❌ Only JPG / JPEG / PNG allowed.";
           if ($err === 5) $msg = "❌ File is not a valid image.";
           if ($err === 6) $msg = "❌ Upload failed, please try again.";
+          if ($err === 7) $msg = "❌ Weight must be a number.";
+          if ($err === 8) $msg = "❌ Weight must be more than 0.";
+          if ($err === 9) $msg = "❌ No points rule found for this material. (Admin need set eco_points_rules)";
         ?>
         <div class="msg msg-error"><?php echo $msg; ?></div>
       <?php endif; ?>
@@ -221,11 +355,13 @@ $photoVal = $log["photo_path"] ?? "";
 
         <label for="material_id">Materials</label>
         <select id="material_id" name="material_id" required>
-          <option value="mat_001" <?php if($matVal==="mat_001") echo "selected"; ?>>mat_001 (Plastic)</option>
-          <option value="mat_002" <?php if($matVal==="mat_002") echo "selected"; ?>>mat_002 (Tin)</option>
-          <option value="mat_003" <?php if($matVal==="mat_003") echo "selected"; ?>>mat_003 (Paper)</option>
-          <option value="mat_004" <?php if($matVal==="mat_004") echo "selected"; ?>>mat_004 (Glass)</option>
-          <option value="mat_005" <?php if($matVal==="mat_005") echo "selected"; ?>>mat_005 (Others)</option>
+          <option value="">-- Select Materials Type --</option>
+          <?php foreach ($materials as $m): ?>
+            <option value="<?php echo htmlspecialchars($m["material_id"]); ?>"
+              <?php if ($matVal === $m["material_id"]) echo "selected"; ?>>
+              <?php echo htmlspecialchars($m["material_id"] . " (" . $m["materials_name"] . ")"); ?>
+            </option>
+          <?php endforeach; ?>
         </select>
 
         <label for="weight_kg">Weight (kg)</label>
@@ -251,6 +387,12 @@ $photoVal = $log["photo_path"] ?? "";
           <div class="photo-preview">
             <img src="<?php echo "../" . htmlspecialchars($photoVal); ?>" alt="Recycle proof photo">
           </div>
+          <?php if (trim($photoVal) !== ""): ?>
+            <form method="POST" style="margin-top:10px;" onsubmit="return confirm('Delete this photo?');">
+              <button class="btn btn-outline" type="submit" name="delete_photo" value="1">Delete Photo</button>
+            </form>
+          <?php endif; ?>
+
         <?php else: ?>
           <p class="hint">No photo uploaded.</p>
         <?php endif; ?>
@@ -267,14 +409,11 @@ $photoVal = $log["photo_path"] ?? "";
         </a>
       </form>
     </div>
-
+  </div>
+</div>
     <footer>
       © 2026 ReLife Hub
     </footer>
-
-  </div>
-</div>
-
 <script src="../user/user.js"></script>
 </body>
 </html>

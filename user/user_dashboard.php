@@ -394,8 +394,6 @@ if ($notifError !== "") {
           <td><?php echo (int)$validLogs; ?></td>
         </tr>
       </table>
-
-      <a class="btn" href="../user/user_recycle_add.php">+ Add Recycling Log</a>
       <a class="btn" href="../user/user_recycle.php" style="margin-left: 10px;">View My Logs</a>
     </div>
 
@@ -422,6 +420,7 @@ if ($notifError !== "") {
             </tr>
           <?php endforeach; ?>
         </table>
+          <a class="btn" href="../user/user_recycle.php" style="margin-left: 10px;">View My Logs</a>
       <?php endif; ?>
 
       <h3>Recent Posts</h3>
@@ -441,8 +440,6 @@ if ($notifError !== "") {
           <?php endforeach; ?>
         </table>
       <?php endif; ?>
-
-      <a class="btn" href="../user/user_tutorial_add.php">+ Create Post</a>
       <a class="btn" href="../user/user_community.php" style="margin-left: 10px;">View Community</a>
     </div>
 

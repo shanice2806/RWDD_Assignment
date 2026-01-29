@@ -11,24 +11,38 @@ if (!isset($_SESSION["user_id"])) {
   exit();
 }
 
+$role = strtolower(trim($_SESSION["role"] ?? ""));
+if ($role === "admin") {
+  header("Location: ../admin/admin_dashboard.php");
+  exit();
+}
+
 $user_id = $_SESSION["user_id"];
 
-$userSql = "SELECT name, eco_points, profile_image FROM users WHERE user_id = ? LIMIT 1";
-$uStmt = mysqli_prepare($conn, $userSql);
-mysqli_stmt_bind_param($uStmt, "s", $user_id);
-mysqli_stmt_execute($uStmt);
-$uRes  = mysqli_stmt_get_result($uStmt);
-$user  = mysqli_fetch_assoc($uRes) ?: ["name" => "User", "eco_points" => 0, "profile_image" => ""];
-mysqli_stmt_close($uStmt);
+
+$userSql = "SELECT user_id, name, email, role, eco_points, badges, created_at, account_status, last_login, profile_image
+            FROM users
+            WHERE user_id = ?
+            LIMIT 1";
+$userStmt = mysqli_prepare($conn, $userSql);
+mysqli_stmt_bind_param($userStmt, "s", $user_id);
+mysqli_stmt_execute($userStmt);
+$userRes = mysqli_stmt_get_result($userStmt);
+$user = mysqli_fetch_assoc($userRes);
+mysqli_stmt_close($userStmt);
+
+if (!$user) {
+  session_unset();
+  session_destroy();
+  header("Location: ../login/login.php");
+  exit();
+}
 
 $profileImg = "../images/profile.png";
-
 if (!empty($user["profile_image"])) {
-  $try = "../" . ltrim($user["profile_image"], "/");
+  $try  = "../" . ltrim($user["profile_image"], "/");
   $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
-  if (file_exists($disk)) {
-    $profileImg = $try;
-  }
+  if (file_exists($disk)) $profileImg = $try;
 }
 
 $selectedCat = trim($_GET["category"] ?? "all");
@@ -36,7 +50,7 @@ $selectedCat = trim($_GET["category"] ?? "all");
 $page = (int)($_GET["page"] ?? 1);
 if ($page < 1) $page = 1;
 
-$pageSize = 1; 
+$pageSize = 1;
 $offset   = ($page - 1) * $pageSize;
 
 $catSql = "SELECT content_category_id, content_name
@@ -69,67 +83,53 @@ if ($page > $totalPages) {
 $hasPrev = $page > 1;
 $hasNext = $page < $totalPages;
 
-
 $sql = "
   SELECT p.post_id, p.title, p.body, p.difficulty_level, p.post_created_at,
          p.content_category_id,
-         u.name AS author_name
+         u.user_id AS author_id,
+         u.name AS author_name,
+         u.profile_image AS author_profile_image
   FROM posts p
   JOIN users u ON u.user_id = p.user_id
   WHERE p.post_status = 'Public'
 ";
-
 if ($selectedCat !== "all") $sql .= " AND p.content_category_id = ? ";
 $sql .= " ORDER BY p.post_created_at DESC LIMIT ? OFFSET ? ";
 
 $pStmt = mysqli_prepare($conn, $sql);
-
 if ($selectedCat !== "all") {
   mysqli_stmt_bind_param($pStmt, "sii", $selectedCat, $pageSize, $offset);
 } else {
   mysqli_stmt_bind_param($pStmt, "ii", $pageSize, $offset);
 }
-
 mysqli_stmt_execute($pStmt);
 $pRes = mysqli_stmt_get_result($pStmt);
 $post = mysqli_fetch_assoc($pRes);
 mysqli_stmt_close($pStmt);
 
-/* =========================
-   5) 小工具：把 youtube watch 转成 embed（给 iframe 用）
-========================= */
 function youtube_to_embed($url) {
   $url = trim($url ?? "");
   if ($url === "") return "";
-
-  // 已经是 embed
   if (strpos($url, "youtube.com/embed/") !== false) return $url;
 
-  // watch?v=xxxx
   $parts = parse_url($url);
   if (!empty($parts["query"])) {
     parse_str($parts["query"], $q);
-    if (!empty($q["v"])) {
-      return "https://www.youtube.com/embed/" . $q["v"];
-    }
+    if (!empty($q["v"])) return "https://www.youtube.com/embed/" . $q["v"];
   }
-
   if (!empty($parts["host"]) && strpos($parts["host"], "youtu.be") !== false) {
     $vid = ltrim($parts["path"] ?? "", "/");
     if ($vid !== "") return "https://www.youtube.com/embed/" . $vid;
   }
-
-  return $url; 
+  return $url;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Community</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/user.css">
@@ -193,14 +193,10 @@ function youtube_to_embed($url) {
       border-radius:10px;
       border:1px solid #ffffff;
       background:#3f7a54;
+      color:#fff;
       cursor:pointer;
       font-size:16px;
       display:flex; align-items:center; justify-content:center;
-    }
-    .wf-icon.liked{
-      color:#b23a3a;
-      border-color:#f0c7c7;
-      background:#fff5f5;
     }
 
     .wf-blank{
@@ -213,33 +209,50 @@ function youtube_to_embed($url) {
       padding:14px;
       background:#fff;
     }
+
     .wf-author{
-      display:flex; align-items:center; gap:8px;
-      font-size:14px; color:#444;
-      margin-bottom:6px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:10px;
+      font-size:14px;
+      color:#444;
     }
-    .wf-usericon{
-      width:24px; height:24px;
-      border:1px solid #ddd;
+    .wf-author img{
+      width:34px;
+      height:34px;
       border-radius:50%;
-      display:flex; align-items:center; justify-content:center;
-      font-size:12px;
+      object-fit:cover;
+      border:1px solid #ddd;
+      background:#fff;
     }
+    .wf-author-id{ font-weight:800; color:#111; }
+    .wf-author-name{ color:#555; }
+
     .wf-title{
-      font-weight:700;
+      font-weight:800;
       margin-bottom:10px;
       padding-bottom:10px;
       border-bottom:6px solid #222;
     }
+
+    .wf-body{
+      white-space:pre-wrap;
+      line-height:1.5;
+      color:#222;
+    }
+
     .wf-difficulty{
       font-size:13px;
       color:#555;
-      padding-top:8px;
+      padding-top:10px;
       border-top:1px solid #eee;
+      margin-top:12px;
       margin-bottom:12px;
     }
 
-    .wf-section-title{ font-weight:700; margin: 6px 0; }
+    .wf-section-title{ font-weight:800; margin: 8px 0; }
+
     .wf-comments{
       background:#fafafa;
       border:1px dashed #ddd;
@@ -268,8 +281,9 @@ function youtube_to_embed($url) {
       border-radius:10px;
       border:1px solid #f5f5f5;
       background:#2d7b2e;
+      color:#fff;
       cursor:pointer;
-      font-weight:700;
+      font-weight:800;
     }
 
     .community-pager{
@@ -288,7 +302,7 @@ function youtube_to_embed($url) {
       border:1px solid #ddd;
       background:#fff;
       text-decoration:none;
-      font-weight:700;
+      font-weight:800;
       color:#111;
       min-width:110px;
     }
@@ -299,31 +313,20 @@ function youtube_to_embed($url) {
     .pager-info{
       font-size:14px;
       color:#555;
-      font-weight:700;
+      font-weight:800;
     }
 
     @media (max-width:768px){
       .community-container{ max-width:100%; padding:18px 14px; }
-
       .wf-card{ border-radius:16px; margin:16px 0; }
       .wf-bottom{ padding:16px; }
-
       .wf-icon{ width:54px; height:54px; font-size:20px; }
-
       .wf-comments{ font-size:15px; max-height:none; }
-      .wf-form-row input{
-        font-size:16px;
-        padding:12px 14px;
-      }
-      .wf-form-row button{
-        font-size:16px;
-        padding:12px 16px;
-      }
-
+      .wf-form-row input{ font-size:16px; padding:12px 14px; }
+      .wf-form-row button{ font-size:16px; padding:12px 16px; }
       .pager-info{ font-size:15px; }
       .pager-btn{ font-size:16px; padding:12px 16px; min-width:120px; }
     }
-    
   </style>
 </head>
 
@@ -339,19 +342,20 @@ function youtube_to_embed($url) {
       <div class="user-top-left">
         <button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
         <div class="user-top-user">
-          <span class="user-top-name">Welcome! <?= htmlspecialchars($_SESSION['name'] ?? 'User') ?></span>
+          <span> Welcome!  <?= htmlspecialchars($_SESSION['name'] ?? 'User') ?> </span>
         </div>
       </div>
 
       <div class="user-top-center">
-        <h1 style="color:white;">Community</h1>
+        <input class="user-top-search" type="text" placeholder="Search...">
+        <button class="user-top-search-btn" type="submit">Search</button>
       </div>
 
       <div class="user-top-right">
         <span class="user-top-points">🪙 <?php echo (int)$user["eco_points"]; ?> points</span>
-        <a href="user_dashboard.php" class="user-top-btn">🏠</a>
-        <a href="friends_add.php" class="user-top-btn">👥</a>
-        <a href="../login/logout.php" class="user-top-btn logout">❌</a>
+        <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
+        <a class="user-top-btn" href="friends_add.php" title="Add Friend">👥</a>
+        <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
       </div>
     </div>
 
@@ -383,7 +387,14 @@ function youtube_to_embed($url) {
           <?php
             $pid = $post["post_id"];
 
-            /* ====== 取该 post 的媒体（优先 video，其次 image）====== */
+            $authorImg = "../images/profile.png";
+            $rawAuthorProfile = trim($post["author_profile_image"] ?? "");
+            if ($rawAuthorProfile !== "") {
+              $try  = "../" . ltrim($rawAuthorProfile, "/");
+              $disk = __DIR__ . "/../" . ltrim($rawAuthorProfile, "/");
+              if (file_exists($disk)) $authorImg = $try;
+            }
+
             $mediaSql = "SELECT media_type, file_path, video_url
                          FROM post_media
                          WHERE post_id = ?
@@ -406,8 +417,7 @@ function youtube_to_embed($url) {
           <div class="wf-card">
 
             <div class="wf-actions">
-              <button type="button" class="wf-icon" title="Like"
-                      onclick="this.classList.toggle('liked')">♡</button>
+              <button type="button" class="wf-icon" title="Like">♡</button>
 
               <button type="button" class="wf-icon" title="Comment"
                       onclick="document.getElementById('comment-<?php echo htmlspecialchars($pid); ?>')
@@ -428,33 +438,34 @@ function youtube_to_embed($url) {
                   title="Video" frameborder="0" allowfullscreen></iframe>
 
               <?php elseif ($firstImage !== ""): ?>
-                <img src="<?php echo htmlspecialchars($firstImage); ?>"
+                <?php $imgSrc = "../" . ltrim($firstImage, "/"); ?>
+                <img src="<?php echo htmlspecialchars($imgSrc); ?>"
                      style="width:100%; height:500px; object-fit:cover; display:block;"
                      alt="Post media">
 
               <?php else: ?>
-                <!-- no media -->
               <?php endif; ?>
             </div>
 
             <div class="wf-bottom">
+
               <div class="wf-author">
-                <span class="wf-usericon">👤</span>
-                <span><?php echo htmlspecialchars($post["author_name"]); ?></span>
+                <img src="<?php echo htmlspecialchars($authorImg); ?>" alt="Profile">
+                <span class="wf-author-id"><?php echo htmlspecialchars($post["author_id"]); ?></span>
+                <span class="wf-author-name"><?php echo htmlspecialchars($post["author_name"]); ?></span>
               </div>
 
               <div class="wf-title"><?php echo htmlspecialchars($post["title"]); ?></div>
+
+              <?php if (trim($post["body"] ?? "") !== ""): ?>
+                <div class="wf-body"><?php echo htmlspecialchars($post["body"]); ?></div>
+              <?php endif; ?>
 
               <div class="wf-difficulty">
                 Difficulty level : <?php echo htmlspecialchars($post["difficulty_level"]); ?>
               </div>
 
-              <?php if (trim($post["body"] ?? "") !== ""): ?>
-                <div class="body"><?php echo htmlspecialchars($post["body"]); ?></div>
-              <?php endif; ?>
-
               <?php
-                /* ====== 取评论 ====== */
                 $csql = "
                   SELECT c.comment_text, u.name
                   FROM community_comments c
@@ -484,7 +495,6 @@ function youtube_to_embed($url) {
 
               <?php mysqli_stmt_close($cstmt); ?>
 
-              <!-- comment 表单：加回 category/page，这样提交后能回到当前页 -->
               <form class="wf-form-row" method="post" action="comment_add.php">
                 <input type="hidden" name="post_id" value="<?php echo htmlspecialchars($pid); ?>">
                 <input type="hidden" name="category" value="<?php echo htmlspecialchars($selectedCat); ?>">
@@ -493,7 +503,6 @@ function youtube_to_embed($url) {
                 <button type="submit">Send</button>
               </form>
 
-              <!-- report 表单：加回 category/page -->
               <form class="wf-form-row" method="post" action="report_add.php">
                 <input type="hidden" name="post_id" value="<?php echo htmlspecialchars($pid); ?>">
                 <input type="hidden" name="category" value="<?php echo htmlspecialchars($selectedCat); ?>">
@@ -509,17 +518,17 @@ function youtube_to_embed($url) {
             <?php $catParam = urlencode($selectedCat); ?>
 
             <?php if ($hasPrev): ?>
-              <a class="pager-btn" href="?category=<?php echo $catParam; ?>&page=<?php echo $page-1; ?>">◀</a>
+              <a class="pager-btn" href="?category=<?php echo $catParam; ?>&page=<?php echo $page-1; ?>">back</a>
             <?php else: ?>
-              <span class="pager-btn disabled">◀</span>
+              <span class="pager-btn disabled">back</span>
             <?php endif; ?>
 
             <span class="pager-info">Page <?php echo (int)$page; ?> / <?php echo (int)$totalPages; ?></span>
 
             <?php if ($hasNext): ?>
-              <a class="pager-btn" href="?category=<?php echo $catParam; ?>&page=<?php echo $page+1; ?>">Next ➡️</a>
+              <a class="pager-btn" href="?category=<?php echo $catParam; ?>&page=<?php echo $page+1; ?>">Next</a>
             <?php else: ?>
-              <span class="pager-btn disabled">Next ➡️</span>
+              <span class="pager-btn disabled">Next</span>
             <?php endif; ?>
           </div>
 

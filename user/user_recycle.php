@@ -42,6 +42,9 @@ if (!$user) {
   exit();
 }
 
+/* =========================
+   REMOVE LOG
+========================= */
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["remove_log_id"])) {
   $log_id = trim($_POST["remove_log_id"]);
 
@@ -56,13 +59,27 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["remove_log_id"])) {
 
 $editMode = (isset($_GET["edit"]) && $_GET["edit"] == "1");
 
+/* =========================
+   LOAD LOGS (JOIN materials to show name)
+========================= */
 $logsStmt = mysqli_prepare($conn, "
   SELECT 
-    log_id, material_id, event_id, weight_kg, photo_path,
-    submitted_at, status, points_awarded, is_flagged, flag_reason
-  FROM recycling_log
-  WHERE user_id=?
-  ORDER BY submitted_at DESC
+    rl.log_id,
+    rl.material_id,
+    m.materials_name,
+    rl.event_id,
+    rl.weight_kg,
+    rl.photo_path,
+    rl.submitted_at,
+    rl.status,
+    rl.points_awarded,
+    rl.is_flagged,
+    rl.flag_reason
+  FROM recycling_log rl
+  LEFT JOIN materials m
+    ON m.material_id = rl.material_id
+  WHERE rl.user_id=?
+  ORDER BY rl.submitted_at DESC
 ");
 mysqli_stmt_bind_param($logsStmt, "s", $user_id);
 mysqli_stmt_execute($logsStmt);
@@ -114,9 +131,9 @@ mysqli_stmt_close($logsStmt);
             <span> Welcome!  <?= htmlspecialchars($_SESSION['name'] ?? 'User') ?> </span>
           </div>
         </div>
-  <div class="user-top-center">
-<h1 style="color: white;">Recycle</h1>
-  </div>
+        <div class="user-top-center">
+          <h1 style="color: white;">Recycle</h1>
+        </div>
         <div class="user-top-right">
           <span class="user-top-points">🪙 <?php echo (int)$user["eco_points"]; ?> points</span>
           <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
@@ -124,13 +141,12 @@ mysqli_stmt_close($logsStmt);
           <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
         </div>
       </div>
-      
 
       <div class="section-preview">
         <div class="card">
 
           <div class="toolbar">
-            <h2>Recycle — User point</h2>
+            <h2>Recycle Log</h2>
             <div>
               <?php if ($editMode): ?>
                 <a class="btn btn-outline" href="user_recycle.php">Done</a>
@@ -169,15 +185,19 @@ mysqli_stmt_close($logsStmt);
                   $badgeClass = "b-pending";
                   if ($st === "VALID") $badgeClass = "b-valid";
                   if ($st === "INVALID") $badgeClass = "b-invalid";
+
+                  $matId = $log["material_id"] ?? "-";
+                  $matName = trim($log["materials_name"] ?? "");
+                  $matDisplay = ($matName !== "") ? ($matId . " (" . $matName . ")") : $matId;
                 ?>
                 <tr>
                   <td>
                     <?php echo htmlspecialchars($log["submitted_at"]); ?>
                     <?php if (!empty($log["is_flagged"]) && $log["is_flagged"] == 1): ?>
-                      <div class="small">⚑ Flagged: <?php echo htmlspecialchars($log["flag_reason"] ?? "-"); ?></div>
+                      <div class="small">Notice ！: <?php echo htmlspecialchars($log["flag_reason"] ?? "-"); ?></div>
                     <?php endif; ?>
                   </td>
-                  <td><?php echo htmlspecialchars($log["material_id"]); ?></td>
+                  <td><?php echo htmlspecialchars($matDisplay); ?></td>
                   <td><?php echo htmlspecialchars($log["weight_kg"]); ?></td>
                   <td><span class="badge <?php echo $badgeClass; ?>"><?php echo htmlspecialchars($st); ?></span></td>
                   <td><?php echo htmlspecialchars($log["points_awarded"] ?? 0); ?></td>
