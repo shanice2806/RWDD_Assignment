@@ -1,3 +1,27 @@
+<?php
+
+// =========================
+// PROFILE IMAGE LOGIC（重点）
+// =========================
+
+// 1️⃣ 默认头像（一定存在）
+$profileImg = "../images/profile.png";
+
+// 2️⃣ 如果 DB 有存文件名
+if (!empty($user["profile_image"])) {
+
+  // 给 <img src> 用的路径
+  $try  = "../images/profile/" . $user["profile_image"];
+
+  // 给 PHP 检查用的真实磁盘路径
+  $disk = __DIR__ . "/../images/profile/" . $user["profile_image"];
+
+  // 3️⃣ 文件真的存在，才使用
+  if (file_exists($disk)) {
+    $profileImg = $try;
+  }
+}
+?>
 
 <aside class="user-sidebar collapsed" id="userSidebar">
 

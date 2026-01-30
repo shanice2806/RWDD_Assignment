@@ -37,7 +37,7 @@ if (!$user) {
   exit();
 }
 
-$profileImg = "../images/profile.png";
+$profileImg = "../images/profile.jpeg";
 if (!empty($user["profile_image"])) {
   $try  = "../" . ltrim($user["profile_image"], "/");
   $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
