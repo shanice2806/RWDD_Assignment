@@ -119,7 +119,7 @@ $view = isset($_GET['view']) ? $_GET['view'] : 'catalog';
             <div class="user-top-center"><h1 style="color: white; margin: 0;">Reward</h1></div>
             <div class="user-top-right">
                 <a href="user_dashboard.php" class="user-top-btn">🏠</a>
-                <a class="user-top-btn" href="friends_add.php" title="Add Friend">👥</a>
+                <a class="user-top-btn" href="user_profile.php">👤</a>
                 <a href="../login/logout.php" class="user-top-btn logout">❌</a>
             </div>
         </div>
