@@ -122,27 +122,6 @@ include '../connect.php';
           </div>
       </div>
 
-      <!-- Section 2: Hall of Fame -->
-      <div class="management-section">
-        <div class="section-header">
-          <span class="section-icon">🏆</span>
-          <div>
-            <h2 class="section-title">Hall of Fame</h2>
-            <p class="section-description">Celebrate your best events and top contributors</p>
-          </div>
-        </div>
-        <a href="organizer_hall_of_fame.php" class="action-btn">⭐ View Hall of Fame</a>
-        <div class="submenu">
-          <div class="submenu-title">💡 What's Inside</div>
-          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #555; line-height: 1.6;">
-            <li><strong>Featured Events:</strong> Your most impactful and well-received events</li>
-            <li><strong>Top Volunteers:</strong> Recognition of your most dedicated volunteers</li>
-            <li><strong>Event Highlights:</strong> Photos and memories from featured events</li>
-            <li><strong>Impact Metrics:</strong> Stats showing the success of featured events</li>
-          </ul>
-        </div>
-      </div>
-
       <!-- Archive Statistics -->
       <div class="management-section">
         <div class="section-header">

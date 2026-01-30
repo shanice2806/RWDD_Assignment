@@ -7,9 +7,23 @@ if (session_status() === PHP_SESSION_NONE) {
 // Get user information from session
 $organizerName = htmlspecialchars($_SESSION['name'] ?? 'Organizer');
 $organizerRole = htmlspecialchars($_SESSION['role'] ?? 'Organizer');
+$userId = $_SESSION['user_id'] ?? '';
 
-// Profile image path
-$profileImg = '../images/profile.png';
+// Fetch user profile image from database
+$profileImg = '../images/profile.png'; // Default image
+if (!empty($userId) && isset($conn)) {
+    $profileStmt = $conn->prepare("SELECT profile_image FROM users WHERE user_id = ?");
+    $profileStmt->bind_param("s", $userId);
+    $profileStmt->execute();
+    $profileResult = $profileStmt->get_result();
+    if ($profileResult->num_rows > 0) {
+        $profileData = $profileResult->fetch_assoc();
+        if (!empty($profileData['profile_image'])) {
+            $profileImg = '../images/profile/' . htmlspecialchars($profileData['profile_image']);
+        }
+    }
+    $profileStmt->close();
+}
 ?>
 
 <aside class="organizer-sidebar" id="sidebar">
@@ -23,7 +37,7 @@ $profileImg = '../images/profile.png';
       <small class="organizer-role"><?= $organizerRole ?></small>
       <!-- Button to switch back to user mode -->
       <a href="/RWDD_Assignment/user/switch_to_user.php" class="switch-role-btn">🔄 Switch to User</a>
-      <a href="../profile/profile.php">View Profile</a>
+      <a href="organizer_view_profile.php">View Profile</a>
     </div>
   </div>
 
@@ -36,9 +50,9 @@ $profileImg = '../images/profile.png';
     <a href="organizer_sustainability_hub.php" class="organizer-menu-item">🌱 Sustainability Tracking</a>
     <a href="organizer_collaboration_feedback_hub.php" class="organizer-menu-item">💬 Collaboration & Feedback</a>
     <a href="organizer_archive_showcase_hub.php" class="organizer-menu-item">📁 Archive & Showcase</a>
-    <a href="organizer_profile_view.php" class="organizer-menu-item">👤 Profile</a>
+    <a href="organizer_view_profile.php" class="organizer-menu-item">👤 Profile</a>
     
     <!-- Logout button -->
-    <a href="../login/logout.php" class="organizer-menu-item logout" onclick="return confirm('Logout now?');">🚪 Log Out</a>
+    <a href="../login/logout.php" class="organizer-menu-item logout">🚪 Log Out</a>
   </div>
 </aside>

@@ -102,7 +102,7 @@ include '../connect.php';
           <a href="organizer_announcement.php" class="action-btn">📄 View Announcements</a>
           <a href="organizer_announcement_create.php" class="action-btn">➕ Post Announcement</a>
           <a href="organizer_notification_send.php" class="action-btn">🔔 Send Notification</a>
-          <a href="organizer_recap_summary.php" class="action-btn">📊 Post Recap</a>
+          <a href="organizer_post_recap.php" class="action-btn">📊 Post Recap</a>
         </div>
         <div class="submenu">
           <div class="submenu-title">💡 Quick Tips</div>
