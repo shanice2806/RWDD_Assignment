@@ -14,11 +14,7 @@ $_SESSION['name'] = $_SESSION['name'] ?? 'User (Test)';
     <span class="user-name"><?= htmlspecialchars($_SESSION['name']) ?></span>
   </div>
 
-  <!-- Center: search bar -->
-  <div class="search-container">
-    <input type="text" class="search-bar" placeholder="Search events...">
-    <button class="search-btn">🔍</button>
-  </div>
+
 
   <!-- Right side: home and exit icons -->
   <div class="icons">
