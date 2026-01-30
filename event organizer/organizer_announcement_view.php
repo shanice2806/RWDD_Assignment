@@ -69,7 +69,7 @@ if ($announcement['is_active'] == 1) {
         
           <div class="main-content">
     <div class="back-btn-container">
-      <button onclick="history.back()" class="action-btn"> Back</button>
+      <a href="organizer_event_management.php" class="action-btn"> Back</a>
     </div>            <!-- Page header -->
             <div class="page-header">
                 <h1>Announcement Details</h1>

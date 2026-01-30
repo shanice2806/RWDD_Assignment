@@ -91,7 +91,7 @@ if (!empty($selected_event_id)) {
 <div class="dashboard-container">
     <div class="main-content">
     <div class="back-btn-container">
-      <button onclick="history.back()" class="action-btn">← Back</button>
+      <a href="organizer_registration_attendance_hub.php" class="action-btn">← Back</a>
     </div>
         <div class="container container-narrow">
             <h1 style="color: #1e3a34; margin-bottom: 10px;">Volunteer Hours</h1>

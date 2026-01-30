@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_volunteer'])) {
         $error_message = "Please select at least one task interest.";
     } else {
         // Convert array to comma-separated string
-        $role_interested_str = implode(', ', $role_interests);
+        $task_interested_str = implode(', ', $role_interests);
         
         // Check if user exists and name matches user_id
         $user_query = "SELECT user_id, name FROM users WHERE user_id = '$user_id' AND name = '$volunteer_name' LIMIT 1";
@@ -46,9 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_volunteer'])) {
             if ($check_result && $check_result->num_rows > 0) {
                 $error_message = "This user is already a volunteer for this event.";
             } else {
-                // Insert volunteer with role_interested and notes
-                $insert_query = "INSERT INTO volunteers (event_id, user_id, role_interested, notes, volunteer_hours_logged) 
-                                VALUES ('$event_id', '$user_id', '$role_interested_str', '$notes', 0.00)";
+                // Insert volunteer with task_interested and notes
+                $insert_query = "INSERT INTO volunteers (event_id, user_id, task_interested, notes, volunteer_hours_logged) 
+                                VALUES ('$event_id', '$user_id', '$task_interested_str', '$notes', 0.00)";
                 
                 if ($conn->query($insert_query)) {
                     $success_message = "Volunteer '$volunteer_name' (ID: $user_id) recruited successfully!";

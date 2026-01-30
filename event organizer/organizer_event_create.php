@@ -225,7 +225,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <div class="main-content">
     <div class="back-btn-container">
-      <button onclick="history.back()" class="action-btn"> Back</button>
+      <a href="organizer_event_management.php" class="action-btn"> Back</a>
     </div>    <div class="create-event-container">
       <h1>Create Event Form</h1>
       

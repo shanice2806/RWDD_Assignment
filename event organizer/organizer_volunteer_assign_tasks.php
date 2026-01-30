@@ -64,7 +64,7 @@ $events_result = $conn->query($events_query);
 // Get volunteers for selected event
 $volunteers = [];
 if (!empty($selected_event_id)) {
-    $volunteers_query = "SELECT v.volunteer_id, v.user_id, u.name, v.role_interested, v.volunteer_task, v.time_slot
+    $volunteers_query = "SELECT v.volunteer_id, v.user_id, u.name, v.task_interested, v.volunteer_task, v.time_slot, v.notes
                          FROM volunteers v
                          JOIN users u ON v.user_id = u.user_id
                          WHERE v.event_id = '$selected_event_id'
@@ -95,16 +95,31 @@ if (!empty($selected_event_id)) {
             const volunteerSelect = document.getElementById('volunteer_id');
             const taskField = document.getElementById('task');
             const selectedOption = volunteerSelect.options[volunteerSelect.selectedIndex];
+            const notesSection = document.getElementById('notes-section');
+            const notesText = document.getElementById('notes-text');
             
             if (selectedOption.value) {
                 const interests = selectedOption.getAttribute('data-interests');
                 const currentTask = selectedOption.getAttribute('data-task');
+                const notes = selectedOption.getAttribute('data-notes');
                 
+                // Update task field
                 if (currentTask && currentTask !== '') {
                     taskField.value = currentTask;
                 } else if (interests) {
                     taskField.placeholder = 'Interests: ' + interests;
                 }
+                
+                // Show/hide notes section
+                if (notes && notes.trim() !== '') {
+                    notesText.textContent = notes;
+                    notesSection.style.display = 'block';
+                } else {
+                    notesText.textContent = 'No notes available';
+                    notesSection.style.display = 'none';
+                }
+            } else {
+                notesSection.style.display = 'none';
             }
         }
     </script>
@@ -117,7 +132,7 @@ if (!empty($selected_event_id)) {
         
         <div class="main-content">
             <div class="back-btn-container">
-                <button onclick="history.back()" class="action-btn">← Back</button>
+                <a href="organizer_registration_attendance_hub.php" class="action-btn">← Back</a>
             </div>
             
             <div class="container container-narrow">
@@ -166,8 +181,9 @@ if (!empty($selected_event_id)) {
                                     <option value="">-- Select Volunteer --</option>
                                     <?php foreach ($volunteers as $vol): ?>
                                         <option value="<?= $vol['volunteer_id'] ?>" 
-                                                data-interests="<?= htmlspecialchars($vol['role_interested'] ?? '') ?>"
-                                                data-task="<?= htmlspecialchars($vol['volunteer_task'] ?? '') ?>">
+                                                data-interests="<?= htmlspecialchars($vol['task_interested'] ?? '') ?>"
+                                                data-task="<?= htmlspecialchars($vol['volunteer_task'] ?? '') ?>"
+                                                data-notes="<?= htmlspecialchars($vol['notes'] ?? '') ?>">
                                             <?= htmlspecialchars($vol['name']) ?> (<?= $vol['user_id'] ?>)
                                             <?php if ($vol['volunteer_task']): ?>
                                                 - Current: <?= htmlspecialchars($vol['volunteer_task']) ?>
@@ -175,6 +191,13 @@ if (!empty($selected_event_id)) {
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
+                            </div>
+                            
+                            <div class="form-group" id="notes-section" style="display: none;">
+                                <label class="form-label">Volunteer Notes:</label>
+                                <div id="volunteer-notes" class="alert">
+                                    <span id="notes-text">No notes available</span>
+                                </div>
                             </div>
                             
                             <div class="form-group">
@@ -211,7 +234,7 @@ if (!empty($selected_event_id)) {
                                     <?php endforeach; ?>
                                 </div>
                                 <small class="form-text">Select one or more time slots for this volunteer</small>
-                            </div>
+                                    </div>
                         </div>
                         
                         <div class="form-actions">
@@ -223,7 +246,7 @@ if (!empty($selected_event_id)) {
                 <?php endif; ?>
                 
                 <div class="flex gap-15 flex-center mt-20">
-                    <a href="organizer_recruit_volunteers.php" class="action-btn">Recruit Volunteer</a>
+                    <a href="organizer_volunteer_recruit.php" class="action-btn">Recruit Volunteer</a>
                     <a href="organizer_volunteer_list.php" class="action-btn">View Volunteer List</a>
                 </div>
             </div>

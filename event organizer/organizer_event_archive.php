@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_archive'])) {
         
           <div class="main-content">
     <div class="back-btn-container">
-      <button onclick="history.back()" class="action-btn"> Back</button>
+      <a href="organizer_archive_showcase_hub.php" class="action-btn"> Back</a>
     </div>            <!-- Page title -->
             <div class="page-header">
                 <h1><?php echo htmlspecialchars($event['event_title']); ?></h1>

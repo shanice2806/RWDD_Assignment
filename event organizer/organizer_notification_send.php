@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['send_notification'])) 
         
           <div class="main-content">
     <div class="back-btn-container">
-      <button onclick="history.back()" class="action-btn"> Back</button>
+      <a href="organizer_event_management.php" class="action-btn"> Back</a>
     </div>            <!-- Page header -->
             <div class="page-header flex-between">
                 <h1>Send Notification</h1>

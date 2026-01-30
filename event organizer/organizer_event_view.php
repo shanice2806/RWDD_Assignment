@@ -69,7 +69,7 @@ $result = mysqli_query($conn, $query);
 
     <div class="main-content">
     <div class="back-btn-container">
-      <button onclick="history.back()" class="action-btn"> Back</button>
+      <a href="organizer_event_management.php" class="action-btn"> Back</a>
     </div>    <div class="view-events-container">
       <h1>View All Events</h1>
       

@@ -45,7 +45,7 @@ $result = $conn->query($query);
         
           <div class="main-content">
     <div class="back-btn-container">
-      <button onclick="history.back()" class="action-btn"> Back</button>
+      <a href="organizer_event_management.php" class="action-btn"> Back</a>
     </div>            <!-- Page title -->
             <div class="page-header">
                 <h1>Select Event to Edit</h1>

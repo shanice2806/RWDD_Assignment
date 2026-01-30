@@ -110,8 +110,8 @@ include '../connect.php';
           </div>
         </div>
         <div class="action-grid">
-          <a href="organizer_recruit_volunteers.php" class="action-btn">➕ Recruit Volunteers</a>
-          <a href="organizer_assign_volunteer_task.php" class="action-btn">🎯 Assign Tasks</a>
+          <a href="organizer_volunteer_recruit.php" class="action-btn">➕ Recruit Volunteers</a>
+          <a href="organizer_volunteer_assign_tasks.php" class="action-btn">🎯 Assign Tasks</a>
           <a href="organizer_volunteer_hours.php" class="action-btn">⏱️ Log Hours</a>
           <a href="organizer_award_ecopoints.php" class="action-btn">🌟 Award Eco-Points</a>
           <a href="organizer_volunteer_list.php" class="action-btn">📋 View Volunteer List</a>

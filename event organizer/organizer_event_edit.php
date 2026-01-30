@@ -179,7 +179,7 @@ $current_poster = $poster_result->num_rows > 0 ? $poster_result->fetch_assoc()['
         
           <div class="main-content">
     <div class="back-btn-container">
-      <button onclick="history.back()" class="action-btn"> Back</button>
+      <a href="organizer_event_management.php" class="action-btn"> Back</a>
     </div>            <!-- Page title -->
             <div class="page-header">
                 <h1>Edit Event</h1>
