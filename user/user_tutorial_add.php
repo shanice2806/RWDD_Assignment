@@ -101,7 +101,7 @@ $catRes = mysqli_query($conn, $catSql);
       <div class="user-top-right">
         <span class="user-top-points">🪙 <?php echo (int)$user["eco_points"]; ?> points</span>
         <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
-        <a class="user-top-btn" href="friends_add.php" title="Add Friend">👥</a>
+        <a class="user-top-btn" href="add_friends.php" title="Add Friend">👥</a>
         <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
       </div>
     </div>
@@ -152,7 +152,7 @@ $catRes = mysqli_query($conn, $catSql);
             </div>
 
             <div class="form-row">
-              <label>Upload Images (optional)</label>
+              <label>Upload Images</label>
               <input 
                 type="file" 
                 name="media_files[]" 
@@ -160,6 +160,10 @@ $catRes = mysqli_query($conn, $catSql);
                 multiple
               >
             </div>
+              <div class="form-row">
+                <label>Video URL (optional)</label>
+                  <input type="url" name="video_url" placeholder="https://youtube.com/...">
+              </div>
 
             <div style="display:flex; gap:12px; justify-content:flex-end;">
               <a class="btn" href="tutorial_view.php">Back</a>

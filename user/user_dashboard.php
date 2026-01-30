@@ -15,6 +15,9 @@ if ($role === "admin") {
 
 $user_id = $_SESSION["user_id"];
 
+function h($str) {
+  return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8');
+}
 
 $userSql = "SELECT user_id, name, email, role, eco_points, badges, created_at, account_status, last_login, profile_image
             FROM users
@@ -27,16 +30,6 @@ $userRes = mysqli_stmt_get_result($userStmt);
 $user = mysqli_fetch_assoc($userRes);
 mysqli_stmt_close($userStmt);
 
-$profileImg = "../images/profile.png";
-
-if (!empty($user["profile_image"])) {
-  $try = "../" . ltrim($user["profile_image"], "/");
-  $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
-  if (file_exists($disk)) {
-    $profileImg = $try;
-  }
-}
-
 if (!$user) {
   session_unset();
   session_destroy();
@@ -44,8 +37,12 @@ if (!$user) {
   exit();
 }
 
-
-
+$profileImg = "../images/profile.png";
+if (!empty($user["profile_image"])) {
+  $try  = "../" . ltrim($user["profile_image"], "/");
+  $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
+  if (file_exists($disk)) $profileImg = $try;
+}
 
 function getCount($conn, $sql, $user_id) {
   $stmt = mysqli_prepare($conn, $sql);
@@ -58,24 +55,23 @@ function getCount($conn, $sql, $user_id) {
 }
 
 $totalLogs   = getCount($conn, "SELECT COUNT(*) AS c FROM recycling_log WHERE user_id = ?", $user_id);
-$pendingLogs = getCount($conn, "SELECT COUNT(*) AS c FROM recycling_log WHERE user_id = ? AND status = 'pending'", $user_id);
-$validLogs   = getCount($conn, "SELECT COUNT(*) AS c FROM recycling_log WHERE user_id = ? AND status = 'valid'", $user_id);
-
+$pendingLogs = getCount($conn, "SELECT COUNT(*) AS c FROM recycling_log WHERE user_id = ? AND UPPER(status) = 'PENDING'", $user_id);
+$validLogs   = getCount($conn, "SELECT COUNT(*) AS c FROM recycling_log WHERE user_id = ? AND UPPER(status) = 'VALID'", $user_id);
 $totalPosts  = getCount($conn, "SELECT COUNT(*) AS c FROM posts WHERE user_id = ?", $user_id);
 
 
 $recentLogs = [];
-$logStmt = mysqli_prepare($conn, "SELECT rl.log_id,
-       m.materials_name AS material_type,
-       rl.weight_kg     AS weight,
-       rl.submitted_at  AS date,
-       rl.status
-FROM recycling_log rl
-JOIN materials m ON rl.material_id = m.material_id
-WHERE rl.user_id = ?
-ORDER BY rl.submitted_at DESC
-LIMIT 5
-");
+$logSql = "SELECT rl.log_id,
+                  m.materials_name AS material_type,
+                  rl.weight_kg     AS weight,
+                  rl.submitted_at  AS date,
+                  rl.status
+           FROM recycling_log rl
+           JOIN materials m ON rl.material_id = m.material_id
+           WHERE rl.user_id = ?
+           ORDER BY rl.submitted_at DESC
+           LIMIT 5";
+$logStmt = mysqli_prepare($conn, $logSql);
 if ($logStmt) {
   mysqli_stmt_bind_param($logStmt, "s", $user_id);
   mysqli_stmt_execute($logStmt);
@@ -84,13 +80,13 @@ if ($logStmt) {
   mysqli_stmt_close($logStmt);
 }
 
-
 $recentPosts = [];
-$postStmt = mysqli_prepare($conn, "SELECT post_id, title, post_created_at AS created_at
-FROM posts
-WHERE user_id = ?
-ORDER BY post_created_at DESC
-LIMIT 5");
+$postSql = "SELECT post_id, title, post_created_at AS created_at
+            FROM posts
+            WHERE user_id = ?
+            ORDER BY post_created_at DESC
+            LIMIT 5";
+$postStmt = mysqli_prepare($conn, $postSql);
 if ($postStmt) {
   mysqli_stmt_bind_param($postStmt, "s", $user_id);
   mysqli_stmt_execute($postStmt);
@@ -99,18 +95,7 @@ if ($postStmt) {
   mysqli_stmt_close($postStmt);
 }
 
-
-$badges = [];
-if (!empty($user["badges"])) {
-  $parts = array_map("trim", explode(",", $user["badges"]));
-  foreach ($parts as $b) if ($b !== "") $badges[] = $b;
-}
-
-$joined = $user["created_at"] ? date("F Y", strtotime($user["created_at"])) : "—";
-$lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_login"])) : "First login";
-
 $notifications = [];
-$notifError = "";
 
 $notifSql = "
 SELECT
@@ -136,22 +121,16 @@ LIMIT 5
 ";
 
 $notifStmt = mysqli_prepare($conn, $notifSql);
-
 if ($notifStmt) {
   mysqli_stmt_bind_param($notifStmt, "s", $user_id);
   if (mysqli_stmt_execute($notifStmt)) {
     $notifRes = mysqli_stmt_get_result($notifStmt);
     while ($n = mysqli_fetch_assoc($notifRes)) $notifications[] = $n;
-  } else {
-    $notifError = "Notification query fallback.";
   }
   mysqli_stmt_close($notifStmt);
-} else {
-  $notifError = "Notification statement prepare failed.";
 }
 
-if ($notifError !== "") {
-  $notifications = [];
+if (count($notifications) === 0) {
   $fallbackSql = "
     SELECT notification_id, event_id, message, audience_type, created_at
     FROM notifications
@@ -164,57 +143,94 @@ if ($notifError !== "") {
     while ($n = mysqli_fetch_assoc($fallbackRes)) $notifications[] = $n;
   }
 }
+
+$announcements = [];
+$annSql = "
+SELECT announcement_id, title, message, start_date, end_date, created_at
+FROM announcements
+WHERE is_active = 1
+AND (start_date IS NULL OR start_date <= CURDATE())
+AND (end_date IS NULL OR end_date >= CURDATE())
+ORDER BY created_at DESC
+LIMIT 3
+";
+$annRes = mysqli_query($conn, $annSql);
+if ($annRes) {
+  while ($a = mysqli_fetch_assoc($annRes)) $announcements[] = $a;
+}
+
+
+$userBadges = [];
+$badgeSql = "
+SELECT b.badge_id, b.badge_name, b.icon_path, b.description
+FROM user_badges ub
+JOIN badges b ON ub.badge_id = b.badge_id
+WHERE ub.user_id = ?
+AND b.is_active = 1
+ORDER BY ub.date_awarded DESC
+";
+$badgeStmt = mysqli_prepare($conn, $badgeSql);
+if ($badgeStmt) {
+  mysqli_stmt_bind_param($badgeStmt, "s", $user_id);
+  mysqli_stmt_execute($badgeStmt);
+  $badgeRes = mysqli_stmt_get_result($badgeStmt);
+  while ($b = mysqli_fetch_assoc($badgeRes)) $userBadges[] = $b;
+  mysqli_stmt_close($badgeStmt);
+}
+
+$joined    = $user["created_at"] ? date("F Y", strtotime($user["created_at"])) : "—";
+$lastLogin = $user["last_login"] ? date("d M Y, h:i A", strtotime($user["last_login"])) : "First login";
+
+$badgeBaseDir = "../images/badges/";
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Profile | ReLife Hub</title>
+  <title>User Dashboard | ReLife Hub</title>
 
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/user.css">
 
 <style>
-  .notif-wrap{
-    margin: 16px 0;
-    padding: 14px 16px;
+  .top-panels{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 14px 0;
+  }
+  .panel-box{
     background: #fff;
     border: 1px solid var(--color-border);
     border-radius: 12px;
+    padding: 14px 16px;
   }
-  .notif-header{
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap: 12px;
-    margin-bottom: 10px;
-  }
-  .notif-title{
+  .panel-title{
     font-weight: 700;
     font-size: 18px;
-    margin: 0;
+    margin: 0 0 6px 0;
   }
-  .notif-small{
+  .panel-sub{
     color: var(--color-muted);
     font-size: 13px;
-    margin-top: 2px;
+    margin-bottom: 10px;
   }
-  .notif-list{
+  .panel-list{
+    list-style: none;
+    padding: 0;
+    margin: 0;
     display:flex;
     flex-direction:column;
     gap: 10px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
   }
-  .notif-item{
+  .panel-item{
     border: 1px solid var(--color-border);
     border-radius: 10px;
     padding: 10px 12px;
     background: var(--color-section);
   }
-  .notif-meta{
+  .panel-meta{
     display:flex;
     flex-wrap:wrap;
     gap: 10px;
@@ -222,12 +238,7 @@ if ($notifError !== "") {
     color: var(--color-muted);
     margin-bottom: 6px;
   }
-  .notif-msg{
-    margin: 0;
-    line-height: 1.35;
-    word-break: break-word;
-  }
-  .notif-badge{
+  .pill{
     display:inline-block;
     padding: 2px 8px;
     border-radius: 999px;
@@ -236,45 +247,52 @@ if ($notifError !== "") {
     font-size: 12px;
     color: var(--color-text);
   }
-  .notif-empty{
+  .panel-empty{
     color: var(--color-muted);
     margin: 0;
   }
 
+  /* badge grid */
+  .badge-grid{
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 10px;
+  }
+  .badge-card{
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-section);
+    padding: 10px;
+    text-align: center;
+  }
+  .badge-card img{
+    width: 54px;
+    height: 54px;
+    object-fit: contain;
+    display:block;
+    margin: 0 auto 8px auto;
+  }
+  .badge-name{
+    font-weight: 700;
+    font-size: 13px;
+    margin: 0;
+  }
+  .badge-desc{
+    color: var(--color-muted);
+    font-size: 12px;
+    margin: 4px 0 0 0;
+    line-height: 1.25;
+  }
+
+  @media (max-width: 900px){
+    .badge-grid{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
   @media (max-width: 768px) {
-    .notif-wrap{
-      margin: 12px 0;
-      padding: 12px;
-      border-radius: 10px;
-    }
-
-    .notif-title{
-      font-size: 16px;
-    }
-
-    .notif-small{
-      font-size: 12px;
-    }
-
-    .notif-item{
-      padding: 10px;
-      border-radius: 10px;
-    }
-
-    .notif-meta{
-      gap: 8px;
-      font-size: 11px;
-    }
-
-    .notif-badge{
-      font-size: 11px;
-      padding: 2px 7px;
-    }
-
-    .notif-msg{
-      font-size: 13px;
-      line-height: 1.45;
-    }
+    .top-panels{ grid-template-columns: 1fr; }
+    .panel-title{ font-size: 16px; }
+    .panel-sub{ font-size: 12px; }
+    .badge-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 </style>
 </head>
@@ -290,12 +308,10 @@ if ($notifError !== "") {
   <div class="user-content">
 
     <div class="user-top-bar">
-
       <div class="user-top-left">
         <button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
-
         <div class="user-top-user">
-          <span> Welcome!  <?= htmlspecialchars($_SESSION['name'] ?? 'User') ?> </span>
+          <span> Welcome! <?= h($_SESSION['name'] ?? 'User') ?> </span>
         </div>
       </div>
 
@@ -305,77 +321,112 @@ if ($notifError !== "") {
       </div>
 
       <div class="user-top-right">
-        <span class="user-top-points">
-          🪙 <?php echo (int)$user["eco_points"]; ?> points
-        </span>
+        <span class="user-top-points">🪙 <?= (int)$user["eco_points"]; ?> points</span>
         <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
-        <a class="user-top-btn" href="friends_add.php" title="Add Friend">👥</a>
+        <a class="user-top-btn" href="add_friends.php" title="Add Friend">👥</a>
         <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
       </div>
-
     </div>
 
-    <div class="notif-wrap" id="notifBox">
-      <div class="notif-header">
-        <div>
-          <p class="notif-title">🔔 Notifications</p>
-          <div class="notif-small">Latest updates for you (showing up to 5)</div>
-        </div>
+    <div class="top-panels">
+
+      <div class="panel-box">
+        <p class="panel-title">📢 Announcements</p>
+        <div class="panel-sub">Latest announcements (up to 3)</div>
+
+        <?php if (count($announcements) === 0): ?>
+          <p class="panel-empty">No announcements right now.</p>
+        <?php else: ?>
+          <ul class="panel-list">
+            <?php foreach ($announcements as $a): ?>
+              <li class="panel-item">
+                <div class="panel-meta">
+                  <span class="pill"><?= h($a["announcement_id"]); ?></span>
+                  <span>
+                    <?= $a["created_at"] ? date("d M Y, h:i A", strtotime($a["created_at"])) : ""; ?>
+                  </span>
+                </div>
+                <div style="font-weight:700; margin-bottom:6px;"><?= h($a["title"]); ?></div>
+                <div><?= nl2br(h($a["message"])); ?></div>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+        <?php endif; ?>
       </div>
 
-      <?php if (count($notifications) === 0): ?>
-        <p class="notif-empty">No notifications right now.</p>
-      <?php else: ?>
-        <ul class="notif-list">
-          <?php foreach ($notifications as $n): ?>
-            <li class="notif-item">
-              <div class="notif-meta">
-                <span class="notif-badge">
-                  <?php echo htmlspecialchars($n["audience_type"]); ?>
-                </span>
-                <span>Event: <?php echo htmlspecialchars($n["event_id"]); ?></span>
-                <span>
-                  <?php echo $n["created_at"] ? date("d M Y, h:i A", strtotime($n["created_at"])) : ""; ?>
-                </span>
-              </div>
-              <p class="notif-msg"><?php echo nl2br(htmlspecialchars($n["message"])); ?></p>
-            </li>
-          <?php endforeach; ?>
-        </ul>
-      <?php endif; ?>
+      <div class="panel-box">
+        <p class="panel-title">🔔 Notifications</p>
+        <div class="panel-sub">Latest updates for you (up to 5)</div>
+
+        <?php if (count($notifications) === 0): ?>
+          <p class="panel-empty">No notifications right now.</p>
+        <?php else: ?>
+          <ul class="panel-list">
+            <?php foreach ($notifications as $n): ?>
+              <li class="panel-item">
+                <div class="panel-meta">
+                  <span class="pill"><?= h($n["audience_type"]); ?></span>
+                  <span>Event: <?= h($n["event_id"]); ?></span>
+                  <span>
+                    <?= $n["created_at"] ? date("d M Y, h:i A", strtotime($n["created_at"])) : ""; ?>
+                  </span>
+                </div>
+                <div><?= nl2br(h($n["message"])); ?></div>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+        <?php endif; ?>
+      </div>
+
     </div>
 
     <div class="profile-card">
       <h2>User Profile</h2>
       <p>
-        <?php echo htmlspecialchars($user["name"]); ?> | Joined <?php echo htmlspecialchars($joined); ?>
-        <br>
-        <span style="color: var(--color-muted);">Last login: <?php echo htmlspecialchars($lastLogin); ?></span>
+        <?= h($user["name"]); ?> | Joined <?= h($joined); ?><br>
+        <span style="color: var(--color-muted);">Last login: <?= h($lastLogin); ?></span>
       </p>
 
       <div class="profile-stats">
         <div>
           <h3>Eco-Points</h3>
-          <p><?php echo (int)$user["eco_points"]; ?></p>
+          <p><?= (int)$user["eco_points"]; ?></p>
         </div>
         <div>
           <h3>Recycling Logs</h3>
-          <p><?php echo (int)$totalLogs; ?></p>
+          <p><?= (int)$totalLogs; ?></p>
         </div>
         <div>
           <h3>Posts</h3>
-          <p><?php echo (int)$totalPosts; ?></p>
+          <p><?= (int)$totalPosts; ?></p>
         </div>
       </div>
 
       <div class="badges">
         <h3>Badges</h3>
-        <?php if (count($badges) === 0): ?>
+
+        <?php if (count($userBadges) === 0): ?>
           <div class="alert-warning">No badges yet. Start recycling to earn your first badge!</div>
         <?php else: ?>
-          <?php foreach ($badges as $b): ?>
-            <span class="badge"><?php echo htmlspecialchars($b); ?></span>
-          <?php endforeach; ?>
+          <div class="badge-grid">
+            <?php foreach ($userBadges as $b): ?>
+              <?php
+                $img = trim($b["icon_path"] ?? "");
+                $imgUrl = $badgeBaseDir . $img;
+
+                $imgDisk = __DIR__ . "/" . $badgeBaseDir . $img; 
+              ?>
+              <div class="badge-card" title="<?= h($b["badge_name"]); ?>">
+                <?php if ($img !== ""): ?>
+                  <img src="<?= h($imgUrl); ?>" alt="<?= h($b["badge_name"]); ?>">
+                <?php else: ?>
+                  <div style="font-size:30px; margin: 6px 0;">🏅</div>
+                <?php endif; ?>
+                <p class="badge-name"><?= h($b["badge_name"]); ?></p>
+                <p class="badge-desc"><?= h($b["description"]); ?></p>
+              </div>
+            <?php endforeach; ?>
+          </div>
         <?php endif; ?>
       </div>
     </div>
@@ -389,9 +440,9 @@ if ($notifError !== "") {
           <th>Valid</th>
         </tr>
         <tr>
-          <td><?php echo (int)$totalLogs; ?></td>
-          <td><?php echo (int)$pendingLogs; ?></td>
-          <td><?php echo (int)$validLogs; ?></td>
+          <td><?= (int)$totalLogs; ?></td>
+          <td><?= (int)$pendingLogs; ?></td>
+          <td><?= (int)$validLogs; ?></td>
         </tr>
       </table>
       <a class="btn" href="../user/user_recycle.php" style="margin-left: 10px;">View My Logs</a>
@@ -413,14 +464,14 @@ if ($notifError !== "") {
           </tr>
           <?php foreach ($recentLogs as $log): ?>
             <tr>
-              <td><?php echo htmlspecialchars($log["date"]); ?></td>
-              <td><?php echo htmlspecialchars($log["material_type"]); ?></td>
-              <td><?php echo htmlspecialchars($log["weight"]); ?></td>
-              <td><?php echo htmlspecialchars($log["status"]); ?></td>
+              <td><?= h($log["date"]); ?></td>
+              <td><?= h($log["material_type"]); ?></td>
+              <td><?= h($log["weight"]); ?></td>
+              <td><?= h($log["status"]); ?></td>
             </tr>
           <?php endforeach; ?>
         </table>
-          <a class="btn" href="../user/user_recycle.php" style="margin-left: 10px;">View My Logs</a>
+        <a class="btn" href="../user/user_recycle.php" style="margin-left: 10px;">View My Logs</a>
       <?php endif; ?>
 
       <h3>Recent Posts</h3>
@@ -434,8 +485,8 @@ if ($notifError !== "") {
           </tr>
           <?php foreach ($recentPosts as $p): ?>
             <tr>
-              <td><?php echo htmlspecialchars($p["title"]); ?></td>
-              <td><?php echo htmlspecialchars($p["created_at"]); ?></td>
+              <td><?= h($p["title"]); ?></td>
+              <td><?= h($p["created_at"]); ?></td>
             </tr>
           <?php endforeach; ?>
         </table>

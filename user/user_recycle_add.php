@@ -318,7 +318,7 @@ $locPrev = trim($_POST["location"] ?? "");
           🪙 <?php echo (int)$user["eco_points"]; ?> points
         </span>
         <a href="user_dashboard.php" class="user-top-btn">🏠</a>
-        <a href="friends_add.php" class="user-top-btn">👥</a>
+        <a href="add_friends.php" class="user-top-btn">👥</a>
         <a href="../login/logout.php" class="user-top-btn logout">❌</a>
       </div>
 

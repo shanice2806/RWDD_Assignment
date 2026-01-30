@@ -190,7 +190,7 @@ $regOpen = (strtolower($event["registration_status"]) === "open");
       <div class="user-top-right">
         <span class="user-top-points">🪙 <?= (int)$user["eco_points"]; ?> points</span>
         <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
-        <a class="user-top-btn" href="friends_add.php" title="Add Friend">👥</a>
+        <a class="user-top-btn" href="add_friends.php" title="Add Friend">👥</a>
         <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
       </div>
 

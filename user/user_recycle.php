@@ -137,7 +137,7 @@ mysqli_stmt_close($logsStmt);
         <div class="user-top-right">
           <span class="user-top-points">🪙 <?php echo (int)$user["eco_points"]; ?> points</span>
           <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
-          <a href="friends_add.php" class="user-top-btn">👥</a>
+          <a href="add_friends.php" class="user-top-btn">👥</a>
           <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
         </div>
       </div>

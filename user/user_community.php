@@ -19,6 +19,66 @@ if ($role === "admin") {
 
 $user_id = $_SESSION["user_id"];
 
+function h($s){ return htmlspecialchars($s ?? "", ENT_QUOTES, "UTF-8"); }
+
+function youtube_to_embed($url) {
+  $url = trim($url ?? "");
+  if ($url === "") return "";
+  if (strpos($url, "youtube.com/embed/") !== false) return $url;
+
+  $parts = parse_url($url);
+  if (!empty($parts["query"])) {
+    parse_str($parts["query"], $q);
+    if (!empty($q["v"])) return "https://www.youtube.com/embed/" . $q["v"];
+  }
+  if (!empty($parts["host"]) && strpos($parts["host"], "youtu.be") !== false) {
+    $vid = ltrim($parts["path"] ?? "", "/");
+    if ($vid !== "") return "https://www.youtube.com/embed/" . $vid;
+  }
+  return $url;
+}
+
+if (!isset($_SESSION["liked_posts"])) {
+  $_SESSION["liked_posts"] = []; 
+}
+
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["toggle_like"])) {
+  $post_id  = trim($_POST["post_id"] ?? "");
+  $category = trim($_POST["category"] ?? "all");
+  $pagePost = (int)($_POST["page"] ?? 1);
+  if ($pagePost < 1) $pagePost = 1;
+
+  if ($post_id !== "") {
+    $alreadyLiked = !empty($_SESSION["liked_posts"][$post_id]);
+
+    if ($alreadyLiked) {
+      $sqlLike = "UPDATE posts
+                  SET like_count = GREATEST(like_count - 1, 0)
+                  WHERE post_id = ?
+                  LIMIT 1";
+      $st = mysqli_prepare($conn, $sqlLike);
+      mysqli_stmt_bind_param($st, "s", $post_id);
+      mysqli_stmt_execute($st);
+      mysqli_stmt_close($st);
+
+      unset($_SESSION["liked_posts"][$post_id]);
+    } else {
+      $sqlLike = "UPDATE posts
+                  SET like_count = like_count + 1
+                  WHERE post_id = ?
+                  LIMIT 1";
+      $st = mysqli_prepare($conn, $sqlLike);
+      mysqli_stmt_bind_param($st, "s", $post_id);
+      mysqli_stmt_execute($st);
+      mysqli_stmt_close($st);
+
+      $_SESSION["liked_posts"][$post_id] = true;
+    }
+  }
+
+  header("Location: user_community.php?category=" . urlencode($category) . "&page=" . $pagePost);
+  exit();
+}
 
 $userSql = "SELECT user_id, name, email, role, eco_points, badges, created_at, account_status, last_login, profile_image
             FROM users
@@ -50,28 +110,31 @@ $selectedCat = trim($_GET["category"] ?? "all");
 $page = (int)($_GET["page"] ?? 1);
 if ($page < 1) $page = 1;
 
-$pageSize = 1;
+$pageSize = 1; 
 $offset   = ($page - 1) * $pageSize;
 
+$cats = [];
 $catSql = "SELECT content_category_id, content_name
            FROM content_categories
            WHERE is_active = 1
            ORDER BY content_name ASC";
 $catRes = mysqli_query($conn, $catSql);
+if ($catRes) {
+  while ($row = mysqli_fetch_assoc($catRes)) $cats[] = $row;
+}
 
-$countSql = "SELECT COUNT(*) AS total FROM posts p WHERE p.post_status = 'Public'";
-if ($selectedCat !== "all") $countSql .= " AND p.content_category_id = ?";
-
-if ($selectedCat !== "all") {
+if ($selectedCat === "all") {
+  $countSql = "SELECT COUNT(*) AS total FROM posts WHERE post_status='Public'";
+  $countRes = mysqli_query($conn, $countSql);
+  $totalRows = (int)(mysqli_fetch_assoc($countRes)["total"] ?? 0);
+} else {
+  $countSql = "SELECT COUNT(*) AS total FROM posts WHERE post_status='Public' AND content_category_id=?";
   $countStmt = mysqli_prepare($conn, $countSql);
   mysqli_stmt_bind_param($countStmt, "s", $selectedCat);
   mysqli_stmt_execute($countStmt);
   $countRes = mysqli_stmt_get_result($countStmt);
   $totalRows = (int)(mysqli_fetch_assoc($countRes)["total"] ?? 0);
   mysqli_stmt_close($countStmt);
-} else {
-  $countRes = mysqli_query($conn, $countSql);
-  $totalRows = (int)(mysqli_fetch_assoc($countRes)["total"] ?? 0);
 }
 
 $totalPages = ($totalRows > 0) ? (int)ceil($totalRows / $pageSize) : 1;
@@ -86,6 +149,7 @@ $hasNext = $page < $totalPages;
 $sql = "
   SELECT p.post_id, p.title, p.body, p.difficulty_level, p.post_created_at,
          p.content_category_id,
+         p.like_count,
          u.user_id AS author_id,
          u.name AS author_name,
          u.profile_image AS author_profile_image
@@ -106,23 +170,6 @@ mysqli_stmt_execute($pStmt);
 $pRes = mysqli_stmt_get_result($pStmt);
 $post = mysqli_fetch_assoc($pRes);
 mysqli_stmt_close($pStmt);
-
-function youtube_to_embed($url) {
-  $url = trim($url ?? "");
-  if ($url === "") return "";
-  if (strpos($url, "youtube.com/embed/") !== false) return $url;
-
-  $parts = parse_url($url);
-  if (!empty($parts["query"])) {
-    parse_str($parts["query"], $q);
-    if (!empty($q["v"])) return "https://www.youtube.com/embed/" . $q["v"];
-  }
-  if (!empty($parts["host"]) && strpos($parts["host"], "youtu.be") !== false) {
-    $vid = ltrim($parts["path"] ?? "", "/");
-    if ($vid !== "") return "https://www.youtube.com/embed/" . $vid;
-  }
-  return $url;
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -197,12 +244,18 @@ function youtube_to_embed($url) {
       cursor:pointer;
       font-size:16px;
       display:flex; align-items:center; justify-content:center;
+      font-weight:900;
+    }
+
+    .wf-icon.liked{
+      background:#d61f1f !important;
     }
 
     .wf-blank{
       height:500px;
       background:#fff;
       border-bottom:1px solid #eee;
+      position:relative;
     }
 
     .wf-bottom{
@@ -316,6 +369,20 @@ function youtube_to_embed($url) {
       font-weight:800;
     }
 
+    .wf-show-video{
+      position:absolute;
+      left:12px;
+      bottom:12px;
+      z-index:3;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid #fff;
+      background:rgba(0,0,0,.55);
+      color:#fff;
+      font-weight:800;
+      cursor:pointer;
+    }
+
     @media (max-width:768px){
       .community-container{ max-width:100%; padding:18px 14px; }
       .wf-card{ border-radius:16px; margin:16px 0; }
@@ -342,7 +409,7 @@ function youtube_to_embed($url) {
       <div class="user-top-left">
         <button class="sidebar-toggle" id="userSidebarToggle" type="button">☰</button>
         <div class="user-top-user">
-          <span> Welcome!  <?= htmlspecialchars($_SESSION['name'] ?? 'User') ?> </span>
+          <span> Welcome!  <?= h($_SESSION['name'] ?? 'User') ?> </span>
         </div>
       </div>
 
@@ -354,7 +421,7 @@ function youtube_to_embed($url) {
       <div class="user-top-right">
         <span class="user-top-points">🪙 <?php echo (int)$user["eco_points"]; ?> points</span>
         <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
-        <a class="user-top-btn" href="friends_add.php" title="Add Friend">👥</a>
+        <a class="user-top-btn" href="add_friends.php" title="Add Friend">👥</a>
         <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
       </div>
     </div>
@@ -369,14 +436,12 @@ function youtube_to_embed($url) {
             <input type="hidden" name="page" value="1">
             <select name="category" onchange="this.form.submit()">
               <option value="all" <?php echo ($selectedCat==="all") ? "selected" : ""; ?>>All Category</option>
-              <?php if ($catRes): ?>
-                <?php while ($cat = mysqli_fetch_assoc($catRes)): ?>
-                  <option value="<?php echo htmlspecialchars($cat["content_category_id"]); ?>"
-                    <?php echo ($selectedCat === $cat["content_category_id"]) ? "selected" : ""; ?>>
-                    <?php echo htmlspecialchars($cat["content_name"]); ?>
-                  </option>
-                <?php endwhile; ?>
-              <?php endif; ?>
+              <?php foreach ($cats as $cat): ?>
+                <option value="<?php echo h($cat["content_category_id"]); ?>"
+                  <?php echo ($selectedCat === $cat["content_category_id"]) ? "selected" : ""; ?>>
+                  <?php echo h($cat["content_name"]); ?>
+                </option>
+              <?php endforeach; ?>
             </select>
           </form>
         </div>
@@ -395,74 +460,110 @@ function youtube_to_embed($url) {
               if (file_exists($disk)) $authorImg = $try;
             }
 
+            $firstImage = "";
+            $firstVideo = "";
+
             $mediaSql = "SELECT media_type, file_path, video_url
                          FROM post_media
-                         WHERE post_id = ?
-                         ORDER BY order_number ASC";
+                         WHERE post_id=?
+                         ORDER BY order_number ASC, media_id ASC";
             $mStmt = mysqli_prepare($conn, $mediaSql);
             mysqli_stmt_bind_param($mStmt, "s", $pid);
             mysqli_stmt_execute($mStmt);
             $mRes = mysqli_stmt_get_result($mStmt);
 
-            $firstVideo = "";
-            $firstImage = "";
-
             while ($m = mysqli_fetch_assoc($mRes)) {
-              if ($m["media_type"] === "video" && $firstVideo === "") $firstVideo = youtube_to_embed($m["video_url"]);
-              if ($m["media_type"] === "image" && $firstImage === "") $firstImage = $m["file_path"];
+              $t = strtolower(trim($m["media_type"] ?? ""));
+
+              if ($t === "image" && $firstImage === "") {
+                $firstImage = trim($m["file_path"] ?? "");
+              }
+              if ($t === "video" && $firstVideo === "") {
+                $firstVideo = youtube_to_embed($m["video_url"] ?? "");
+              }
+              if ($firstImage !== "" && $firstVideo !== "") break;
             }
             mysqli_stmt_close($mStmt);
+
+            $imgSrc = "";
+            if ($firstImage !== "" && str_starts_with($firstImage, "images/")) {
+              $imgSrc = "../" . $firstImage; 
+            }
+
+            $liked = !empty($_SESSION["liked_posts"][$pid]);
+            $likeCount = (int)($post["like_count"] ?? 0);
           ?>
 
           <div class="wf-card">
 
             <div class="wf-actions">
-              <button type="button" class="wf-icon" title="Like">♡</button>
+
+              <form method="post" style="margin:0;">
+                <input type="hidden" name="toggle_like" value="1">
+                <input type="hidden" name="post_id" value="<?php echo h($pid); ?>">
+                <input type="hidden" name="category" value="<?php echo h($selectedCat); ?>">
+                <input type="hidden" name="page" value="<?php echo (int)$page; ?>">
+                <button type="submit" class="wf-icon <?php echo $liked ? 'liked' : ''; ?>" title="Like">
+                  ❤ <?php echo $likeCount; ?>
+                </button>
+              </form>
 
               <button type="button" class="wf-icon" title="Comment"
-                      onclick="document.getElementById('comment-<?php echo htmlspecialchars($pid); ?>')
+                      onclick="document.getElementById('comment-<?php echo h($pid); ?>')
                       .scrollIntoView({behavior:'smooth'});">
                 💬
               </button>
 
               <button type="button" class="wf-icon" title="Report"
-                      onclick="document.getElementById('report-<?php echo htmlspecialchars($pid); ?>').focus();">
+                      onclick="document.getElementById('report-<?php echo h($pid); ?>').focus();">
                 ⚠
               </button>
             </div>
 
             <div class="wf-blank wf-video">
-              <?php if ($firstVideo !== ""): ?>
-                <iframe width="100%" height="500"
-                  src="<?php echo htmlspecialchars($firstVideo); ?>"
-                  title="Video" frameborder="0" allowfullscreen></iframe>
 
-              <?php elseif ($firstImage !== ""): ?>
-                <?php $imgSrc = "../" . ltrim($firstImage, "/"); ?>
-                <img src="<?php echo htmlspecialchars($imgSrc); ?>"
+              <?php if ($imgSrc !== ""): ?>
+                <img id="img-<?php echo h($pid); ?>"
+                     src="<?php echo h($imgSrc); ?>"
                      style="width:100%; height:500px; object-fit:cover; display:block;"
                      alt="Post media">
-
-              <?php else: ?>
               <?php endif; ?>
+
+              <?php if ($firstVideo !== ""): ?>
+                <button type="button"
+                        class="wf-show-video"
+                        data-post="<?php echo h($pid); ?>"
+                        data-video="<?php echo h($firstVideo); ?>">
+                  Show Video
+                </button>
+
+                <iframe id="video-<?php echo h($pid); ?>"
+                        width="100%" height="500"
+                        src=""
+                        title="Video"
+                        frameborder="0"
+                        allowfullscreen
+                        style="display:none;"></iframe>
+              <?php endif; ?>
+
             </div>
 
             <div class="wf-bottom">
 
               <div class="wf-author">
-                <img src="<?php echo htmlspecialchars($authorImg); ?>" alt="Profile">
-                <span class="wf-author-id"><?php echo htmlspecialchars($post["author_id"]); ?></span>
-                <span class="wf-author-name"><?php echo htmlspecialchars($post["author_name"]); ?></span>
+                <img src="<?php echo h($authorImg); ?>" alt="Profile">
+                <span class="wf-author-id"><?php echo h($post["author_id"]); ?></span>
+                <span class="wf-author-name"><?php echo h($post["author_name"]); ?></span>
               </div>
 
-              <div class="wf-title"><?php echo htmlspecialchars($post["title"]); ?></div>
+              <div class="wf-title"><?php echo h($post["title"]); ?></div>
 
               <?php if (trim($post["body"] ?? "") !== ""): ?>
-                <div class="wf-body"><?php echo htmlspecialchars($post["body"]); ?></div>
+                <div class="wf-body"><?php echo h($post["body"]); ?></div>
               <?php endif; ?>
 
               <div class="wf-difficulty">
-                Difficulty level : <?php echo htmlspecialchars($post["difficulty_level"]); ?>
+                Difficulty level : <?php echo h($post["difficulty_level"]); ?>
               </div>
 
               <?php
@@ -479,15 +580,15 @@ function youtube_to_embed($url) {
                 $cres = mysqli_stmt_get_result($cstmt);
               ?>
 
-              <div class="wf-section-title" id="comment-<?php echo htmlspecialchars($pid); ?>">Comments</div>
+              <div class="wf-section-title" id="comment-<?php echo h($pid); ?>">Comments</div>
               <div class="wf-comments">
                 <?php if (mysqli_num_rows($cres) == 0): ?>
                   <div class="wf-comment-item">No comments yet.</div>
                 <?php else: ?>
                   <?php while ($c = mysqli_fetch_assoc($cres)): ?>
                     <div class="wf-comment-item">
-                      <b><?php echo htmlspecialchars($c["name"]); ?>:</b>
-                      <?php echo htmlspecialchars($c["comment_text"]); ?>
+                      <b><?php echo h($c["name"]); ?>:</b>
+                      <?php echo h($c["comment_text"]); ?>
                     </div>
                   <?php endwhile; ?>
                 <?php endif; ?>
@@ -496,18 +597,18 @@ function youtube_to_embed($url) {
               <?php mysqli_stmt_close($cstmt); ?>
 
               <form class="wf-form-row" method="post" action="comment_add.php">
-                <input type="hidden" name="post_id" value="<?php echo htmlspecialchars($pid); ?>">
-                <input type="hidden" name="category" value="<?php echo htmlspecialchars($selectedCat); ?>">
+                <input type="hidden" name="post_id" value="<?php echo h($pid); ?>">
+                <input type="hidden" name="category" value="<?php echo h($selectedCat); ?>">
                 <input type="hidden" name="page" value="<?php echo (int)$page; ?>">
                 <input type="text" name="comment" placeholder="add a comment..." required>
                 <button type="submit">Send</button>
               </form>
 
               <form class="wf-form-row" method="post" action="report_add.php">
-                <input type="hidden" name="post_id" value="<?php echo htmlspecialchars($pid); ?>">
-                <input type="hidden" name="category" value="<?php echo htmlspecialchars($selectedCat); ?>">
+                <input type="hidden" name="post_id" value="<?php echo h($pid); ?>">
+                <input type="hidden" name="category" value="<?php echo h($selectedCat); ?>">
                 <input type="hidden" name="page" value="<?php echo (int)$page; ?>">
-                <input id="report-<?php echo htmlspecialchars($pid); ?>" type="text" name="reason" placeholder="Report reason..." required>
+                <input id="report-<?php echo h($pid); ?>" type="text" name="reason" placeholder="Report reason..." required>
                 <button type="submit">Report</button>
               </form>
 
@@ -545,5 +646,34 @@ function youtube_to_embed($url) {
 </div>
 
 <script src="../user/user.js"></script>
+
+<script>
+  document.addEventListener("click", function(e){
+    const btn = e.target.closest(".wf-show-video");
+    if (!btn) return;
+
+    const pid = btn.getAttribute("data-post");
+    const videoUrl = btn.getAttribute("data-video");
+
+    const img = document.getElementById("img-" + pid);
+    const iframe = document.getElementById("video-" + pid);
+
+    if (!iframe) return;
+
+    const isShowing = iframe.style.display !== "none";
+
+    if (isShowing) {
+      iframe.style.display = "none";
+      iframe.src = "";
+      if (img) img.style.display = "block";
+      btn.textContent = "Show Video";
+    } else {
+      if (img) img.style.display = "none";
+      iframe.style.display = "block";
+      iframe.src = videoUrl;
+      btn.textContent = "Show Photo";
+    }
+  });
+</script>
 </body>
 </html>
