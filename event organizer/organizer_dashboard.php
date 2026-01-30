@@ -80,6 +80,21 @@ if ($impact_event) {
     $result6 = $conn->query($query6);
     $impact_recyclables = $result6->fetch_assoc()['total_recyclables'];
 }
+
+// Get recent notifications for this user (limit 5)
+$notifications = [];
+$notif_query = "SELECT n.notification_id, n.event_id, n.message, n.created_at, e.event_title
+                FROM notifications n
+                LEFT JOIN events e ON n.event_id = e.event_id
+                WHERE n.audience_type = '$user_id' AND n.is_active = 1
+                ORDER BY n.created_at DESC
+                LIMIT 5";
+$notif_result = $conn->query($notif_query);
+if ($notif_result) {
+    while ($notif = $notif_result->fetch_assoc()) {
+        $notifications[] = $notif;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -98,6 +113,24 @@ if ($impact_event) {
   <!-- Main content -->
   <div class="main-content">
     <main class="dashboard">
+
+      <!-- Notifications Section -->
+      <?php if (!empty($notifications)): ?>
+      <section>
+        <h2>🔔 Notifications</h2>
+        <p style="color: #6c757d; font-size: 14px; margin-bottom: 15px;">Latest updates for you (showing up to 5)</p>
+        
+        <?php foreach ($notifications as $notif): ?>
+          <div class="alert" style="margin-bottom: 10px; border-left: 4px solid #3ba99c;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+              <strong>Event: <?= htmlspecialchars($notif['event_title'] ?? 'N/A') ?></strong>
+              <span style="color: #6c757d; font-size: 13px;"><?= date('d M Y, h:i A', strtotime($notif['created_at'])) ?></span>
+            </div>
+            <div><?= htmlspecialchars($notif['message']) ?></div>
+          </div>
+        <?php endforeach; ?>
+      </section>
+      <?php endif; ?>
 
       <!-- Quick View Cards -->
       <section class="card-grid">

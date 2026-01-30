@@ -51,8 +51,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_log'])) {
                 $log_id = 'rl_001';
             }
             
-            // Calculate points based on material type (example: 10 points per kg)
-            $points = intval($weight_kg * 10);
+            // Get points per kg from eco_points_rules based on material_id
+            $points_query = "SELECT points_per_kg FROM eco_points_rules 
+                           WHERE material_id = '$material_id' 
+                           AND rule_type = 'RECYCLE' 
+                           AND is_active = 1 
+                           LIMIT 1";
+            $points_result = $conn->query($points_query);
+            
+            if ($points_result && $points_result->num_rows > 0) {
+                $points_per_kg = $points_result->fetch_assoc()['points_per_kg'];
+                $points = intval($weight_kg * $points_per_kg);
+            } else {
+                // Default to 0 if no rule found
+                $points = 0;
+            }
             
             // Handle event_id - use NULL if empty
             $event_id_sql = (empty($event_id) || $event_id == '') ? "NULL" : "'$event_id'";
@@ -66,16 +79,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_log'])) {
                            VALUES ('$log_id', '$user_id_input', '$material_id', $event_id_sql, '$weight_kg', '$location_sql', NULL, 'VALID', $points, 0)";
             
             if ($conn->query($insert_query)) {
-                // Generate unique transaction ID for eco_points_transactions
-                $transaction_id = 'epr_' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
+                // Generate sequential transaction ID for eco_points_transactions
+                $last_trans_query = "SELECT transaction_id FROM eco_points_transactions ORDER BY transaction_id DESC LIMIT 1";
+                $last_trans_result = $conn->query($last_trans_query);
                 
-                while (true) {
-                    $check_trans = "SELECT transaction_id FROM eco_points_transactions WHERE transaction_id = '$transaction_id'";
-                    $check_trans_result = $conn->query($check_trans);
-                    if ($check_trans_result->num_rows == 0) {
-                        break;
-                    }
-                    $transaction_id = 'epr_' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
+                if ($last_trans_result && $last_trans_result->num_rows > 0) {
+                    $last_trans_id = $last_trans_result->fetch_assoc()['transaction_id'];
+                    $trans_number = intval(substr($last_trans_id, 4)) + 1;
+                    $transaction_id = 'ept_' . str_pad($trans_number, 3, '0', STR_PAD_LEFT);
+                } else {
+                    $transaction_id = 'ept_001';
                 }
                 
                 // Get material name for description
@@ -83,8 +96,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_log'])) {
                 $material_name_result = $conn->query($material_name_query);
                 $material_name = $material_name_result->fetch_assoc()['materials_name'];
                 
-                // Create transaction record
-                $description = "Points awarded for recycling $material_name materials.";
+                // Create transaction record with detailed description
+                $description = "Points awarded for recycling based on material and weight.";
                 $source_id = $log_id; // Reference to the recycling log
                 
                 $trans_query = "INSERT INTO eco_points_transactions 
@@ -96,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_log'])) {
                     $update_user_query = "UPDATE users SET eco_points = eco_points + $points WHERE user_id = '$user_id_input'";
                     
                     if ($conn->query($update_user_query)) {
-                        $success_message = "Recyclable log submitted successfully! Points awarded: $points";
+                        $success_message = "Recyclable log submitted successfully! $weight_kg kg of $material_name logged. Points awarded: $points";
                         $selected_event_id = $event_id;
                     } else {
                         $error_message = "Log created but failed to update user points: " . $conn->error;
