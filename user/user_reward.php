@@ -13,7 +13,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_redeem'])) {
     $r_id = $_POST['reward_id'];
     $pts_required = (int)$_POST['points'];
 
-    // Check current points first
     $checkQuery = mysqli_query($conn, "SELECT eco_points FROM users WHERE user_id = '$user_id'");
     $userData = mysqli_fetch_assoc($checkQuery);
     $current_balance = (int)$userData['eco_points'];
@@ -29,7 +28,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_redeem'])) {
         $new_ept = "ept_" . str_pad($t_count, 3, "0", STR_PAD_LEFT);
 
         if ($current_balance >= $pts_required) {
-            // SUCCESSFUL PATH
             mysqli_query($conn, "INSERT INTO reward_redemptions (redemption_id, user_id, reward_id, redemption_date_time, status, points_spent) VALUES ('$new_rdp', '$user_id', '$r_id', NOW(), 'Approved', $pts_required)");
             mysqli_query($conn, "INSERT INTO eco_points_transactions (transaction_id, user_id, source_id, points_change, description) VALUES ('$new_ept', '$user_id', '$new_rdp', -$pts_required, 'Redeemed Reward Item')");
             mysqli_query($conn, "UPDATE users SET eco_points = eco_points - $pts_required WHERE user_id = '$user_id'");
@@ -37,7 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_redeem'])) {
             mysqli_commit($conn);
             echo "success";
         } else {
-            // INSUFFICIENT POINTS PATH (REJECTED)
             mysqli_query($conn, "INSERT INTO reward_redemptions (redemption_id, user_id, reward_id, redemption_date_time, status, points_spent) VALUES ('$new_rdp', '$user_id', '$r_id', NOW(), 'Rejected', 0)");
             mysqli_query($conn, "INSERT INTO eco_points_transactions (transaction_id, user_id, source_id, points_change, description) VALUES ('$new_ept', '$user_id', '$new_rdp', 0, 'Failed Redemption - Insufficient Points')");
             mysqli_commit($conn);
@@ -50,13 +47,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_redeem'])) {
     }
 }
 
-// --- 2. GET USER DATA ---
-$userSql = "SELECT user_id, name, eco_points FROM users WHERE user_id = ? LIMIT 1";
+// --- 2. GET USER DATA (Required for Sidebar & Page) ---
+$userSql = "SELECT user_id, name, eco_points, profile_image FROM users WHERE user_id = ? LIMIT 1";
 $userStmt = mysqli_prepare($conn, $userSql);
 mysqli_stmt_bind_param($userStmt, "s", $user_id);
 mysqli_stmt_execute($userStmt);
 $user = mysqli_fetch_assoc(mysqli_stmt_get_result($userStmt));
+
 $current_points = (int)$user['eco_points'];
+// Sidebar variables
+$profileImg = !empty($user['profile_image']) ? "../" . $user['profile_image'] : "../images/profiles/default.png";
 
 $view = isset($_GET['view']) ? $_GET['view'] : 'catalog';
 ?>
@@ -79,6 +79,15 @@ $view = isset($_GET['view']) ? $_GET['view'] : 'catalog';
         .balance-label { font-size: 15px; color: #000; margin-bottom: 5px; }
         .balance-label b { font-weight: bold; }
         .points-box { border: 1px solid #000; padding: 6px 12px; border-radius: 6px; font-size: 16px; font-weight: bold; background: #fff; display: inline-block; }
+        
+        /* Sidebar Fix: Highlights Reward menu and makes sure links work */
+        .user-sidebar-menu a[href="../user/rewards.php"], 
+        .user-sidebar-menu a[href="user_reward.php"] {
+            background-color: #3ba99c !important; 
+            color: white !important;
+            border-radius: 4px;
+        }
+
         .reward-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .reward-table th { border: 1px solid #000; background-color: #f2f2f2; padding: 10px; text-align: center; font-weight: bold; color: #000; }
         .reward-table td { border: 1px solid #000; padding: 12px; vertical-align: middle; color: #333; }
@@ -94,7 +103,6 @@ $view = isset($_GET['view']) ? $_GET['view'] : 'catalog';
         .btn-no { background: #1f5147; color: white; }
         .btn-confirm { background: #1f5147; color: white; }
         .btn-ok { background: #333; color: white; width: 150px; }
-        .pop-btn:hover { opacity: 0.9; }
         .hidden { display: none !important; }
         footer { text-align: center; padding: 20px; color: #888; font-size: 14px; margin-top: auto; }
     </style>
@@ -110,8 +118,8 @@ $view = isset($_GET['view']) ? $_GET['view'] : 'catalog';
             </div>
             <div class="user-top-center"><h1 style="color: white; margin: 0;">Reward</h1></div>
             <div class="user-top-right">
-                <a class="user-top-btn" href="user_profile.php">👤</a>
                 <a href="user_dashboard.php" class="user-top-btn">🏠</a>
+                <a class="user-top-btn" href="friends_add.php" title="Add Friend">👥</a>
                 <a href="../login/logout.php" class="user-top-btn logout">❌</a>
             </div>
         </div>
@@ -145,7 +153,7 @@ $view = isset($_GET['view']) ? $_GET['view'] : 'catalog';
                         <tr>
                             <td>
                                 <div class="item-row">
-                                    <img src="..<?= $h['image_path'] ?>" class="reward-img">
+                                    <img src="../images/reward/<?= ltrim($h['image_path'], '/') ?>" class="reward-img">
                                     <b style="color: #000;"><?= htmlspecialchars($h['reward_name']) ?></b>
                                 </div>
                             </td>
@@ -172,7 +180,7 @@ $view = isset($_GET['view']) ? $_GET['view'] : 'catalog';
                         <tr>
                             <td>
                                 <div class="item-row">
-                                    <img src="..<?= $row['image_path'] ?>" class="reward-img">
+                                    <img src="../images/reward/<?= ltrim($row['image_path'], '/') ?>" class="reward-img">
                                     <div>
                                         <b style="color: #000;"><?= htmlspecialchars($row['reward_name']) ?></b><br>
                                         <small style="color: #666;"><?= htmlspecialchars($row['description']) ?></small>
@@ -183,7 +191,7 @@ $view = isset($_GET['view']) ? $_GET['view'] : 'catalog';
                             <td align="center"><?= $row['stock'] ?></td>
                             <td align="center">
                                 <button class="btn-redeem" onclick="handleRedeem('<?= $row['reward_id'] ?>', '<?= addslashes($row['reward_name']) ?>', <?= $row['points_required'] ?>)" <?= $row['stock'] <= 0 ? 'disabled' : '' ?>>
-                                    <?= $row['stock'] <= 0 ? 'Out of Stock' : 'Redeem' ?>
+                                    <?= $row['stock'] <= 0 ? 'Sold Out' : 'Redeem' ?>
                                 </button>
                             </td>
                         </tr>
