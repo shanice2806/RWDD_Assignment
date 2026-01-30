@@ -21,9 +21,11 @@ $rule_id = $_GET['id'];
 $stmt = $conn->prepare("
     SELECT rule_id,
            rule_key,
+           rule_type,
            description,
-           points,
-           is_active
+           points_per_kg,
+           is_active,
+           material_id
     FROM eco_points_rules
     WHERE rule_id = ?
 ");
@@ -43,28 +45,34 @@ $rule = $result->fetch_assoc();
 ===================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $rule_key    = trim($_POST['rule_key']);
-    $description = trim($_POST['description']);
-    $points      = (int) $_POST['points'];
-    $status      = (int) $_POST['is_active'];
+    $rule_key      = trim($_POST['rule_key']);
+    $rule_type     = $_POST['rule_type'];
+    $description   = trim($_POST['description']);
+    $points_per_kg = (int) $_POST['points_per_kg'];
+    $material_id   = $rule_type === 'RECYCLE' ? $_POST['material_id'] : NULL;
+    $is_active     = (int) $_POST['is_active'];
 
-    if ($rule_key !== '' && $points > 0) {
+    if ($rule_key !== '' && $points_per_kg > 0) {
 
         $stmt = $conn->prepare("
             UPDATE eco_points_rules
             SET rule_key = ?,
+                rule_type = ?,
                 description = ?,
-                points = ?,
+                points_per_kg = ?,
+                material_id = ?,
                 is_active = ?
             WHERE rule_id = ?
         ");
 
         $stmt->bind_param(
-            "ssiss",
+            "sssisis",
             $rule_key,
+            $rule_type,
             $description,
-            $points,
-            $status,
+            $points_per_kg,
+            $material_id,
+            $is_active,
             $rule_id
         );
 
@@ -83,83 +91,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <!-- PAGE TITLE BAR -->
   <div class="page-title-bar">
-    <a href="admin_system_settings.php?view=eco_rules"
-       class="icon-btn back-btn">↩</a>
-
-    <h2><?php echo htmlspecialchars($rule_id); ?></h2>
+    <a href="admin_system_settings.php?view=eco_rules" class="icon-btn back-btn">↩</a>
+    <h2><?= htmlspecialchars($rule_id) ?></h2>
   </div>
 
-  <!-- CENTERED FORM -->
   <div class="profile-container">
 
-    <form method="POST"
-          style="
-            background:#e5e5e5;
-            padding:30px;
-            border-radius:8px;
-          ">
+    <form method="POST" style="background:#e5e5e5; padding:30px; border-radius:8px;">
 
-      <!-- RULE ID (READ ONLY) -->
+      <!-- RULE ID -->
       <div class="form-group">
         <label>Rule ID</label>
-        <input type="text"
-               value="<?= htmlspecialchars($rule['rule_id']) ?>"
-               readonly>
+        <input type="text" value="<?= htmlspecialchars($rule['rule_id']) ?>" readonly>
       </div>
 
       <!-- RULE KEY -->
       <div class="form-group">
         <label>Rule Key</label>
-        <input type="text"
-               name="rule_key"
-               value="<?= htmlspecialchars($rule['rule_key']) ?>"
-               required>
+        <input type="text" name="rule_key" value="<?= htmlspecialchars($rule['rule_key']) ?>" required>
+      </div>
+
+      <!-- RULE TYPE -->
+      <div class="form-group">
+        <label>Rule Type</label>
+        <select name="rule_type" id="ruleType" required>
+          <option value="RECYCLE" <?= $rule['rule_type'] === 'RECYCLE' ? 'selected' : '' ?>>RECYCLE</option>
+          <option value="EVENT" <?= $rule['rule_type'] === 'EVENT' ? 'selected' : '' ?>>EVENT</option>
+          <option value="CONTENT" <?= $rule['rule_type'] === 'CONTENT' ? 'selected' : '' ?>>CONTENT</option>
+        </select>
+      </div>
+
+      <!-- MATERIAL ID (RECYCLE ONLY) -->
+      <div class="form-group" id="materialGroup">
+        <label>Material ID</label>
+        <input type="text" name="material_id" value="<?= htmlspecialchars($rule['material_id'] ?? '') ?>">
       </div>
 
       <!-- DESCRIPTION -->
       <div class="form-group">
-        <label>Rule Description</label>
-        <input type="text"
-               name="description"
-               value="<?= htmlspecialchars($rule['description']) ?>">
+        <label>Description</label>
+        <input type="text" name="description" value="<?= htmlspecialchars($rule['description']) ?>">
       </div>
 
-      <!-- POINTS -->
+      <!-- POINTS PER KG -->
       <div class="form-group">
-        <label>Points</label>
-        <input type="number"
-               name="points"
-               min="1"
-               value="<?= $rule['points'] ?>"
-               required>
+        <label>Points Per KG</label>
+        <input type="number" name="points_per_kg" min="1" value="<?= $rule['points_per_kg'] ?>" required>
       </div>
 
       <!-- STATUS -->
       <div class="form-group">
         <label>Status</label>
         <select name="is_active">
-          <option value="1" <?= $rule['is_active'] == 1 ? 'selected' : '' ?>>
-            Active
-          </option>
-          <option value="0" <?= $rule['is_active'] == 0 ? 'selected' : '' ?>>
-            Inactive
-          </option>
+          <option value="1" <?= $rule['is_active'] == 1 ? 'selected' : '' ?>>Active</option>
+          <option value="0" <?= $rule['is_active'] == 0 ? 'selected' : '' ?>>Inactive</option>
         </select>
       </div>
 
-
-        <!-- EDIT BUTTON -->
-        <div style="text-align:center; margin-top:25px;">
-          <button type="submit" class="action-btn">
-            Edit
-          </button>
-        </div>
+      <div style="text-align:center; margin-top:25px;">
+        <button type="submit" class="action-btn">Edit</button>
+      </div>
 
     </form>
 
   </div>
-
 </div>
 </main>
+
+<script>
+const ruleType = document.getElementById('ruleType');
+const materialGroup = document.getElementById('materialGroup');
+
+function toggleMaterial() {
+    materialGroup.style.display = ruleType.value === 'RECYCLE' ? 'block' : 'none';
+}
+
+ruleType.addEventListener('change', toggleMaterial);
+toggleMaterial();
+</script>
 
 <?php include "admin_footer.php"; ?>

@@ -71,17 +71,20 @@ switch ($view) {
         break;
 
     case 'eco_rules':
-        $sql = "
-            SELECT rule_id AS id,
-                   rule_key,
-                   description,
-                   points,
-                   is_active
-            FROM eco_points_rules
-            $where_sql
-            ORDER BY rule_id
-        ";
-        break;
+    $sql = "
+        SELECT rule_id AS id,
+               rule_key,
+               rule_type,
+               description,
+               points_per_kg,
+               material_id,
+               is_active
+        FROM eco_points_rules
+        $where_sql
+        ORDER BY rule_id
+    ";
+    break;
+
 
     default:
         $sql = "
@@ -188,9 +191,12 @@ $data = $stmt->get_result();
 <?php elseif ($view === 'eco_rules'): ?>
   <th>Rule ID</th>
   <th>Rule Key</th>
+  <th>Rule Type</th>
   <th>Description</th>
-  <th>Points</th>
+  <th>Points / KG</th>
+  <th>Material ID</th>
   <th>Status</th>
+
 <?php else: ?>
   <th>ID</th>
   <th>Name</th>
@@ -213,7 +219,7 @@ $data = $stmt->get_result();
   <td>
   <?php if (!empty($row['icon_path'])): ?>
     <img src="../images/badges/<?= htmlspecialchars($row['icon_path']) ?>"
-         width="40"
+         width="100"
          alt="Badge Icon">
   <?php else: ?>
     -
@@ -225,9 +231,18 @@ $data = $stmt->get_result();
 <?php elseif ($view === 'eco_rules'): ?>
   <td><?= $row['id'] ?></td>
   <td><?= htmlspecialchars($row['rule_key']) ?></td>
-  <td><?= htmlspecialchars($row['description']) ?></td>
-  <td><?= $row['points'] ?></td>
+  <td><?= htmlspecialchars($row['rule_type']) ?></td>
+  <td><?= htmlspecialchars($row['description']) ?: '-' ?></td>
+  <td><?= $row['points_per_kg'] ?></td>
+
+  <td>
+    <?= $row['rule_type'] === 'RECYCLE'
+        ? htmlspecialchars($row['material_id'])
+        : '-' ?>
+  </td>
+
   <td><?= $row['is_active'] ? 'Active' : 'Inactive' ?></td>
+
 
 <?php else: ?>
   <td><?= $row['id'] ?></td>

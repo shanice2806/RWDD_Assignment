@@ -10,10 +10,17 @@ include "admin_header.php";
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $rule_key     = trim($_POST['rule_key']);
+    $rule_type    = $_POST['rule_type'];
     $description  = trim($_POST['description']);
-    $points       = (int) $_POST['points'];
+    $points_per_kg = (int) $_POST['points_per_kg'];
+    $material_id  = $_POST['material_id'] ?: NULL;
 
-    if ($rule_key !== '' && $points > 0) {
+    /* Safety: material_id only for RECYCLE */
+    if ($rule_type !== 'RECYCLE') {
+        $material_id = NULL;
+    }
+
+    if ($rule_key !== '' && $points_per_kg > 0 && $rule_type !== '') {
 
         /* =====================
            GENERATE RULE ID
@@ -39,16 +46,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ===================== */
         $stmt = $conn->prepare("
             INSERT INTO eco_points_rules
-            (rule_id, rule_key, description, points, is_active)
-            VALUES (?, ?, ?, ?, 1)
+                (rule_id, rule_key, rule_type, description, points_per_kg, material_id, is_active)
+            VALUES
+                (?, ?, ?, ?, ?, ?, 1)
         ");
 
         $stmt->bind_param(
-            "sssi",
+            "ssssds",
             $rule_id,
             $rule_key,
+            $rule_type,
             $description,
-            $points
+            $points_per_kg,
+            $material_id
         );
 
         if ($stmt->execute()) {
@@ -68,14 +78,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="page-title-bar">
     <a href="admin_system_settings.php?view=eco_rules"
        class="icon-btn back-btn">↩</a>
-
     <h2>Add Eco Rule</h2>
   </div>
 
-  <!-- CENTERED FORM -->
+  <!-- FORM -->
   <div class="profile-container">
     <div class="form-panel">
+
     <form method="POST">
+
+      <!-- RULE KEY -->
       <div class="form-group">
         <label>Rule Key</label>
         <input type="text"
@@ -84,32 +96,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                required>
       </div>
 
+      <!-- RULE TYPE -->
+      <div class="form-group">
+        <label>Rule Type</label>
+        <select name="rule_type" id="ruleType" required>
+          <option value="">-- Select Type --</option>
+          <option value="RECYCLE">RECYCLE</option>
+          <option value="EVENT">EVENT</option>
+          <option value="CONTENT">CONTENT</option>
+        </select>
+      </div>
+
+      <!-- DESCRIPTION -->
       <div class="form-group">
         <label>Description</label>
         <input type="text"
                name="description"
-               placeholder="Points awarded for submitting a valid plastic recycling log">
+               placeholder="Describe how points are awarded">
       </div>
 
+      <!-- POINTS PER KG -->
       <div class="form-group">
-        <label>Points Awarded</label>
+        <label>Points Per KG</label>
         <input type="number"
-               name="points"
+               name="points_per_kg"
                min="1"
                required>
       </div>
 
-      <!-- Add BUTTON -->
+      <!-- MATERIAL ID (RECYCLE ONLY) -->
+      <div class="form-group" id="materialGroup" style="display:none;">
+        <label>Material ID</label>
+        <input type="text"
+               name="material_id"
+               placeholder="e.g. mat_001">
+      </div>
+
+      <!-- BUTTON -->
       <div style="text-align:center; margin-top:25px;">
         <button type="submit" class="action-btn">
           Add
         </button>
       </div>
 
-      </form>
+    </form>
     </div>
   </div>
 
 </main>
+</div>
+
+<script>
+const ruleType = document.getElementById('ruleType');
+const materialGroup = document.getElementById('materialGroup');
+
+function toggleMaterial() {
+    if (ruleType.value === 'RECYCLE') {
+        materialGroup.style.display = 'block';
+    } else {
+        materialGroup.style.display = 'none';
+    }
+}
+
+ruleType.addEventListener('change', toggleMaterial);
+toggleMaterial();
+</script>
 
 <?php include "admin_footer.php"; ?>
