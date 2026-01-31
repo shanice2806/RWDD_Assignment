@@ -18,14 +18,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $target = $_POST['target_id'];
         if ($_POST['action'] === 'accept') {
             mysqli_query($conn, "UPDATE user_friends SET status = 'accepted' WHERE user_id = '$target' AND friend_id = '$user_id'");
+            $_SESSION['msg_alert'] = "Accepted a friend!";
         } elseif ($_POST['action'] === 'decline') {
             mysqli_query($conn, "DELETE FROM user_friends WHERE (user_id = '$target' AND friend_id = '$user_id') OR (user_id = '$user_id' AND friend_id = '$target') AND status = 'pending'");
+            $_SESSION['msg_alert'] = "Declined a friend!";
         } elseif ($_POST['action'] === 'add') {
             $tp = mysqli_real_escape_string($conn, $_POST['tp_num']);
             $checkUser = mysqli_query($conn, "SELECT user_id FROM users WHERE user_id = '$tp'");
             if (mysqli_num_rows($checkUser) > 0) {
                 $new_id = "f_" . substr(md5(time()), 0, 8);
                 mysqli_query($conn, "INSERT INTO user_friends (friendship_id, user_id, friend_id, status) VALUES ('$new_id', '$user_id', '$tp', 'pending')");
+                $_SESSION['msg_alert'] = "Friend request sent!";
             }
         }
         header("Location: " . $_SERVER['PHP_SELF']);
@@ -73,9 +76,24 @@ while ($rRow = mysqli_fetch_assoc($reqRes)) { $requests[] = $rRow; }
     <link rel="stylesheet" href="../css/user.css">
     <style>
         :root { --color-primary: #1e3a34; --color-secondary: #3ba99c; --ig-blue: #0095f6; --color-red: #ff4d4d; --color-online: #2ecc71; }
+        
+        /* Layout Fix: Footer to bottom */
         .user-layout { display: flex; min-height: 100vh; width: 100%; }
-        .user-content { flex: 1; display: flex; flex-direction: column; background: #f9f9f9; }
-        .main-app { width: 1200px; margin: 40px auto; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; position: relative; height: 700px; overflow: hidden; }
+        .user-content { flex: 1; display: flex; flex-direction: column; background: #f9f9f9; min-height: 100vh; }
+        
+        /* Main page made longer */
+        .main-app { 
+            width: 1200px; 
+            margin: 40px auto; 
+            background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            display: flex; 
+            flex-direction: column; 
+            position: relative; 
+            height: 850px; /* Made longer */
+            overflow: hidden; 
+        }
         
         .chat-title-row { padding: 15px 40px; background: var(--color-secondary); color: white; display: flex; justify-content: space-between; align-items: center; }
         .header-controls { display: flex; align-items: flex-end; gap: 30px; }
@@ -105,6 +123,9 @@ while ($rRow = mysqli_fetch_assoc($reqRes)) { $requests[] = $rRow; }
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2500; }
         .popup { background: white; width: 800px; height: 500px; display: grid; grid-template-columns: 1fr 1fr; border-radius: 12px; overflow: hidden; position: relative; }
         .action-btn { border: none; padding: 6px 12px; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; font-size: 12px; }
+
+        /* Footer stick to bottom */
+        footer { margin-top: auto; padding: 20px 0; background: white; text-align: center; border-top: 1px solid #eee; }
     </style>
 </head>
 
@@ -199,13 +220,18 @@ while ($rRow = mysqli_fetch_assoc($reqRes)) { $requests[] = $rRow; }
         <div style="padding:40px;">
             <h3>Add Friend</h3>
             <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Enter the user's TP number (e.g., TP012345) to send a request.</p>
-            <form method="POST" onsubmit="alert('Friend request sent!');">
+            <form method="POST">
                 <input type="text" name="tp_num" style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #ddd; border-radius:5px; margin-bottom:15px;" placeholder="TP000000" required>
                 <button type="submit" name="action" value="add" style="width:100%; padding:12px; background:var(--color-primary); color:white; border:none; border-radius:5px; font-weight:bold;">Send Request</button>
             </form>
         </div>
     </div>
 </div>
+
+<?php if (isset($_SESSION['msg_alert'])): ?>
+    <script>alert("localhost: <?= $_SESSION['msg_alert'] ?>");</script>
+    <?php unset($_SESSION['msg_alert']); ?>
+<?php endif; ?>
 
 <script src="../user/user.js"></script>
 <script>
