@@ -9,6 +9,11 @@ include "admin_header.php";
 $success = "";
 $error   = "";
 
+/* Form defaults */
+$badge_name = "";
+$description = "";
+$required_points = "";
+
 /* =====================
    HANDLE ADD BADGE
 ===================== */
@@ -25,9 +30,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $error = "Please upload a valid badge icon.";
     } else {
 
-        /* =====================
-           IMAGE UPLOAD
-        ===================== */
         $upload_dir = realpath(__DIR__ . "/../images/badges");
         if ($upload_dir === false) {
             $error = "Upload folder not found.";
@@ -53,9 +55,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $error = "Failed to upload image.";
                 } else {
 
-                    /* =====================
-                       INSERT INTO DATABASE
-                    ===================== */
                     $badge_id = uniqid("b_");
 
                     $stmt = $conn->prepare("
@@ -77,8 +76,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     if ($stmt->execute()) {
                         $success = "Badge added successfully.";
 
-                        /* clear form */
-                        $badge_name = $description = "";
+                        /* clear form values */
+                        $badge_name = "";
+                        $description = "";
                         $required_points = "";
                     } else {
                         $error = "Database error: " . $stmt->error;
@@ -104,36 +104,32 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <!-- STATUS MESSAGE -->
     <?php if (!empty($success)): ?>
-      <div class="alert-success">
-        <?= htmlspecialchars($success) ?>
-      </div>
+      <div class="alert-success"><?= htmlspecialchars($success) ?></div>
     <?php endif; ?>
 
     <?php if (!empty($error)): ?>
-      <div class="alert-error">
-        <?= htmlspecialchars($error) ?>
-      </div>
+      <div class="alert-error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
     <!-- FORM -->
     <div class="form-panel">
-    <form method="POST" enctype="multipart/form-data">
+    <form method="POST" enctype="multipart/form-data" id="badgeForm">
 
       <div class="form-group">
         <label>Badge Name</label>
         <input type="text" name="badge_name"
-               value="<?= htmlspecialchars($badge_name ?? '') ?>" required>
+               value="<?= htmlspecialchars($badge_name) ?>" required>
       </div>
 
       <div class="form-group">
         <label>Badge Description</label>
-        <textarea name="description" rows="3" required><?= htmlspecialchars($description ?? '') ?></textarea>
+        <textarea name="description" rows="3" required><?= htmlspecialchars($description) ?></textarea>
       </div>
 
       <div class="form-group">
         <label>Points Required</label>
         <input type="number" name="required_points"
-               min="1" value="<?= htmlspecialchars($required_points ?? '') ?>" required>
+               min="1" value="<?= htmlspecialchars($required_points) ?>" required>
       </div>
 
       <div class="form-group">
@@ -144,6 +140,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
           <img id="previewImg">
           <input type="file"
                  name="badge_icon"
+                 id="badgeIcon"
                  accept="image/*"
                  onchange="previewImage(event)"
                  required>
@@ -164,7 +161,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 <?php include "admin_footer.php"; ?>
 
-<!-- Upload box styles -->
 <style>
 .upload-box {
     width: 180px;
@@ -176,18 +172,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     cursor: pointer;
     margin: 0 auto;
 }
-
 .upload-box img {
     max-width: 100%;
     max-height: 100%;
     display: none;
 }
-
 .upload-box span {
     font-size: 28px;
     color: #888;
 }
-
 input[type="file"] {
     display: none;
 }
@@ -202,4 +195,11 @@ function previewImage(event) {
     img.style.display = "block";
     plus.style.display = "none";
 }
+
+/* Clear image preview after success */
+<?php if (!empty($success)): ?>
+document.getElementById("badgeIcon").value = "";
+document.getElementById("previewImg").style.display = "none";
+document.getElementById("plusIcon").style.display = "block";
+<?php endif; ?>
 </script>

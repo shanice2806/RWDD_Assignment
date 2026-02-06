@@ -6,14 +6,26 @@ $page_title = "Add Material";
 include "admin_header.php";
 
 /* =====================
+   STATUS MESSAGE
+===================== */
+$success = "";
+$error   = "";
+
+/* Form defaults (for clearing) */
+$materials_name = "";
+$material_description = "";
+
+/* =====================
    HANDLE FORM SUBMIT
-   ===================== */
+===================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $materials_name = trim($_POST['materials_name']);
     $material_description = trim($_POST['material_description']);
 
-    if ($materials_name !== '') {
+    if ($materials_name === "") {
+        $error = "Material name is required.";
+    } else {
 
         /* Generate next material_id */
         $result = $conn->query("
@@ -47,8 +59,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
 
         if ($stmt->execute()) {
-            header("Location: admin_system_settings.php?view=materials");
-            exit();
+            $success = "Material added successfully.";
+
+            /* Clear fields after success */
+            $materials_name = "";
+            $material_description = "";
+        } else {
+            $error = "Failed to add material.";
         }
     }
 }
@@ -57,11 +74,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <main class="dashboard">
   <div class="main-content">
 
-<div class="page-title-bar">
-    <a href="admin_system_settings.php?view=materials" class="icon-btn back-btn">↩</a>
-
+    <div class="page-title-bar">
+      <a href="admin_system_settings.php?view=materials" class="icon-btn back-btn">↩</a>
       <h2>Add Material</h2>
     </div>
+
+    <!-- STATUS MESSAGE -->
+    <?php if (!empty($success)): ?>
+      <div class="alert-success"><?= htmlspecialchars($success) ?></div>
+    <?php endif; ?>
+
+    <?php if (!empty($error)): ?>
+      <div class="alert-error"><?= htmlspecialchars($error) ?></div>
+    <?php endif; ?>
 
     <!-- CENTERED FORM -->
     <div class="profile-container">
@@ -77,13 +102,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <label>Material Name</label>
           <input type="text"
                  name="materials_name"
+                 value="<?= htmlspecialchars($materials_name) ?>"
                  required>
         </div>
 
         <div class="form-group">
           <label>Material Description</label>
           <input type="text"
-                 name="material_description">
+                 name="material_description"
+                 value="<?= htmlspecialchars($material_description) ?>">
         </div>
 
         <!-- Add BUTTON -->

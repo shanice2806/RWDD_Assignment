@@ -6,14 +6,26 @@ $page_title = "Add Content Category";
 include "admin_header.php";
 
 /* =====================
+   STATUS MESSAGE
+===================== */
+$success = "";
+$error   = "";
+
+/* Form defaults (for clearing) */
+$content_name = "";
+$content_description = "";
+
+/* =====================
    HANDLE FORM SUBMIT
-   ===================== */
+===================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $content_name = trim($_POST['content_name']);
     $content_description = trim($_POST['content_description']);
 
-    if ($content_name !== '') {
+    if ($content_name === "") {
+        $error = "Category name is required.";
+    } else {
 
         /* Generate next content_category_id */
         $result = $conn->query("
@@ -47,8 +59,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
 
         if ($stmt->execute()) {
-            header("Location: admin_system_settings.php?view=categories");
-            exit();
+            $success = "Content category added successfully.";
+
+            /* Clear fields after success */
+            $content_name = "";
+            $content_description = "";
+        } else {
+            $error = "Failed to add content category.";
         }
     }
 }
@@ -61,9 +78,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="page-title-bar">
       <a href="admin_system_settings.php?view=categories"
          class="icon-btn back-btn">↩</a>
-
       <h2>Add Content Category</h2>
     </div>
+
+    <!-- STATUS MESSAGE -->
+    <?php if (!empty($success)): ?>
+      <div class="alert-success"><?= htmlspecialchars($success) ?></div>
+    <?php endif; ?>
+
+    <?php if (!empty($error)): ?>
+      <div class="alert-error"><?= htmlspecialchars($error) ?></div>
+    <?php endif; ?>
 
     <!-- CENTERED FORM -->
     <div class="profile-container">
@@ -79,13 +104,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <label>Category Name</label>
           <input type="text"
                  name="content_name"
+                 value="<?= htmlspecialchars($content_name) ?>"
                  required>
         </div>
 
         <div class="form-group">
           <label>Category Description</label>
           <input type="text"
-                 name="content_description">
+                 name="content_description"
+                 value="<?= htmlspecialchars($content_description) ?>">
         </div>
 
         <!-- Add BUTTON -->
