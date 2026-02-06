@@ -100,7 +100,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <h2>Add Badge</h2>
   </div>
 
-  <div class="profile-container">
 
     <!-- STATUS MESSAGE -->
     <?php if (!empty($success)): ?>
@@ -110,6 +109,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <?php if (!empty($error)): ?>
       <div class="alert-error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
+
+
+  <div class="profile-container">
 
     <!-- FORM -->
     <div class="form-panel">

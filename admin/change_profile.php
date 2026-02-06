@@ -27,14 +27,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     } else {
 
         $upload_dir = realpath(__DIR__ . "/../images/profile");
+
         if ($upload_dir === false) {
             $error = "Profile image folder not found.";
         } else {
 
             $upload_dir .= DIRECTORY_SEPARATOR;
-            $tmp_name   = $_FILES['profile_image']['tmp_name'];
-            $file_name  = basename($_FILES['profile_image']['name']);
-            $extension  = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+            $tmp_name  = $_FILES['profile_image']['tmp_name'];
+
+            /* Use ORIGINAL file name */
+            $file_name = basename($_FILES['profile_image']['name']);
+            $extension = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
 
             $allowed = ['png', 'jpg', 'jpeg', 'webp'];
 
@@ -46,9 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $error = "Upload folder is not writable.";
             } else {
 
-                /* Rename file to avoid overwrite */
-                $new_name = $user_id . "_" . time() . "." . $extension;
-                $target   = $upload_dir . $new_name;
+                $target = $upload_dir . $file_name;
 
                 if (!move_uploaded_file($tmp_name, $target)) {
                     $error = "Failed to upload image.";
@@ -60,10 +61,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         SET profile_image = ?
                         WHERE user_id = ?
                     ");
-                    $stmt->bind_param("ss", $new_name, $user_id);
+                    $stmt->bind_param("ss", $file_name, $user_id);
 
                     if ($stmt->execute()) {
-                        $_SESSION['profile_image'] = $new_name;
+                        $_SESSION['profile_image'] = $file_name;
                         $success = "Profile photo updated successfully.";
                     } else {
                         $error = "Database update failed.";
@@ -97,7 +98,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
       <label class="upload-box">
         <span id="plusIcon">+</span>
-        <img id="previewImg">
+        <img id="previewImg" alt="Preview">
         <input type="file"
                name="profile_image"
                accept="image/*"
@@ -133,8 +134,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 .upload-box img {
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
   display: none;
   object-fit: cover;
 }
@@ -151,11 +152,18 @@ input[type="file"] {
 
 <script>
 function previewImage(event) {
-  const img  = document.getElementById("previewImg");
-  const plus = document.getElementById("plusIcon");
+  const input = event.target;
+  const img   = document.getElementById("previewImg");
+  const plus  = document.getElementById("plusIcon");
 
-  img.src = URL.createObjectURL(event.target.files[0]);
-  img.style.display = "block";
-  plus.style.display = "none";
+  if (!input.files || !input.files[0]) return;
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    img.src = e.target.result;
+    img.style.display = "block";
+    plus.style.display = "none";
+  };
+  reader.readAsDataURL(input.files[0]);
 }
 </script>
