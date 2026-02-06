@@ -31,7 +31,6 @@ $stmt = $conn->prepare("
         rc.reward_name,
         rc.description,
         rc.points_required,
-        rc.stock,
         rc.image_path,
 
         u.name   AS user_name,
@@ -140,11 +139,6 @@ $data = $result->fetch_assoc();
     <div class="form-group">
       <label>Points Required</label>
       <input type="text" value="<?= $data['points_required'] ?>" readonly>
-    </div>
-
-    <div class="form-group">
-      <label>Current Stock</label>
-      <input type="text" value="<?= $data['stock'] ?>" readonly>
     </div>
 
     <div class="form-group">
