@@ -38,6 +38,12 @@ if ($result->num_rows === 0) {
 $material = $result->fetch_assoc();
 
 /* =====================
+   STATUS MESSAGE
+   ===================== */
+$success = "";
+$error   = "";
+
+/* =====================
    HANDLE FORM SUBMIT
    ===================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -65,9 +71,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
 
         if ($stmt->execute()) {
-            header("Location: admin_system_settings.php?view=materials");
-            exit();
+            $success = "Material updated successfully.";
+
+            /* refresh local data */
+            $material['materials_name'] = $materials_name;
+            $material['material_description'] = $material_description;
+            $material['is_active'] = $status;
+
+        } else {
+            $error = "Failed to update material.";
         }
+
+    } else {
+        $error = "Material name cannot be empty.";
     }
 }
 ?>
@@ -81,6 +97,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
          class="icon-btn back-btn">↩</a>
       <h2><?= htmlspecialchars($material['material_id']) ?></h2>
     </div>
+
+    <!-- STATUS MESSAGE -->
+    <?php if (!empty($success)): ?>
+      <div class="alert-success"><?= htmlspecialchars($success) ?></div>
+    <?php endif; ?>
+
+    <?php if (!empty($error)): ?>
+      <div class="alert-error"><?= htmlspecialchars($error) ?></div>
+    <?php endif; ?>
 
     <!-- CENTERED FORM -->
     <div class="profile-container">

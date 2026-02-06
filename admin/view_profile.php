@@ -60,37 +60,37 @@ $user = $userStmt->get_result()->fetch_assoc();
       <form class="profile-form">
 
         <div class="form-group">
-          <label>User ID :</label>
+          <label>User ID</label>
           <input type="text" value="<?= htmlspecialchars($user['user_id']) ?>" readonly>
         </div>
 
         <div class="form-group">
-          <label>Name :</label>
+          <label>Name</label>
           <input type="text" value="<?= htmlspecialchars($user['name']) ?>" readonly>
         </div>
 
         <div class="form-group">
-          <label>Email :</label>
+          <label>Email</label>
           <input type="text" value="<?= htmlspecialchars($user['email']) ?>" readonly>
         </div>
 
         <div class="form-group">
-          <label>Role :</label>
+          <label>Role</label>
           <input type="text" value="<?= htmlspecialchars($user['role']) ?>" readonly>
         </div>
         
         <div class="form-group">
-          <label>Last Login :</label>
+          <label>Last Login</label>
           <input type="text" value="<?= htmlspecialchars($user['last_login']) ?>" readonly>
         </div>
 
         <div class="form-group">
-          <label>Account Created On :</label>
+          <label>Account Created On</label>
           <input type="text" value="<?= htmlspecialchars($user['created_at']) ?>" readonly>
         </div>
 
         <div class="form-group">
-          <label>Account Status :</label>
+          <label>Account Status</label>
           <input type="text" value="<?= htmlspecialchars($user['account_status']) ?>" readonly>
         </div>
 

@@ -106,7 +106,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       </label>
 
       <button type="submit" class="action-btn" style="margin-top:20px;">
-        Save
+        Change
       </button>
 
     </form>

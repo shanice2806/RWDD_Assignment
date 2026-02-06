@@ -123,18 +123,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </div>
 
         <div class="form-group">
-          <label>Re-Enter New Password</label>
+          <label>Confirm New Password</label>
           <input type="password" name="confirm_password" placeholder="Re-enter new password">
         </div>
 
         <div class="form-actions">
-        <div style="display:flex; justify-content:center; gap:12px; margin-top:20px;">
-          <a href="view_profile.php" class="action-btn">Cancel</a>
-
-          
+        <div style="display:flex; justify-content:center; gap:12px; margin-top:20px;">          
           <button type="submit"
                   class="action-btn">
-            Submit
+            Change
           </button>
         
         </div>

@@ -1,5 +1,7 @@
 <?php
+session_start();
 include "../connect.php";
+
 $page_title = "Update Recycling Log";
 include "admin_header.php";
 
@@ -30,6 +32,12 @@ if ($result->num_rows === 0) {
 }
 
 $data = $result->fetch_assoc();
+
+/* =====================
+   STATUS MESSAGE
+===================== */
+$success = "";
+$error   = "";
 
 /* =====================
    HANDLE UPDATE
@@ -93,77 +101,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $flag_reason,
         $log_id
     );
-    $update->execute();
 
-    /* =====================
-       RECORD ECO POINTS TRANSACTION
-    ===================== */
-    if ($status === 'VALID' && $points > 0) {
+    if ($update->execute()) {
 
-        // Prevent duplicate transaction
-        $check = $conn->prepare("
-            SELECT 1 FROM eco_points_transactions WHERE source_id = ?
-        ");
-        $check->bind_param("s", $log_id);
-        $check->execute();
-        $check->store_result();
+        /* =====================
+           RECORD ECO POINTS TRANSACTION
+        ===================== */
+        if ($status === 'VALID' && $points > 0) {
 
-        if ($check->num_rows === 0) {
-
-            $count_result = $conn->query("
-                SELECT COUNT(*) AS total FROM eco_points_transactions
+            // Prevent duplicate transaction
+            $check = $conn->prepare("
+                SELECT 1 FROM eco_points_transactions WHERE source_id = ?
             ");
-            $count = $count_result->fetch_assoc()['total'] + 1;
-            $transaction_id = 'ept_' . str_pad($count, 3, '0', STR_PAD_LEFT);
+            $check->bind_param("s", $log_id);
+            $check->execute();
+            $check->store_result();
 
-            $user_id = $data['user_id'];
-            $source_id = $log_id;
-            $points_change = $points;
-            $description = "Points awarded for recycling based on material and weight.";
+            if ($check->num_rows === 0) {
 
-            $insert = $conn->prepare("
-                INSERT INTO eco_points_transactions
-                (transaction_id, user_id, source_id, points_change, description, created_at)
-                VALUES (?, ?, ?, ?, ?, NOW())
-            ");
+                $count_result = $conn->query("
+                    SELECT COUNT(*) AS total FROM eco_points_transactions
+                ");
+                $count = $count_result->fetch_assoc()['total'] + 1;
+                $transaction_id = 'ept_' . str_pad($count, 3, '0', STR_PAD_LEFT);
 
-            $insert->bind_param(
-                "sssds",
-                $transaction_id,
-                $user_id,
-                $source_id,
-                $points_change,
-                $description
-            );
+                $user_id = $data['user_id'];
+                $source_id = $log_id;
+                $points_change = $points;
+                $description = "Points awarded for recycling based on material and weight.";
 
-            $insert->execute();
+                $insert = $conn->prepare("
+                    INSERT INTO eco_points_transactions
+                    (transaction_id, user_id, source_id, points_change, description, created_at)
+                    VALUES (?, ?, ?, ?, ?, NOW())
+                ");
 
-                /* =====================
-                UPDATE USER ECO POINTS (+points)
-                ===================== */
+                $insert->bind_param(
+                    "sssds",
+                    $transaction_id,
+                    $user_id,
+                    $source_id,
+                    $points_change,
+                    $description
+                );
+                $insert->execute();
+
+                /* UPDATE USER ECO POINTS */
                 $updateUserPoints = $conn->prepare("
                     UPDATE users
                     SET eco_points = eco_points + ?
                     WHERE user_id = ?
                 ");
-
-                $updateUserPoints->bind_param(
-                    "is",
-                    $points_change,   // positive points
-                    $user_id          // owner of the recycling log
-                );
-
+                $updateUserPoints->bind_param("is", $points_change, $user_id);
                 $updateUserPoints->execute();
-
-                if ($updateUserPoints->affected_rows === 0) {
-                    throw new Exception("Failed to update user eco points.");
-                }
-
-
-            
+            }
         }
-    }
 
+        /* refresh local data */
+        $data['status'] = $status;
+        $data['points_awarded'] = $points;
+        $data['flag_reason'] = $flag_reason;
+
+        $success = "Recycling log updated successfully.";
+
+    } else {
+        $error = "Failed to update recycling log.";
+    }
 }
 ?>
 
@@ -176,36 +179,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h2><?= htmlspecialchars($log_id) ?></h2>
     </div>
 
+    <!-- STATUS MESSAGE -->
+    <?php if (!empty($success)): ?>
+        <div class="alert-success"><?= htmlspecialchars($success) ?></div>
+    <?php endif; ?>
+
+    <?php if (!empty($error)): ?>
+        <div class="alert-error"><?= htmlspecialchars($error) ?></div>
+    <?php endif; ?>
+
     <!-- UPDATE FORM -->
     <form method="POST" class="section-preview" style="max-width:750px; margin:auto;">
 
         <div class="form-group">
-            <label>User ID :</label>
+            <label>User ID</label>
             <input type="text" value="<?= htmlspecialchars($data['user_id']) ?>" readonly class="readonly">
         </div>
 
         <div class="form-group">
-            <label>Submitted At :</label>
+            <label>Submitted At</label>
             <input type="text" value="<?= htmlspecialchars($data['submitted_at']) ?>" readonly class="readonly">
         </div>
 
         <div class="form-group">
-            <label>Location :</label>
+            <label>Location</label>
             <input type="text" value="<?= htmlspecialchars($data['location']) ?>" readonly class="readonly">
         </div>
 
         <div class="form-group">
-            <label>Event ID :</label>
+            <label>Event ID</label>
             <input type="text" value="<?= htmlspecialchars($data['event_id'] ?? '-') ?>" readonly class="readonly">
         </div>
 
         <div class="form-group">
-            <label>Material ID :</label>
+            <label>Material ID</label>
             <input type="text" value="<?= htmlspecialchars($data['material_id']) ?>" readonly class="readonly">
         </div>
 
         <div class="form-group">
-            <label>Weight (KG) :</label>
+            <label>Weight (KG)</label>
             <input type="text" value="<?= htmlspecialchars($data['weight_kg']) ?>" readonly class="readonly">
         </div>
 
@@ -224,7 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- STATUS -->
         <div class="form-group">
-            <label>Status :</label>
+            <label>Status</label>
             <select name="status" id="statusSelect" required>
                 <option value="PENDING" <?= $data['status'] === 'PENDING' ? 'selected' : '' ?>>PENDING</option>
                 <option value="VALID" <?= $data['status'] === 'VALID' ? 'selected' : '' ?>>VALID</option>
@@ -234,7 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- REASON -->
         <div class="form-group">
-            <label>Reason :</label>
+            <label>Reason</label>
             <textarea name="flag_reason" id="flagReason" rows="3"
                 <?= $data['status'] !== 'INVALID' ? 'readonly class="readonly"' : '' ?>>
                 <?= htmlspecialchars($data['flag_reason'] ?? '') ?>
@@ -243,13 +255,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- POINTS -->
         <div class="form-group">
-            <label>Points Awarded :</label>
+            <label>Points Awarded</label>
             <input type="text" value="<?= htmlspecialchars($data['points_awarded']) ?>" readonly class="readonly">
         </div>
 
         <!-- BUTTONS -->
         <div style="display:flex; justify-content:center; gap:20px; margin-top:25px;">
-            <a href="admin_recycling_log_view.php?id=<?= urlencode($log_id) ?>" class="btn">Cancel</a>
             <button type="submit" class="btn save-btn">Update</button>
         </div>
 

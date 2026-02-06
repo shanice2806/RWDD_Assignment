@@ -140,9 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h2><?= htmlspecialchars($badge_id) ?></h2>
   </div>
 
-  <div class="profile-container">
-
-    <!-- STATUS MESSAGE -->
+   <!-- STATUS MESSAGE -->
     <?php if (!empty($success)): ?>
       <div class="alert-success">
         <?= htmlspecialchars($success) ?>
@@ -154,6 +152,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?= htmlspecialchars($error) ?>
       </div>
     <?php endif; ?>
+  <div class="profile-container">
+
+   
 
     <!-- FORM -->
     <form method="POST"
@@ -205,7 +206,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
 
       <div style="display:flex;justify-content:center;gap:12px;margin-top:25px;">
-        <a href="admin_system_settings.php?view=badges" class="action-btn">Cancel</a>
         <button type="submit" class="action-btn">Edit</button>
       </div>
 

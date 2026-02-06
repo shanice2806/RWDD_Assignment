@@ -1,4 +1,5 @@
 <?php
+session_start();
 include "../connect.php";
 
 $page_title = "Review Event";
@@ -42,6 +43,12 @@ if ($result->num_rows === 0) {
 $event = $result->fetch_assoc();
 
 /* =====================
+   STATUS MESSAGE
+===================== */
+$success = "";
+$error   = "";
+
+/* =====================
    HANDLE STATUS UPDATE
 ===================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -79,10 +86,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $update_stmt->bind_param("ss", $new_status, $event_id);
     }
 
-    $update_stmt->execute();
+    if ($update_stmt->execute()) {
+        $success = "Event status updated successfully.";
+        $event['event_status'] = $new_status;
 
-    header("Location: admin_event_view.php?id=" . urlencode($event_id));
-    exit;
+        if ($new_status === 'Approved') {
+            $event['registration_status'] = 'Open';
+        } elseif ($new_status === 'Cancelled') {
+            $event['registration_status'] = 'Closed';
+        }
+
+    } else {
+        $error = "Failed to update event status.";
+    }
 }
 ?>
 
@@ -93,6 +109,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <a href="admin_event.php" class="icon-btn back-btn">↩</a>
     <h2><?= htmlspecialchars($event['event_id']) ?></h2>
 </div>
+
+<!-- STATUS MESSAGE -->
+<?php if (!empty($success)): ?>
+    <div class="alert-success"><?= htmlspecialchars($success) ?></div>
+<?php endif; ?>
+
+<?php if (!empty($error)): ?>
+    <div class="alert-error"><?= htmlspecialchars($error) ?></div>
+<?php endif; ?>
 
 <!-- =====================
      EVENT REVIEW CARD
@@ -163,7 +188,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
          ACTION BUTTONS
     ===================== -->
     <div style="display:flex; justify-content:center; gap:20px; margin-top:30px;">
-        <a href="admin_event.php" class="btn">Cancel</a>
         <button type="submit" class="btn">Update</button>
     </div>
 

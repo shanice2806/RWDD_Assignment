@@ -38,37 +38,37 @@ $data = $result->fetch_assoc();
         <div class="section-preview" style="max-width:700px; margin:auto;">
 
             <div class="form-group">
-                <label>Announcement ID :</label>
+                <label>Announcement ID</label>
                 <input type="text" value="<?= htmlspecialchars($data['announcement_id']) ?>" readonly>
             </div>
             
             <div class="form-group">
-                <label>End Date :</label>
+                <label>End Date</label>
                 <input type="text" value="<?= htmlspecialchars($data['end_date']) ?>" readonly>
             </div>
 
             <div class="form-group">
-                <label>Status :</label>
+                <label>Status</label>
                 <input type="text" value="<?= $data['is_active'] ? 'Active' : 'Inactive' ?>" readonly>
             </div>
 
             <div class="form-group">
-                <label>Title :</label>
+                <label>Title</label>
                 <input type="text" value="<?= htmlspecialchars($data['title']) ?>" readonly>
             </div>
 
             <div class="form-group">
-                <label>Message :</label>
+                <label>Message</label>
                 <input type="text" value="<?= htmlspecialchars($data['message']) ?>" readonly>
             </div>
 
             <div class="form-group">
-                <label>Created At :</label>
+                <label>Created At</label>
                 <input type="text" value="<?= htmlspecialchars($data['created_at']) ?>" readonly>
             </div>
 
             <div class="form-group">
-                <label>Created By :</label>
+                <label>Created By</label>
                 <input type="text" value="<?= htmlspecialchars($data['created_by']) ?>" readonly>
             </div>
 

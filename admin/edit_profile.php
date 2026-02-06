@@ -140,7 +140,7 @@ $user = $userStmt->get_result()->fetch_assoc();
 
         <div class="form-actions">
         <button style="margin-top:10px; text-align:center;" type="submit"  name="save_email" class="action-btn" >
-          Save
+          Edit
         </button>
         </div>
       </form>

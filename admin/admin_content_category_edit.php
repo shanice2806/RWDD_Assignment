@@ -38,6 +38,12 @@ if ($result->num_rows === 0) {
 $category = $result->fetch_assoc();
 
 /* =====================
+   STATUS MESSAGE
+   ===================== */
+$success = "";
+$error   = "";
+
+/* =====================
    HANDLE FORM SUBMIT
    ===================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -65,9 +71,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
 
         if ($stmt->execute()) {
-            header("Location: admin_system_settings.php?view=categories");
-            exit();
+            $success = "Content category updated successfully.";
+        } else {
+            $error = "Failed to update content category.";
         }
+
+    } else {
+        $error = "Category name cannot be empty.";
     }
 }
 ?>
@@ -79,8 +89,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="page-title-bar">
       <a href="admin_system_settings.php?view=categories"
          class="icon-btn back-btn">↩</a>
-      <h2><?=htmlspecialchars($category["content_category_id"])?></h2>
+      <h2><?= htmlspecialchars($category["content_category_id"]) ?></h2>
     </div>
+
+    <!-- STATUS MESSAGES -->
+    <?php if (!empty($success)): ?>
+      <div class="alert-success"><?= htmlspecialchars($success) ?></div>
+    <?php endif; ?>
+
+    <?php if (!empty($error)): ?>
+      <div class="alert-error"><?= htmlspecialchars($error) ?></div>
+    <?php endif; ?>
 
     <!-- CENTERED FORM -->
     <div class="profile-container">

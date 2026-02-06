@@ -41,6 +41,12 @@ if ($result->num_rows === 0) {
 $rule = $result->fetch_assoc();
 
 /* =====================
+   STATUS MESSAGE
+===================== */
+$success = "";
+$error   = "";
+
+/* =====================
    HANDLE FORM SUBMIT
 ===================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -77,11 +83,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
 
         if ($stmt->execute()) {
-            header("Location: admin_system_settings.php?view=eco_rules");
-            exit();
+            $success = "Eco point rule updated successfully.";
+
+            /* refresh local data */
+            $rule['rule_key'] = $rule_key;
+            $rule['rule_type'] = $rule_type;
+            $rule['description'] = $description;
+            $rule['points_per_kg'] = $points_per_kg;
+            $rule['material_id'] = $material_id;
+            $rule['is_active'] = $is_active;
+
         } else {
-            die("Database Error: " . $stmt->error);
+            $error = "Failed to update eco point rule.";
         }
+
+    } else {
+        $error = "Rule key and points must be valid.";
     }
 }
 ?>
@@ -94,6 +111,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <a href="admin_system_settings.php?view=eco_rules" class="icon-btn back-btn">↩</a>
     <h2><?= htmlspecialchars($rule_id) ?></h2>
   </div>
+
+  <!-- STATUS MESSAGE -->
+  <?php if (!empty($success)): ?>
+    <div class="alert-success"><?= htmlspecialchars($success) ?></div>
+  <?php endif; ?>
+
+  <?php if (!empty($error)): ?>
+    <div class="alert-error"><?= htmlspecialchars($error) ?></div>
+  <?php endif; ?>
 
   <div class="profile-container">
 

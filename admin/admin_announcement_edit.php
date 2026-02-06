@@ -1,8 +1,9 @@
 <?php
 
+session_start();
 include "../connect.php";
 $page_title = "Edit Announcement";
-include 'admin_header.php'; // Include the new header
+include 'admin_header.php';
 
 /* Validate ID */
 if (!isset($_GET['id'])) {
@@ -29,6 +30,10 @@ if ($result->num_rows === 0) {
 
 $data = $result->fetch_assoc();
 
+/* Status messages */
+$success = "";
+$error   = "";
+
 /* Handle update */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -52,11 +57,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $announcement_id
     );
 
-    $update->execute();
-
-    header("Location: admin_announcement_view.php?id=" . urlencode($announcement_id));
-    exit;
+    if ($update->execute()) {
+        $success = "Announcement updated successfully.";
+    } else {
+        $error = "Failed to update announcement.";
+    }
 }
+
 ?>
 
 <div class="main-content">
@@ -68,23 +75,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h2><?= htmlspecialchars($announcement_id) ?></h2>
         </div>
 
+        <!-- STATUS MESSAGES -->
+        <?php if (!empty($success)): ?>
+            <div class="alert-success"><?= htmlspecialchars($success) ?></div>
+        <?php endif; ?>
+
+        <?php if (!empty($error)): ?>
+            <div class="alert-error"><?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
+
         <!-- Edit Form -->
         <form method="POST" class="section-preview" style="max-width:700px; margin:auto;">
 
             <div class="form-group">
-                <label>Announcement ID :</label>
+                <label>Announcement ID</label>
                 <input type="text" value="<?= htmlspecialchars($data['announcement_id']) ?>" readonly>
             </div>
 
-
             <div class="form-group">
-                <label>End Date :</label>
+                <label>End Date</label>
                 <input type="datetime-local" name="end_date"
                     value="<?= date('Y-m-d\TH:i', strtotime($data['end_date'])) ?>" required>
             </div>
 
             <div class="form-group">
-                <label>Status :</label>
+                <label>Status</label>
                 <select name="is_active">
                     <option value="1" <?= $data['is_active'] ? 'selected' : '' ?>>Active</option>
                     <option value="0" <?= !$data['is_active'] ? 'selected' : '' ?>>Inactive</option>
@@ -92,29 +107,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div class="form-group">
-                <label>Title :</label>
+                <label>Title</label>
                 <input type="text" name="title" value="<?= htmlspecialchars($data['title']) ?>" required>
             </div>
 
             <div class="form-group">
-                <label>Message :</label>
+                <label>Message</label>
                 <textarea name="message" rows="4" required><?= htmlspecialchars($data['message']) ?></textarea>
             </div>
 
             <div class="form-group">
-                <label>Created At :</label>
+                <label>Created At</label>
                 <input type="text" value="<?= htmlspecialchars($data['created_at']) ?>" readonly>
             </div>
 
             <div class="form-group">
-                <label>Created By :</label>
+                <label>Created By</label>
                 <input type="text" value="<?= htmlspecialchars($data['created_by']) ?>" readonly>
             </div>
 
             <!-- Buttons -->
             <div style="display:flex; justify-content:center; gap:20px; margin-top:20px;">
-                <a href="admin_announcement_view.php?id=<?= urlencode($announcement_id) ?>" class="btn">Cancel</a>
-                <button type="submit" class="btn save-btn">Save</button>
+                <button type="submit" class="btn save-btn">Edit</button>
             </div>
 
         </form>

@@ -35,6 +35,8 @@ $result = $conn->query($sql);
     <main class="dashboard">
         <h2>Announcements</h2>
 
+<h3>📊 INSIGHTS OVERVIEW</h3>
+
         <!-- 📊 Stats -->
         <div class="card-grid">
             <div class="card">

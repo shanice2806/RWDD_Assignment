@@ -1,4 +1,5 @@
 <?php
+session_start();
 include "../connect.php";
 $page_title = "Edit User";
 include "admin_header.php";
@@ -33,6 +34,12 @@ if ($result->num_rows === 0) {
 $user = $result->fetch_assoc();
 
 /* =========================
+   STATUS MESSAGE
+   ========================= */
+$success = "";
+$error   = "";
+
+/* =========================
    HANDLE UPDATE (ONLY ROLE & STATUS)
    ========================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -47,10 +54,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ");
 
     $update->bind_param("sss", $role, $account_status, $user_id);
-    $update->execute();
 
-    header("Location: admin_user_view.php?id=" . urlencode($user_id));
-    exit;
+    if ($update->execute()) {
+        $success = "User updated successfully.";
+
+        /* refresh local data */
+        $user['role'] = $role;
+        $user['account_status'] = $account_status;
+
+    } else {
+        $error = "Failed to update user.";
+    }
 }
 ?>
 
@@ -63,62 +77,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h2><?= htmlspecialchars($user_id) ?></h2>
     </div>
 
+    <!-- STATUS MESSAGE -->
+    <?php if (!empty($success)): ?>
+        <div class="alert-success"><?= htmlspecialchars($success) ?></div>
+    <?php endif; ?>
+
+    <?php if (!empty($error)): ?>
+        <div class="alert-error"><?= htmlspecialchars($error) ?></div>
+    <?php endif; ?>
+
     <!-- EDIT FORM -->
     <form method="POST" class="section-preview" style="max-width:700px; margin:auto;">
 
         <!-- Profile Image -->
         <div style="text-align:center; margin-bottom:20px;">
             <?php
-$profileImage = !empty($user['profile_image'])
-    ? "../images/profile/" . htmlspecialchars($user['profile_image'])
-    : "../images/profile/default.jpeg";
-?>
-
-<div class="profile-avatar-large">
-  <img src="<?= $profileImage ?>" alt="Profile">
-</div>
-
+            $profileImage = !empty($user['profile_image'])
+                ? "../images/profile/" . htmlspecialchars($user['profile_image'])
+                : "../images/profile/default.jpeg";
+            ?>
+            <div class="profile-avatar-large">
+                <img src="<?= $profileImage ?>" alt="Profile">
+            </div>
         </div>
 
         <!-- READ ONLY FIELDS -->
         <div class="form-group">
-            <label>User ID :</label>
+            <label>User ID</label>
             <input type="text" value="<?= htmlspecialchars($user['user_id']) ?>" readonly>
         </div>
 
         <div class="form-group">
-            <label>Name :</label>
+            <label>Name</label>
             <input type="text" value="<?= htmlspecialchars($user['name']) ?>" readonly>
         </div>
 
         <div class="form-group">
-            <label>Email :</label>
+            <label>Email</label>
             <input type="text" value="<?= htmlspecialchars($user['email']) ?>" readonly>
         </div>
 
         <div class="form-group">
-            <label>Eco Points :</label>
+            <label>Eco Points</label>
             <input type="text" value="<?= htmlspecialchars($user['eco_points']) ?>" readonly>
         </div>
 
         <div class="form-group">
-            <label>Badges :</label>
+            <label>Badges</label>
             <input type="text" value="<?= htmlspecialchars($user['badges']) ?>" readonly>
         </div>
 
         <div class="form-group">
-            <label>Created At :</label>
+            <label>Created At</label>
             <input type="text" value="<?= htmlspecialchars($user['created_at']) ?>" readonly>
         </div>
 
         <div class="form-group">
-            <label>Last Login :</label>
+            <label>Last Login</label>
             <input type="text" value="<?= htmlspecialchars($user['last_login']) ?>" readonly>
         </div>
 
         <!-- EDITABLE FIELDS -->
         <div class="form-group">
-            <label>Role :</label>
+            <label>Role</label>
             <select name="role">
                 <option value="Admin" <?= $user['role'] === 'Admin' ? 'selected' : '' ?>>Admin</option>
                 <option value="User" <?= $user['role'] === 'User' ? 'selected' : '' ?>>User</option>
@@ -129,7 +150,7 @@ $profileImage = !empty($user['profile_image'])
         </div>
 
         <div class="form-group">
-            <label>Account Status :</label>
+            <label>Account Status</label>
             <select name="account_status">
                 <option value="Activated" <?= $user['account_status'] === 'Activated' ? 'selected' : '' ?>>
                     Activated
@@ -142,8 +163,7 @@ $profileImage = !empty($user['profile_image'])
 
         <!-- BUTTONS -->
         <div style="display:flex; justify-content:center; gap:20px; margin-top:25px;">
-            <a href="admin_user_view.php?id=<?= urlencode($user_id) ?>" class="btn">Cancel</a>
-            <button type="submit" class="btn save-btn">Update</button>
+            <button type="submit" class="btn save-btn">Edit</button>
         </div>
 
     </form>
