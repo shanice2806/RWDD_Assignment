@@ -1,5 +1,6 @@
 <?php
 session_start();
+$page_title = "Change Password";
 require_once "../connect.php";
 
 /* =====================
