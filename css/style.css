@@ -194,7 +194,7 @@ footer {
   border-top: 1px solid var(--color-border);
 }
 
-/* --- THE 768px PERFECT FIT --- */
+
 @media (max-width: 768px) {
     
     /* Force the main body to never overflow */
@@ -205,13 +205,13 @@ footer {
         padding: 0;
     }
 
-    /* Make the layout take the full 768px */
+    /* layout */
     .user-layout {
         width: 100% !important;
         flex-direction: column !important;
     }
 
-    /* The Top Bar must fit perfectly */
+    /*Top Bar*/
     .user-top-bar {
         width: 100% !important;
         box-sizing: border-box; /* Crucial for "Perfect Fit" */
@@ -222,7 +222,7 @@ footer {
         flex-wrap: wrap !important; /* Prevents icons from flying off */
     }
 
-    /* The Profile Box: The most important part */
+    /* The Profile Box */
     .profile-container {
         width: 90% !important; /* Leaves 5% gap on each side */
         max-width: 720px !important; /* Just slightly smaller than 768 */
@@ -233,14 +233,14 @@ footer {
         border-radius: 8px !important;
     }
 
-    /* Make text wrap so it doesn't push the box wider */
+  
     .profile-info p {
         width: 100% !important;
         word-wrap: break-word;
         font-size: 17px !important;
     }
 
-    /* Buttons must be touch-friendly and fit */
+    /* Buttons */
     .action-btn {
         width: 100% !important;
         max-width: 100% !important;
