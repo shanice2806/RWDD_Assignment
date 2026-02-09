@@ -60,21 +60,6 @@ while ($row = $res->fetch_assoc()) {
     $materialData['values'][] = $row['total'];
 }
 
-/* Logs Over Time */
-$timeData = [];
-$res2 = $conn->query("
-    SELECT DATE(submitted_at) AS log_date, COUNT(*) AS total
-    FROM recycling_log
-    GROUP BY DATE(submitted_at)
-    ORDER BY log_date
-");
-
-while ($row = $res2->fetch_assoc()) {
-    $timeData['labels'][] = $row['log_date'];
-    $timeData['values'][] = $row['total'];
-}
-
-
 
 // Final JSON output
 header('Content-Type: application/json');

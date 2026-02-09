@@ -124,23 +124,22 @@ $top_users_query = "
 </table>
 
 
-        <div class="chart-section">
-            <div class="chart-box">
-                <h4>Monthly Recycling Log Bar Chart</h4>
-                <canvas id="recyclingChart"></canvas>
-            </div>
-            
-            <div class="chart-box">
-                <h4>Monthly Event Attendance Bar Chart</h4>
-                <canvas id="eventAttendanceChart"></canvas>
-            </div>
-        </div>
+     <div class="chart-section">
+    <div class="chart-box">
+        <h4>Monthly Recycling Log Bar Chart</h4>
+        <canvas id="recyclingChart" width="500" height="300"></canvas>
+    </div>
+    
+    <div class="chart-box">
+        <h4>Monthly Event Attendance Bar Chart</h4>
+        <canvas id="eventAttendanceChart" width="500" height="300"></canvas>
+    </div>
+</div>
 
-    </main>
+</main>
 
-    <!-- chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
-    <script src="chart.js"></script> 
+<script src="chart.js"></script>
+
 
 <?php include 'admin_footer.php'; ?>
 

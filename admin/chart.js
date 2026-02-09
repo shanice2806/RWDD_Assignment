@@ -1,131 +1,143 @@
-document.addEventListener('DOMContentLoaded', function ()  {
-  fetch('admin_chart.php')
-    .then(response => response.json())
-    .then(data => {
+/* =========================================
+   FETCH ALL CHART DATA
+========================================= */
+fetch("admin_chart.php")
+  .then(res => res.json())
+  .then(data => {
 
-      // ========== Dashboard Charts ==========
+    /* Monthly Recycling Log */
+    drawBarChart(
+      "recyclingChart",
+      data.recycling_data,
+      "total_weight",
+      "#3ba99c"
+    );
 
-      // 1. Monthly Recycling Log Chart
-      if (document.getElementById('recyclingChart')) {
-        const recyclingLabels = data.recycling_data.map(entry => entry.month);
-        const recyclingWeights = data.recycling_data.map(entry => entry.total_weight);
+    /* Monthly Event Attendance */
+    drawBarChart(
+      "eventAttendanceChart",
+      data.event_data,
+      "attendance_count",
+      "#1e3a34"
+    );
 
-        const ctx1 = document.getElementById('recyclingChart').getContext('2d');
-        new Chart(ctx1, {
-          type: 'bar',
-          data: {
-            labels: recyclingLabels,
-            datasets: [{
-              label: 'Total Recycling Logs (kg)',
-              data: recyclingWeights,
-              backgroundColor: '#3ba99c',
-              borderColor: '#1e3a34',
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: { position: 'top' },
-              title: {
-                display: true,
-                text: 'Monthly Recycling Log (Total Weight in KG)'
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                title: {
-                  display: true,
-                  text: 'Weight (kg)'
-                }
-              }
-            }
-          }
-        });
-      }
+    /* Logs by Material */
+    drawBarChartByLabel(
+      "barLogsByMaterial",
+      data.byMaterial.labels,
+      data.byMaterial.values,
+      "#3ba99c"
+    );
 
-      // 2. Monthly Event Attendance Chart
-      if (document.getElementById('eventAttendanceChart')) {
-        const eventLabels = data.event_data.map(entry => entry.month);
-        const attendanceCounts = data.event_data.map(entry => entry.attendance_count);
+  });
 
-        const ctx2 = document.getElementById('eventAttendanceChart').getContext('2d');
-        new Chart(ctx2, {
-          type: 'bar',
-          data: {
-            labels: eventLabels,
-            datasets: [{
-              label: 'Event Attendance (Participants)',
-              data: attendanceCounts,
-              backgroundColor: '#c97c1a',
-              borderColor: '#1e3a34',
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: { position: 'top' },
-              title: {
-                display: true,
-                text: 'Monthly Event Attendance'
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                title: {
-                  display: true,
-                  text: 'Number of Attendees'
-                }
-              }
-            }
-          }
-        });
-      }
+/* =========================================
+   BAR CHART (Month-based data)
+========================================= */
+function drawBarChart(canvasId, dataset, valueKey, color) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || dataset.length === 0) return;
 
-      
-      /* =====================
-         Logs by Material (BAR)
-         ===================== */
-      const materialCanvas = document.getElementById("barLogsByMaterial");
-      if (materialCanvas && data.byMaterial) {
-        new Chart(materialCanvas.getContext("2d"), {
-          type: "bar",
-          data: {
-            labels: data.byMaterial.labels,
-            datasets: theData = [{
-              label: "Total Logs",
-              data: data.byMaterial.values,
-              backgroundColor: "#3ba99c"
-            }]
-          }
-        });
-      }
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      /* =====================
-         Logs Over Time (LINE)
-         ===================== */
-      const timeCanvas = document.getElementById("lineLogsOverTime");
-      if (timeCanvas && data.overTime) {
-        new Chart(timeCanvas.getContext("2d"), {
-          type: "line",
-          data: {
-            labels: data.overTime.labels,
-            datasets: [{
-              label: "Logs",
-              data: data.overTime.values,
-              borderColor: "#1e3a34",
-              fill: false,
-              tension: 0.3
-            }]
-          }
-        });
-      }
+  const maxValue = Math.max(...dataset.map(d => d[valueKey]));
+  const barWidth = 40;
+  const gap = 20;
+  const baseY = canvas.height - 40;
 
-    })
-    .catch(error => {
-      console.error('Error loading chart data:', error);
-    });
-});
+  dataset.forEach((item, index) => {
+    const x = index * (barWidth + gap) + 40;
+    const height = (item[valueKey] / maxValue) * 180;
+    const y = baseY - height;
+
+    // Bar
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, barWidth, height);
+
+    // Value label
+    ctx.fillStyle = "#000";
+    ctx.font = "12px Times New Roman";
+    ctx.fillText(item[valueKey], x + 5, y - 5);
+
+    // Month label
+    ctx.fillText(item.month, x - 5, baseY + 15);
+  });
+}
+
+/* =========================================
+   BAR CHART (Label-based data)
+========================================= */
+function drawBarChartByLabel(canvasId, labels, values, color) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || values.length === 0) return;
+
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const maxValue = Math.max(...values);
+  const barWidth = 40;
+  const gap = 25;
+  const baseY = canvas.height - 40;
+
+  values.forEach((value, index) => {
+    const x = index * (barWidth + gap) + 40;
+    const height = (value / maxValue) * 160;
+    const y = baseY - height;
+
+    // Bar
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, barWidth, height);
+
+    // Value label
+    ctx.fillStyle = "#000";
+    ctx.font = "12px Times New Roman";
+    ctx.fillText(value, x + 5, y - 5);
+
+    // Label
+    ctx.fillText(labels[index], x - 10, baseY + 15);
+  });
+}
+
+/* =========================================
+   LINE CHART (Time-based data)
+========================================= */
+function drawLineChart(canvasId, labels, values, color) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || values.length === 0) return;
+
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const maxValue = Math.max(...values);
+  const baseY = canvas.height - 40;
+  const gap = (canvas.width - 80) / (values.length - 1);
+
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+
+  values.forEach((value, index) => {
+    const x = index * gap + 40;
+    const y = baseY - (value / maxValue) * 160;
+
+    if (index === 0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }
+
+    // Point
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Date label
+    ctx.fillStyle = "#000";
+    ctx.font = "11px Times New Roman";
+    ctx.fillText(labels[index], x - 12, baseY + 15);
+  });
+
+  ctx.stroke();
+}

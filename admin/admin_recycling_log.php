@@ -148,26 +148,17 @@ $result = $stmt->get_result();
 
 </div>
 
-<div class="chart-section">
+<div class="chart-section" >
 
   <!-- Bar Chart: Logs by Material -->
   <div class="chart-box">
     <h4>Logs by Material</h4>
-    <canvas id="barLogsByMaterial" height="220"></canvas>
-  </div>
-
-  <!-- Line Chart: Logs Over Time -->
-  <div class="chart-box">
-    <h4>Logs Over Time</h4>
-    <canvas id="lineLogsOverTime" height="220"></canvas>
+    <canvas id="barLogsByMaterial" width="700" height="220"></canvas>
   </div>
 
 
 </div>
 
-<!-- =====================
-     SEARCH & FILTER BAR
-     ===================== -->
 <div class="announcement-search-wrapper">
   <form method="GET" class="announcement-search-form">
 
