@@ -120,4 +120,4 @@ $result = $conn->query($sql);
         </table>
     </main>
 
-<?php include 'admin_footer.php'; // Include the new footer ?>
+<?php include 'admin_footer.php';?>

@@ -64,26 +64,7 @@ body {
   box-sizing: border-box;
 }
 
-.search-container {
-  display: flex;
-  align-items: center;
-  flex-grow: 1;
-  justify-content: center;
-}
 
-.search-bar {
-  padding: 5px 10px;
-  font-size: 14px;
-  width: 300px;
-  border-radius: 4px;
-  border: 1px solid var(--color-border);
-}
-
-.icons {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
 
 /* ===============================
    SIDEBAR
@@ -373,6 +354,8 @@ textarea[readonly] {
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%;
+  justify-content: center;
 }
 
 .announcement-search-input {
@@ -381,6 +364,8 @@ textarea[readonly] {
   border-radius: 6px;
   border: 1px solid var(--color-border);
   font-size: 14px;
+  width: 100%;
+  max-width: 260px;
 }
 
 /* Choose Table Form */
@@ -438,6 +423,8 @@ main.dashboard {
   border-collapse: collapse;
   margin-bottom: 40px;
   background-color: var(--color-card);
+  overflow-x: auto;
+  white-space: nowrap;
 }
 
 .eco-table th {
@@ -488,6 +475,7 @@ main.dashboard {
   max-width: 520px;
   margin: 40px auto;
   text-align: center;
+  padding: 0 15px;
 }
 
 .profile-avatar-large {
@@ -527,16 +515,44 @@ main.dashboard {
   cursor: not-allowed;
 }
 
+  /* Search */
+  .search-container {
+    order: 3;
+    width: 100%;
+    margin-top: 10px;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+  }
+
+  .search-bar {
+    width: 100%;
+    max-width: 280px;
+    padding: 5px 10px;
+    font-size: 14px;
+    width: 300px;
+    border-radius: 4px;
+    border: 1px solid var(--color-border);
+  }
+
+  .icons {
+    gap: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
 
 /* ===============================
    MOBILE / RESPONSIVE
    =============================== */
 
 @media (max-width: 768px) {
-  
+
   /* Layout */
   .top-bar {
-    height: auto;
+    height: 60px;
     min-height: 80px;
     padding: 10px 12px;
     flex-wrap: wrap;
@@ -544,84 +560,57 @@ main.dashboard {
   .main-content {
     padding: 15px;
   }
- .admin-sidebar {
-    position: fixed;
-    top: 0;
-    left: -100vw;          /* fully hidden */
-    width: 100vw;          /* 🔥 FULL WIDTH */
-    height: 100vh;         /* 🔥 FULL HEIGHT */
 
-    padding-top: 80px;     /* space for top bar */
+  /* Sidebar = FULL SCREEN PANEL */
+  .admin-sidebar {
+   position: fixed;
+    top: 60px;                  /* below top bar */
+    left: -280px;               /* hidden */
+    width: 280px;               /* ✅ NORMAL SIDEBAR WIDTH */
+    height: calc(100vh - 60px); /* full remaining height */
+
     background-color: var(--color-primary);
 
     overflow-y: auto;
-    z-index: 2000;         /* above header & content */
+    overflow-x: hidden;
+
+    transition: left 0.3s ease;
+    z-index: 2500;
   }
 
+  /* When open */
   .admin-sidebar.open {
     left: 0;
   }
 
-  /* Prevent content scroll when sidebar open */
+  /* Push sidebar content below top bar */
+  .admin-sidebar .profile-section {
+    margin-top: 60px;
+  }
+
+  /* Lock background */
   body.sidebar-open {
     overflow: hidden;
   }
 
-  /* Main content should NOT move */
-  .sidebar-open .main-content {
+  /* Main content must NOT be visible */
+ .sidebar-open .main-content {
     margin-left: 0;
   }
 
-
-
-  /* Search */
-  .search-container {
-    order: 3;
-    width: 100%;
-    margin-top: 10px;
-    justify-content: center;
-  }
-
-  .search-bar {
-    width: 100%;
-    max-width: 280px;
-  }
-
-  .icons {
-    gap: 6px;
-  }
-
-  /* Announcement Search */
-  .announcement-search-form {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .announcement-search-input {
-    width: 100%;
-    max-width: 260px;
-  }
-
-  /* Components */
-  .card-grid {
-    grid-template-columns: 1fr;
+    .admin-sidebar .menu-first {
+    margin-top: 0;
+    padding-top: 50px;
   }
 
   .eco-table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 40px;
+  background-color: var(--color-card);
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+}
 
-  .chart-section {
-    flex-direction: column;
-  }
-  
-  .chart-box {
-      min-width: 100%;
-  }
-
-  .profile-container {
-    padding: 0 15px;
-  }
 }
