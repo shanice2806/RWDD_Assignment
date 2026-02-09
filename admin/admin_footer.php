@@ -1,5 +1,3 @@
-
-
 <footer>
   © 2026 ReLife Hub
 </footer>
@@ -11,14 +9,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const body = document.body;
 
     if (menuToggle && adminSidebar) {
-        // Toggle sidebar with button
         menuToggle.addEventListener('click', function (event) {
             event.stopPropagation(); // prevent open and instant close
             adminSidebar.classList.toggle('open');
             body.classList.toggle('sidebar-open');
         });
 
-        // Close sidebar when clicking outside
         document.addEventListener('click', function (event) {
             const isClickInsideSidebar = adminSidebar.contains(event.target);
             const isClickOnToggle = menuToggle.contains(event.target);

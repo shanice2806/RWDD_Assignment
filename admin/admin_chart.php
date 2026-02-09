@@ -1,9 +1,13 @@
 <?php
 include "../connect.php";
 
-// 1. Monthly Recycling Log (VALID only)
+/* =========================================
+   1. MONTHLY RECYCLING LOG (VALID ONLY)
+========================================= */
+$recyclingData = [];
+
 $recyclingSql = "
-  SELECT DATE_FORMAT(submitted_at, '%Y-%m') AS month, 
+  SELECT DATE_FORMAT(submitted_at, '%Y-%m') AS month,
          SUM(weight_kg) AS total_weight
   FROM recycling_log
   WHERE status = 'VALID'
@@ -11,19 +15,20 @@ $recyclingSql = "
   ORDER BY month ASC
 ";
 
-$recyclingResult = $conn->query($recyclingSql);
-$recyclingData = [];
-
-if ($recyclingResult && $recyclingResult->num_rows > 0) {
-  while ($row = $recyclingResult->fetch_assoc()) {
-    $recyclingData[] = [
-      'month' => $row['month'],
-      'total_weight' => round((float)$row['total_weight'], 2)
-    ];
-  }
+$res = $conn->query($recyclingSql);
+while ($row = $res->fetch_assoc()) {
+  $recyclingData[] = [
+    'label' => $row['month'],
+    'value' => round((float)$row['total_weight'], 2)
+  ];
 }
 
-// 2. Monthly Event Attendance (Join attendance + events table)
+
+/* =========================================
+   2. MONTHLY EVENT ATTENDANCE
+========================================= */
+$eventData = [];
+
 $eventSql = "
   SELECT DATE_FORMAT(e.event_date_time, '%Y-%m') AS event_month,
          COUNT(DISTINCT a.user_id) AS attendance_count
@@ -33,41 +38,44 @@ $eventSql = "
   ORDER BY event_month ASC
 ";
 
-$eventResult = $conn->query($eventSql);
-$eventData = [];
-
-if ($eventResult && $eventResult->num_rows > 0) {
-  while ($row = $eventResult->fetch_assoc()) {
-    $eventData[] = [
-      'month' => $row['event_month'],
-      'attendance_count' => (int)$row['attendance_count']
-    ];
-  }
-}
-
-
-/* Logs by Material */
-$materialData = [];
-$res = $conn->query("
-    SELECT m.materials_name, COUNT(*) AS total
-    FROM recycling_log rl
-    JOIN materials m ON rl.material_id = m.material_id
-    GROUP BY rl.material_id
-");
-
+$res = $conn->query($eventSql);
 while ($row = $res->fetch_assoc()) {
-    $materialData['labels'][] = $row['materials_name'];
-    $materialData['values'][] = $row['total'];
+  $eventData[] = [
+    'label' => $row['event_month'],
+    'value' => (int)$row['attendance_count']
+  ];
 }
 
 
-// Final JSON output
+/* =========================================
+   3. LOGS BY MATERIAL
+========================================= */
+$materialData = [];
+
+$materialSql = "
+  SELECT m.materials_name AS material,
+         COUNT(*) AS total
+  FROM recycling_log rl
+  JOIN materials m ON rl.material_id = m.material_id
+  GROUP BY rl.material_id
+  ORDER BY total DESC
+";
+
+$res = $conn->query($materialSql);
+while ($row = $res->fetch_assoc()) {
+  $materialData[] = [
+    'label' => $row['material'],
+    'value' => (int)$row['total']
+  ];
+}
+
+
+/* =========================================
+   FINAL JSON OUTPUT
+========================================= */
 header('Content-Type: application/json');
 echo json_encode([
   'recycling_data' => $recyclingData,
-  'event_data' => $eventData,
-  'byMaterial' => $materialData,
-    'overTime' => $timeData
+  'event_data'     => $eventData,
+  'byMaterial'     => $materialData
 ]);
-?>
-
