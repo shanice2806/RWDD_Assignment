@@ -99,8 +99,7 @@ if ($txStmt) {
       </div>
 
       <div class="user-top-center">
-        <input class="user-top-search" type="text" placeholder="Search...">
-        <button class="user-top-search-btn" type="submit">Search</button>
+        <h1 style="color: white;">History</h1>
       </div>
 
       <div class="user-top-right">
