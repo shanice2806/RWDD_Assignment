@@ -36,15 +36,6 @@ $userRes = mysqli_stmt_get_result($userStmt);
 $user = mysqli_fetch_assoc($userRes);
 mysqli_stmt_close($userStmt);
 
-$profileImg = "../images/profile.png";
-if (!empty($user["profile_image"])) {
-  $try = "../" . ltrim($user["profile_image"], "/");
-  $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
-  if (file_exists($disk)) {
-    $profileImg = $try;
-  }
-}
-
 if (!$user) {
   session_unset();
   session_destroy();
@@ -232,7 +223,7 @@ mysqli_stmt_close($myVolListStmt);
         <span class="user-top-points">🪙 <?= (int)$user["eco_points"]; ?> points</span>
         <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
         <a class="user-top-btn" href="add_friends.php" title="Add Friend">👥</a>
-        <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
+        <a href="../login/logout.php" class="user-top-btn logout" title="Logout" onclick="return confirm('Logout now?');">❌</a>
       </div>
 
     </div>

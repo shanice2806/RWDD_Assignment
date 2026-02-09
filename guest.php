@@ -18,9 +18,6 @@ if ($annRes) {
   while ($row = mysqli_fetch_assoc($annRes)) $ann[] = $row;
 }
 
-/* ===== Events preview (upcoming) =====
-   ⚠️ 如果你字段名不同，在这里改就行
-*/
 $events = [];
 $evtSql = "
 SELECT event_id, event_title, event_date_time, event_location
@@ -35,9 +32,7 @@ if ($evtRes) {
   while ($row = mysqli_fetch_assoc($evtRes)) $events[] = $row;
 }
 
-/* ===== Community posts preview (public) =====
-   这里 JOIN users 取发帖者名字
-*/
+
 $posts = [];
 $postSql = "
 SELECT p.post_id, p.title, p.body, p.like_count, p.comment_count, p.post_created_at,
@@ -61,56 +56,90 @@ if ($postRes) {
   <title>ReLife Hub | Guest</title>
 
   <link rel="stylesheet" href="css/style.css">
-  <style>
-    .nav-right {
-      margin-left: auto;
-      display: flex;
-      gap: 1rem;
-      align-items: center;
+<style>
+  .nav-right {
+    margin-left: auto;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  .nav-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .hero {
+    background: var(--color-section);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    margin: 2rem;
+    padding: 2rem;
+    text-align: center;
+  }
+  .hero h2 {
+    color: var(--color-primary);
+    margin-top: 0;
+  }
+  .hero p {
+    color: var(--color-muted);
+    max-width: 850px;
+    margin: 0.5rem auto 1.25rem;
+  }
+  .small-note {
+    font-size: 0.9rem;
+    color: var(--color-muted);
+  }
+
+  .mini-card{
+    border: 1px solid var(--color-border);
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px;
+    margin: 10px 0;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr;  
+    margin: 0 2rem 2rem;
+    align-items: start;
+  }
+
+
+  .grid-2 .feed-card{
+    margin: 1rem 0;          
+  }
+
+  .grid-2 table{
+    width: 100%;
+    table-layout: fixed;
+  }
+  .grid-2 th, .grid-2 td{
+    word-break: break-word;
+  }
+
+  @media (max-width: 769px) {
+    nav {
+      justify-content: flex-start;
+      overflow-x: auto;
     }
     .nav-container {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      align-items: center;
-      flex-wrap: wrap;
+      justify-content: flex-start;
+      gap: 1rem;
     }
-    .hero {
-      background: var(--color-section);
-      border: 1px solid var(--color-border);
-      border-radius: 8px;
-      margin: 2rem;
-      padding: 2rem;
-      text-align: center;
-    }
-    .hero h2 { color: var(--color-primary); margin-top: 0; }
-    .hero p { color: var(--color-muted); max-width: 850px; margin: 0.5rem auto 1.25rem; }
 
+    .hero, .section-preview {
+      margin: 1rem;
+    }
     .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1.5rem;
-      margin: 0 2rem 2rem;
+      margin: 0 1rem 1.5rem;
     }
-
-    .small-note { font-size: 0.9rem; color: var(--color-muted); }
-
-    .mini-card{
-      border: 1px solid var(--color-border);
-      background: #fff;
-      border-radius: 10px;
-      padding: 12px;
-      margin: 10px 0;
-    }
-
-    @media (max-width: 900px) {
-      nav { justify-content: flex-start; overflow-x: auto; }
-      .nav-container { justify-content: flex-start; gap: 1rem; }
-      .grid-2 { grid-template-columns: 1fr; margin: 0 1rem 1.5rem; }
-      .hero, .section-preview { margin: 1rem; }
-    }
-  </style>
+  }
+</style>
 </head>
 <body>
 
@@ -121,7 +150,7 @@ if ($postRes) {
 
   <nav>
     <div class="nav-container">
-      <a href="#home">Home</a>
+      <a href="#">Home</a>
       <a href="#ann">Announcements</a>
       <a href="#events">Events</a>
       <a href="#rewards">Rewards</a>
@@ -171,7 +200,6 @@ if ($postRes) {
 
   <div class="grid-2">
 
-    <!-- Community Preview -->
     <div class="section-preview" id="community">
       <h2>Community Preview</h2>
       <p>Latest public posts — guest can view only.</p>
@@ -208,7 +236,6 @@ if ($postRes) {
       </div>
     </div>
 
-    <!-- Events Preview -->
     <div class="section-preview" id="events">
       <h2>Upcoming Events (Preview)</h2>
 
@@ -242,10 +269,9 @@ if ($postRes) {
 
   </div>
 
-  <!-- Rewards Preview (still ok to be static) -->
   <div class="section-preview" id="rewards">
     <h2>Rewards Preview</h2>
-    <p>These rewards can be redeemed using Eco-Points (login required).</p>
+    <p>These rewards can be redeemed using Eco-Points (These are fake reward, login for more infor).</p>
 
     <table>
       <tr>
@@ -269,8 +295,7 @@ if ($postRes) {
         <td>Limited</td>
       </tr>
     </table>
-
-    <button type="button" onclick="window.location.href='login/login.php'">Login to Redeem</button>
+    <a class="btn" href="login/login.php">Login to Redeem</a>
   </div>
 
   <div class="section-preview" id="about">
@@ -284,7 +309,6 @@ if ($postRes) {
 
   <footer>
     <p>&copy; 2026 ReLife Hub</p>
-    <p><a href="#">Privacy Policy</a> | <a href="#">Terms of Use</a> | <a href="#">Contact Us</a></p>
   </footer>
 
 

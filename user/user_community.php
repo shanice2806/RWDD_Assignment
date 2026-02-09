@@ -98,13 +98,6 @@ if (!$user) {
   exit();
 }
 
-$profileImg = "../images/profile.png";
-if (!empty($user["profile_image"])) {
-  $try  = "../" . ltrim($user["profile_image"], "/");
-  $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
-  if (file_exists($disk)) $profileImg = $try;
-}
-
 $selectedCat = trim($_GET["category"] ?? "all");
 
 $page = (int)($_GET["page"] ?? 1);
@@ -414,15 +407,14 @@ mysqli_stmt_close($pStmt);
       </div>
 
       <div class="user-top-center">
-        <input class="user-top-search" type="text" placeholder="Search...">
-        <button class="user-top-search-btn" type="submit">Search</button>
+      <h1 style="color: white;">Community</h1>
       </div>
 
       <div class="user-top-right">
         <span class="user-top-points">🪙 <?php echo (int)$user["eco_points"]; ?> points</span>
         <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
         <a class="user-top-btn" href="add_friends.php" title="Add Friend">👥</a>
-        <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
+        <a href="../login/logout.php" class="user-top-btn logout" title="Logout" onclick="return confirm('Logout now?');">❌</a>
       </div>
     </div>
 
@@ -452,7 +444,7 @@ mysqli_stmt_close($pStmt);
           <?php
             $pid = $post["post_id"];
 
-            $authorImg = "../images/profile.png";
+            $authorImg = "../images/profile.jpeg";
             $rawAuthorProfile = trim($post["author_profile_image"] ?? "");
             if ($rawAuthorProfile !== "") {
               $try  = "../" . ltrim($rawAuthorProfile, "/");
@@ -509,13 +501,14 @@ mysqli_stmt_close($pStmt);
               </form>
 
               <button type="button" class="wf-icon" title="Comment"
-                      onclick="document.getElementById('comment-<?php echo h($pid); ?>')
-                      .scrollIntoView({behavior:'smooth'});">
+                      onclick="document.getElementById('comment-input-<?php echo h($pid); ?>')
+                      .focus();">
                 💬
               </button>
 
               <button type="button" class="wf-icon" title="Report"
-                      onclick="document.getElementById('report-<?php echo h($pid); ?>').focus();">
+                      onclick="document.getElementById('report-<?php echo h($pid); ?>')
+                      .focus();">
                 ⚠
               </button>
             </div>
@@ -551,7 +544,6 @@ mysqli_stmt_close($pStmt);
             <div class="wf-bottom">
 
               <div class="wf-author">
-                <img src="<?php echo h($authorImg); ?>" alt="Profile">
                 <span class="wf-author-id"><?php echo h($post["author_id"]); ?></span>
                 <span class="wf-author-name"><?php echo h($post["author_name"]); ?></span>
               </div>
@@ -600,7 +592,7 @@ mysqli_stmt_close($pStmt);
                 <input type="hidden" name="post_id" value="<?php echo h($pid); ?>">
                 <input type="hidden" name="category" value="<?php echo h($selectedCat); ?>">
                 <input type="hidden" name="page" value="<?php echo (int)$page; ?>">
-                <input type="text" name="comment" placeholder="add a comment..." required>
+                <input id="comment-input-<?php echo h($pid); ?>" type="text" name="comment" placeholder="add a comment..." required>
                 <button type="submit">Send</button>
               </form>
 

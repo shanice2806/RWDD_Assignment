@@ -29,16 +29,6 @@ $uRes  = mysqli_stmt_get_result($uStmt);
 $user  = mysqli_fetch_assoc($uRes) ?: ["name"=>"User","eco_points"=>0,"profile_image" => "" ];
 mysqli_stmt_close($uStmt);
 
-$profileImg = "../images/profile.png";
-
-if (!empty($user["profile_image"])) {
-  $try = "../" . ltrim($user["profile_image"], "/");
-  $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
-  if (file_exists($disk)) {
-    $profileImg = $try;
-  }
-}
-
 $filterDiff = trim($_GET["diff"] ?? "all");
 $filterCat  = trim($_GET["cat"] ?? "all");
 
@@ -75,6 +65,7 @@ mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 mysqli_stmt_close($stmt);
 
+//only come out once
 $flashSuccess = $_SESSION["flash_success"] ?? null;
 if ($flashSuccess) unset($_SESSION["flash_success"]);
 ?>
@@ -230,7 +221,7 @@ if ($flashSuccess) unset($_SESSION["flash_success"]);
         </span>
         <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
         <a class="user-top-btn" href="add_friends.php" title="Add Friend">👥</a>
-        <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
+        <a href="../login/logout.php" class="user-top-btn logout" title="Logout" onclick="return confirm('Logout now?');">❌</a>
       </div>
     </div>
 

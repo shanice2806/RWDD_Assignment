@@ -11,20 +11,78 @@ session_start();
   <title>About ReLife Hub</title>
   <link rel="stylesheet" href="../style.css">
   <style>
-    body{font-family:Arial,sans-serif;background:#f5f6f8;margin:0}
-    .container{max-width:900px;margin:24px auto;padding:0 16px}
-    .card{background:#fff;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.08);padding:20px;margin-bottom:16px}
-    h1{margin:0 0 6px;font-size:26px}
-    .subtitle{color:#6b7280;margin:0 0 12px}
-    h2{margin:18px 0 8px;font-size:18px}
-    p{color:#374151;line-height:1.6;margin:10px 0}
-    ul{margin:8px 0 0 18px;color:#374151;line-height:1.6}
-    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-    .mini{border:1px solid #e5e7eb;border-radius:12px;padding:14px;background:#fff}
-    .tag{display:inline-block;padding:4px 10px;border-radius:999px;background:#eef2ff;color:#1f6feb;font-size:12px;font-weight:700}
-    .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-    .btn{display:inline-block;padding:10px 12px;border-radius:10px;border:1px solid #e5e7eb;text-decoration:none;color:#111827;font-weight:700;background:#fff}
-    .btn.primary{background:#1f6feb;border-color:#1f6feb;color:#fff}
+    body{
+    font-family:Arial,sans-serif;
+    background:#f5f6f8;
+    margin:0}
+
+    .container{
+    max-width:900px;
+    margin:24px auto;
+    padding:0 16px}
+
+    .card{
+    background:#fff;
+    border-radius:12px;
+    box-shadow:0 6px 18px rgba(0,0,0,.08);
+    padding:20px;
+    margin-bottom:16px}
+
+    h1{margin:0 0 6px;
+    font-size:26px}
+
+    .subtitle{
+    color:#6b7280;
+    margin:0 0 12px}
+
+    h2{
+    margin:18px 0 8px;
+    font-size:18px}
+
+    p{
+      color:#374151;
+      line-height:1.6;
+      margin:10px 0}
+
+    ul{margin:8px 0 0 18px;
+    color:#374151;
+    line-height:1.6}
+
+    .grid{display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px}
+
+    .mini{border:1px solid #e5e7eb;
+    border-radius:12px;
+    padding:14px;
+    background:#fff}
+
+    .tag{display:inline-block;
+    padding:4px 10px;
+    border-radius:999px;
+    background:#eef2ff;
+    color:#1f6feb;
+    font-size:12px;
+    font-weight:700}
+
+    .btnrow{display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:10px}
+
+    .btn{display:inline-block;
+    padding:10px 12px;
+    border-radius:10px;
+    border:1px solid #e5e7eb;
+    text-decoration:none;
+    color:#111827;
+    font-weight:700;
+    background:#fff}
+
+    .btn.primary{background:#1f6feb;
+    border-color:#1f6feb;
+    color:#fff}
+    
     footer{padding:16px;text-align:center;color:#6b7280;font-size:13px}
     @media (max-width:768px){
       .grid{grid-template-columns:1fr}

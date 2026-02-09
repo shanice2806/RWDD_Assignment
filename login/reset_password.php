@@ -4,23 +4,16 @@ require_once "../connect.php";
 $error = "";
 $success = "";
 
-/* =====================
-   STEP 1: GET CREDENTIALS
-===================== */
+
 $email = $_POST['email'] ?? "";
 $temp_password = $_POST['temporary_password'] ?? "";
 
-/* =====================
-   BLOCK DIRECT ACCESS
-===================== */
+
 if ($email === "" || $temp_password === "") {
     header("Location: forgot_password.php");
     exit();
 }
 
-/* =====================
-   VERIFY TEMP PASSWORD (ONCE)
-===================== */
 $stmt = $conn->prepare("
     SELECT user_id, reset_id
     FROM reset_password
@@ -42,9 +35,7 @@ $row = $result->fetch_assoc();
 $user_id = $row['user_id'];
 $reset_id = $row['reset_id'];
 
-/* =====================
-   HANDLE PASSWORD RESET
-===================== */
+
 if (isset($_POST['new_password'])) {
 
     $new_password = $_POST['new_password'];
@@ -61,10 +52,8 @@ if (isset($_POST['new_password'])) {
     }
     else {
 
-        /* ❗ STORE PLAIN TEXT PASSWORD (AS REQUESTED) */
         $plain_password = $new_password;
 
-        /* Update users table */
         $stmt = $conn->prepare("
             UPDATE users
             SET password = ?
@@ -74,7 +63,6 @@ if (isset($_POST['new_password'])) {
 
         if ($stmt->execute()) {
 
-            /* Invalidate temp password AFTER successful reset */
             $stmt2 = $conn->prepare("
                 UPDATE reset_password
                 SET status = 0
@@ -152,7 +140,6 @@ input {
 <?php else: ?>
 <form method="POST">
 
-  <!-- Preserve identity -->
   <input type="hidden" name="email" value="<?= htmlspecialchars($email) ?>">
   <input type="hidden" name="temporary_password" value="<?= htmlspecialchars($temp_password) ?>">
 

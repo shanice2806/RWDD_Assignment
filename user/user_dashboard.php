@@ -19,7 +19,16 @@ function h($str) {
   return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8');
 }
 
-$userSql = "SELECT user_id, name, email, role, eco_points, badges, created_at, account_status, last_login, profile_image
+$userSql = "SELECT user_id,
+                      name, 
+                      email, 
+                      role, 
+                      eco_points, 
+                      badges, 
+                      created_at, 
+                      account_status, 
+                      last_login, 
+                      profile_image
             FROM users
             WHERE user_id = ?
             LIMIT 1";
@@ -35,13 +44,6 @@ if (!$user) {
   session_destroy();
   header("Location: ../login/login.php");
   exit();
-}
-
-$profileImg = "../images/profile.jpeg";
-if (!empty($user["profile_image"])) {
-  $try  = "../" . ltrim($user["profile_image"], "/");
-  $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
-  if (file_exists($disk)) $profileImg = $try;
 }
 
 function getCount($conn, $sql, $user_id) {
@@ -101,10 +103,12 @@ $notifSql = "
 SELECT
   n.notification_id,
   n.event_id,
+  e.event_title,
   n.message,
   n.audience_type,
   n.created_at
 FROM notifications n
+LEFT JOIN events e ON e.event_id = n.event_id
 WHERE n.is_active = 1
 AND (
   n.audience_type = 'participants'
@@ -131,13 +135,20 @@ if ($notifStmt) {
 }
 
 if (count($notifications) === 0) {
-  $fallbackSql = "
-    SELECT notification_id, event_id, message, audience_type, created_at
-    FROM notifications
-    WHERE is_active = 1 AND audience_type = 'participants'
-    ORDER BY created_at DESC
-    LIMIT 5
-  ";
+$fallbackSql = "
+  SELECT
+    n.notification_id,
+    n.event_id,
+    e.event_title,
+    n.message,
+    n.audience_type,
+    n.created_at
+  FROM notifications n
+  LEFT JOIN events e ON e.event_id = n.event_id
+  WHERE n.is_active = 1 AND n.audience_type = 'participants'
+  ORDER BY n.created_at DESC
+  LIMIT 5
+";
   $fallbackRes = mysqli_query($conn, $fallbackSql);
   if ($fallbackRes) {
     while ($n = mysqli_fetch_assoc($fallbackRes)) $notifications[] = $n;
@@ -152,7 +163,7 @@ WHERE is_active = 1
 AND (start_date IS NULL OR start_date <= CURDATE())
 AND (end_date IS NULL OR end_date >= CURDATE())
 ORDER BY created_at DESC
-LIMIT 3
+LIMIT 5
 ";
 $annRes = mysqli_query($conn, $annSql);
 if ($annRes) {
@@ -252,7 +263,6 @@ $badgeBaseDir = "../images/badges/";
     margin: 0;
   }
 
-  /* badge grid */
   .badge-grid{
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -285,9 +295,6 @@ $badgeBaseDir = "../images/badges/";
     line-height: 1.25;
   }
 
-  @media (max-width: 900px){
-    .badge-grid{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  }
   @media (max-width: 768px) {
     .top-panels{ grid-template-columns: 1fr; }
     .panel-title{ font-size: 16px; }
@@ -316,15 +323,14 @@ $badgeBaseDir = "../images/badges/";
       </div>
 
       <div class="user-top-center">
-        <input class="user-top-search" type="text" placeholder="Search...">
-        <button class="user-top-search-btn" type="submit">Search</button>
+      <h1 style="color: white;">Dashboard</h1>
       </div>
 
       <div class="user-top-right">
         <span class="user-top-points">🪙 <?= (int)$user["eco_points"]; ?> points</span>
         <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
         <a class="user-top-btn" href="add_friends.php" title="Add Friend">👥</a>
-        <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
+        <a href="../login/logout.php" class="user-top-btn logout" title="Logout" onclick="return confirm('Logout now?');">❌</a>
       </div>
     </div>
 
@@ -332,7 +338,7 @@ $badgeBaseDir = "../images/badges/";
 
       <div class="panel-box">
         <p class="panel-title">📢 Announcements</p>
-        <div class="panel-sub">Latest announcements (up to 3)</div>
+        <div class="panel-sub">Latest announcements (up to 5)</div>
 
         <?php if (count($announcements) === 0): ?>
           <p class="panel-empty">No announcements right now.</p>
@@ -341,7 +347,6 @@ $badgeBaseDir = "../images/badges/";
             <?php foreach ($announcements as $a): ?>
               <li class="panel-item">
                 <div class="panel-meta">
-                  <span class="pill"><?= h($a["announcement_id"]); ?></span>
                   <span>
                     <?= $a["created_at"] ? date("d M Y, h:i A", strtotime($a["created_at"])) : ""; ?>
                   </span>
@@ -366,7 +371,7 @@ $badgeBaseDir = "../images/badges/";
               <li class="panel-item">
                 <div class="panel-meta">
                   <span class="pill"><?= h($n["audience_type"]); ?></span>
-                  <span>Event: <?= h($n["event_id"]); ?></span>
+                  <span>Event: <?= h($n["event_title"] ?: $n["event_id"]); ?></span>
                   <span>
                     <?= $n["created_at"] ? date("d M Y, h:i A", strtotime($n["created_at"])) : ""; ?>
                   </span>
@@ -381,7 +386,6 @@ $badgeBaseDir = "../images/badges/";
     </div>
 
     <div class="profile-card">
-      <h2>User Profile</h2>
       <p>
         <?= h($user["name"]); ?> | Joined <?= h($joined); ?><br>
         <span style="color: var(--color-muted);">Last login: <?= h($lastLogin); ?></span>

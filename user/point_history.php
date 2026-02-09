@@ -28,17 +28,9 @@ $res = mysqli_stmt_get_result($stmt);
 $user = mysqli_fetch_assoc($res) ?: ["name"=>"User", "eco_points"=>0];
 mysqli_stmt_close($stmt);
 
-$profileImg = "../images/profile.jpeg";
-if (!empty($user["profile_image"])) {
-  $try  = "../" . ltrim($user["profile_image"], "/");
-  $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
-  if (file_exists($disk)) $profileImg = $try;
-}
-
-/* transactions */
 $tx = [];
 $txSql = "
-SELECT transaction_id, source_id, points_change, description, created_at
+SELECT points_change, description, created_at
 FROM eco_points_transactions
 WHERE user_id = ?
 ORDER BY created_at DESC
@@ -53,7 +45,6 @@ if ($txStmt) {
   mysqli_stmt_close($txStmt);
 }
 
-/* summary (optional) */
 ?>
 <!doctype html>
 <html lang="en">
@@ -116,7 +107,7 @@ if ($txStmt) {
         <span class="user-top-points">🪙 <?= (int)$user["eco_points"]; ?> points</span>
         <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
         <a class="user-top-btn" href="add_friends.php" title="Add Friend">👥</a>
-        <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
+        <a href="../login/logout.php" class="user-top-btn logout" title="Logout" onclick="return confirm('Logout now?');">❌</a>
       </div>
     </div>
     <div class="box">
@@ -137,8 +128,6 @@ if ($txStmt) {
         <table>
           <tr>
             <th>Date</th>
-            <th>Transaction</th>
-            <th>Source</th>
             <th>Points</th>
             <th>Description</th>
           </tr>
@@ -150,8 +139,6 @@ if ($txStmt) {
             ?>
             <tr>
               <td><?= $t["created_at"] ? h(date("d M Y, h:i A", strtotime($t["created_at"]))) : ""; ?></td>
-              <td><?= h($t["transaction_id"]); ?></td>
-              <td><?= h($t["source_id"]); ?></td>
               <td class="<?= $isPos ? "pos" : "neg" ?>">
                 <?= $isPos ? "+" : "" ?><?= $pc; ?>
               </td>

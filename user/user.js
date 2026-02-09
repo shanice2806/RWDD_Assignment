@@ -1,8 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-  /* =========================
-     SIDEBAR TOGGLE
-  ========================= */
   const sidebar   = document.getElementById("userSidebar");
   const toggleBtn = document.getElementById("userSidebarToggle");
   const overlay   = document.getElementById("sidebarOverlay");
@@ -28,10 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
     overlay.addEventListener("click", closeSidebar);
   }
 
-  /* =========================
-     CONFIRM MODAL (Upload Tutorial)
-     Works only if elements exist on the page
-  ========================= */
   const modal   = document.getElementById("confirmModal");
   const openBtn = document.getElementById("openConfirm");
   const noBtn   = document.getElementById("noBtn");
