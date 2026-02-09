@@ -74,6 +74,7 @@ while ($rRow = mysqli_fetch_assoc($reqRes)) { $requests[] = $rRow; }
     <title>Chat | ReLife Hub</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/user.css">
+</head>
     <style>
         :root { --color-primary: #1e3a34; --color-secondary: #3ba99c; --ig-blue: #0095f6; --color-red: #ff4d4d; --color-online: #2ecc71; }
         
