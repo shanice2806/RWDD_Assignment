@@ -15,9 +15,6 @@ if (!isset($_GET['id'])) {
 
 $log_id = $_GET['id'];
 
-/* =====================
-   FETCH LOG DATA
-===================== */
 $stmt = $conn->prepare("
     SELECT *
     FROM recycling_log
@@ -33,23 +30,16 @@ if ($result->num_rows === 0) {
 
 $data = $result->fetch_assoc();
 
-/* =====================
-   STATUS MESSAGE
-===================== */
 $success = "";
 $error   = "";
 
-/* =====================
-   HANDLE UPDATE
-===================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $status = $_POST['status'];
     $flag_reason = $_POST['flag_reason'] ?? NULL;
 
-    /* =====================
-       GET POINTS PER KG FROM RULE
-    ===================== */
+
+
     $points_per_kg = 0;
 
     if (!empty($data['rule_id'])) {
@@ -68,9 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    /* =====================
-       AUTO LOGIC
-    ===================== */
+
     if ($status === 'VALID') {
         $points = round($data['weight_kg'] * $points_per_kg);
         $is_flagged = 0;
@@ -79,15 +67,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $points = 0;
         $is_flagged = 1;
         $flag_reason = $flag_reason ?: 'Invalid submission';
-    } else { // PENDING
+    } else {
         $points = 0;
         $is_flagged = 0;
         $flag_reason = NULL;
     }
 
-    /* =====================
-       UPDATE RECYCLING LOG
-    ===================== */
     $update = $conn->prepare("
         UPDATE recycling_log
         SET status = ?, points_awarded = ?, is_flagged = ?, flag_reason = ?
@@ -104,9 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($update->execute()) {
 
-        /* =====================
-           RECORD ECO POINTS TRANSACTION
-        ===================== */
         if ($status === 'VALID' && $points > 0) {
 
             // Prevent duplicate transaction

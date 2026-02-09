@@ -5,9 +5,6 @@ require_once "../connect.php";
 $page_title = "Eco Points Transaction History";
 include "admin_header.php";
 
-/* =====================
-   VALIDATE USER ID
-===================== */
 if (!isset($_GET['id'])) {
     header("Location: admin_manage_user.php");
     exit();
@@ -15,9 +12,6 @@ if (!isset($_GET['id'])) {
 
 $user_id = $_GET['id'];
 
-/* =====================
-   FETCH USER DETAILS
-===================== */
 $stmt = $conn->prepare("
     SELECT user_id, name, email, eco_points, badges
     FROM users
@@ -33,9 +27,6 @@ if ($user_result->num_rows === 0) {
 
 $user = $user_result->fetch_assoc();
 
-/* =====================
-   FETCH ECO POINT TRANSACTIONS
-===================== */
 $stmt = $conn->prepare("
     SELECT transaction_id,
            source_id,
@@ -53,8 +44,6 @@ $transactions = $stmt->get_result();
 
 <main class="dashboard">
 <div class="main-content">
-
-<!-- PAGE TITLE BAR -->
 <div class="page-title-bar">
     <a href="admin_user_view.php?id=<?= urlencode($user_id) ?>"
        class="icon-btn back-btn">↩</a>
@@ -95,9 +84,7 @@ $transactions = $stmt->get_result();
     </div>
   </div>
 
-  <!-- =====================
-       TRANSACTION HISTORY
-  ===================== -->
+
   <div class="section-preview ">
     <h3 style="margin-bottom:15px;">Transaction History</h3>
 

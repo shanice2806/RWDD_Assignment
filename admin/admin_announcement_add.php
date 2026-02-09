@@ -7,34 +7,26 @@ include 'admin_header.php';
 $success = "";
 $error   = "";
 
-/* Default form values (for clearing) */
 $end_date = "";
 $title    = "";
 $message  = "";
 
-/* Handle form submission */
+/* submission */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $end_date = $_POST['end_date'];
     $title    = trim($_POST['title']);
     $message  = trim($_POST['message']);
 
-    /* Admin ID from session */
     $created_by = $_SESSION["user_id"];
 
     if ($end_date === "" || $title === "" || $message === "") {
         $error = "All fields are required.";
     } else {
 
-        /* ===============================
-           Determine is_active based on today
-        =============================== */
         $today = date('Y-m-d');
         $is_active = ($today <= date('Y-m-d', strtotime($end_date))) ? 1 : 0;
 
-        /* ===============================
-           Generate announcement_id (a_001)
-        =============================== */
         $idQuery = $conn->query("
             SELECT announcement_id
             FROM announcements
@@ -72,8 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($stmt->execute()) {
             $success = "Announcement added successfully.";
-
-            /* Clear fields after success */
             $end_date = "";
             $title    = "";
             $message  = "";

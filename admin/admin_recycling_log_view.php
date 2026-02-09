@@ -50,9 +50,6 @@ $log = $result->fetch_assoc();
     <h2><?= htmlspecialchars($log['log_id']) ?></h2>
 </div>
 
-<!-- =====================
-     LOG DETAILS CARD
-     ===================== -->
 <div class="section-preview" style="max-width:800px; margin:auto;">
 
     <div class="form-group">
@@ -85,9 +82,7 @@ $log = $result->fetch_assoc();
         <input type="text" value="<?= htmlspecialchars($log['weight_kg']) ?>" readonly>
     </div>
 
-    <!-- =====================
-     PHOTO PROOF
-     ===================== -->
+
 <div class="form-group">
     <label>Photo Proof</label>
     <div style="border:1px solid #ccc; padding:10px; text-align:center;">

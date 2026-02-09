@@ -4,24 +4,22 @@ include "../connect.php";
 $page_title = "Recycling Log";
 include "admin_header.php";
 
-/* Total valid logs */
+/* total valid logs */
 $total_verified = $conn->query("
     SELECT COUNT(*) AS total 
     FROM recycling_log 
     WHERE status = 'Valid'
 ")->fetch_assoc()['total'];
 
-/* Flagged logs */
+/* flagged logs */
 $total_flagged = $conn->query("
     SELECT COUNT(*) AS total 
     FROM recycling_log 
     WHERE is_flagged = 1
 ")->fetch_assoc()['total'];
 
-/* Verified logs (kept separate for UI clarity) */
-$total_verified_again = $total_verified;
 
-/* Top recycled material */
+/* most recycled material */
 $top_material_result = $conn->query("
     SELECT m.materials_name, COUNT(*) AS total
     FROM recycling_log rl
@@ -36,16 +34,12 @@ if ($top_material_result && $top_material_result->num_rows > 0) {
     $top_material = $top_material_result->fetch_assoc()['materials_name'];
 }
 
-/* =====================
-   GET FILTER VALUES
-   ===================== */
+
 $search   = $_GET['search']   ?? '';
 $status   = $_GET['status']   ?? '';
 $material = $_GET['material'] ?? '';
 
-/* =====================
-   BUILD CONDITIONS
-   ===================== */
+
 $where  = [];
 $params = [];
 $types  = "";
@@ -71,10 +65,6 @@ if ($material !== '') {
     $params[] = $material;
     $types   .= "s";
 }
-
-/* =====================
-   BASE QUERY
-   ===================== */
 $sql = "
     SELECT 
         rl.log_id,
@@ -98,9 +88,6 @@ if (!empty($where)) {
 
 $sql .= " ORDER BY rl.submitted_at DESC";
 
-/* =====================
-   PREPARE & EXECUTE
-   ===================== */
 $stmt = $conn->prepare($sql);
 
 if (!empty($params)) {
@@ -111,7 +98,6 @@ $stmt->execute();
 $result = $stmt->get_result();
 ?>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="chart.js"></script>
 
   <div class="main-content">
@@ -134,11 +120,6 @@ $result = $stmt->get_result();
     <p><strong><?= $total_flagged ?></strong></p>
   </div>
 
-  <div class="card">
-    <div class="icon">✔️</div>
-    <h4>Verified Log</h4>
-    <p><strong><?= $total_verified ?></strong></p>
-  </div>
 
   <div class="card">
     <div class="icon">♻️</div>
@@ -150,7 +131,6 @@ $result = $stmt->get_result();
 
 <div class="chart-section" >
 
-  <!-- Bar Chart: Logs by Material -->
   <div class="chart-box">
     <h4>Logs by Material</h4>
     <canvas id="barLogsByMaterial" width="700" height="220"></canvas>

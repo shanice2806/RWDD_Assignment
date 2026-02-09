@@ -57,8 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($update->execute()) {
         $success = "User updated successfully.";
-
-        /* refresh local data */
         $user['role'] = $role;
         $user['account_status'] = $account_status;
 
@@ -137,7 +135,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="text" value="<?= htmlspecialchars($user['last_login']) ?>" readonly>
         </div>
 
-        <!-- EDITABLE FIELDS -->
         <div class="form-group">
             <label>Role</label>
             <select name="role">
@@ -161,7 +158,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </select>
         </div>
 
-        <!-- BUTTONS -->
         <div style="display:flex; justify-content:center; gap:20px; margin-top:25px;">
             <button type="submit" class="btn save-btn">Edit</button>
         </div>
