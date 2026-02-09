@@ -1,20 +1,15 @@
 <?php
 include "../connect.php";
-
 $page_title = "Recycling Event";
 include "admin_header.php";
 
-/* =====================
-   INSIGHTS
-   ===================== */
 
-/* Total events */
 $total_events = $conn->query("
     SELECT COUNT(*) AS total 
     FROM events
 ")->fetch_assoc()['total'];
 
-/* Upcoming approved events */
+
 $upcoming_events = $conn->query("
     SELECT COUNT(*) AS total
     FROM events
@@ -22,7 +17,7 @@ $upcoming_events = $conn->query("
       AND event_status = 'Approved'
 ")->fetch_assoc()['total'];
 
-/* Total pending events */
+
 $total_pending_events = $conn->query("
     SELECT COUNT(*) AS total
     FROM events
@@ -30,20 +25,16 @@ $total_pending_events = $conn->query("
 ")->fetch_assoc()['total'];
 
 
-/* =====================
-   GET FILTER VALUES
-   ===================== */
+
 $search = $_GET['search'] ?? '';
 $status = $_GET['status'] ?? '';
 
-/* =====================
-   BUILD CONDITIONS
-   ===================== */
+
 $where  = [];
 $params = [];
 $types  = "";
 
-/* Search by title or location */
+
 if ($search !== '') {
     $where[] = "(e.event_title LIKE ? OR e.event_location LIKE ?)";
     $params[] = "%$search%";
@@ -51,16 +42,13 @@ if ($search !== '') {
     $types   .= "ss";
 }
 
-/* Status filter */
+
 if ($status !== '') {
     $where[] = "e.event_status = ?";
     $params[] = $status;
     $types   .= "s";
 }
 
-/* =====================
-   BASE QUERY
-   ===================== */
 $sql = "
     SELECT
         e.event_id,
@@ -77,20 +65,17 @@ $sql = "
         ON e.event_id = a.event_id
 ";
 
-/* Apply filters */
+
 if (!empty($where)) {
     $sql .= " WHERE " . implode(" AND ", $where);
 }
 
-/* Group & order */
+
 $sql .= "
     GROUP BY e.event_id
     ORDER BY e.event_date_time DESC
 ";
 
-/* =====================
-   PREPARE & EXECUTE
-   ===================== */
 $stmt = $conn->prepare($sql);
 
 if (!empty($params)) {
@@ -106,9 +91,6 @@ $result = $stmt->get_result();
 
 <h2 class="page-title">Recycling Event</h2>
 
-<!-- =====================
-     INSIGHTS
-     ===================== -->
 <div class="card-grid">
 
   <div class="card">
@@ -131,9 +113,7 @@ $result = $stmt->get_result();
 
 </div>
 
-<!-- =====================
-     SEARCH & FILTER
-     ===================== -->
+
 <div class="announcement-search-wrapper">
   <form method="GET" class="announcement-search-form">
 
@@ -158,9 +138,7 @@ $result = $stmt->get_result();
   </form>
 </div>
 
-<!-- =====================
-     EVENT TABLE
-     ===================== -->
+
 <div class="table-wrapper">
 <table class="eco-table">
   <thead>

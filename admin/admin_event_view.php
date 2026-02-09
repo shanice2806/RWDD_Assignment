@@ -137,9 +137,7 @@ $total_attendance = $attendance['total_attendance'] ?? 0;
         <input type="text" value="<?= htmlspecialchars($total_attendance) ?>" readonly>
     </div>
 
-    <!-- =====================
-         EVENT MEDIA
-    ===================== -->
+
     <div class="form-group">
         <label>Event Media</label>
 
@@ -147,7 +145,7 @@ $total_attendance = $attendance['total_attendance'] ?? 0;
             <?php if ($media_result->num_rows > 0): ?>
                 <?php while ($media = $media_result->fetch_assoc()): ?>
                     <img
-                        src="<?= htmlspecialchars($media['event_media_file_path']) ?>"
+                        src="../images/events/<?= htmlspecialchars($media['event_media_file_path']) ?>"
                         alt="Event Media"
                         style="width:150px; height:150px; object-fit:cover; border:1px solid #ccc;"
                     >
@@ -158,9 +156,7 @@ $total_attendance = $attendance['total_attendance'] ?? 0;
         </div>
     </div>
 
-    <!-- =====================
-         ACTION BUTTONS
-    ===================== -->
+
     <div style="text-align:center; margin-top:25px;">
         <a href="admin_event_attendance.php?id=<?= urlencode($event_id) ?>" class="btn">
             View Attendance

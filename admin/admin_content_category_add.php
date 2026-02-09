@@ -5,19 +5,14 @@ require_once "../connect.php";
 $page_title = "Add Content Category";
 include "admin_header.php";
 
-/* =====================
-   STATUS MESSAGE
-===================== */
+
 $success = "";
 $error   = "";
 
-/* Form defaults (for clearing) */
+
 $content_name = "";
 $content_description = "";
 
-/* =====================
-   HANDLE FORM SUBMIT
-===================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $content_name = trim($_POST['content_name']);
@@ -27,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Category name is required.";
     } else {
 
-        /* Generate next content_category_id */
+
         $result = $conn->query("
             SELECT content_category_id
             FROM content_categories
@@ -44,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $content_category_id = 'cc_' . str_pad($new_num, 3, '0', STR_PAD_LEFT);
 
-        /* Insert content category */
+
         $stmt = $conn->prepare("
             INSERT INTO content_categories
             (content_category_id, content_name, content_description, is_active)
@@ -61,7 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->execute()) {
             $success = "Content category added successfully.";
 
-            /* Clear fields after success */
             $content_name = "";
             $content_description = "";
         } else {
@@ -74,14 +68,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <main class="dashboard">
   <div class="main-content">
 
-    <!-- PAGE TITLE BAR -->
     <div class="page-title-bar">
       <a href="admin_system_settings.php?view=categories"
          class="icon-btn back-btn">↩</a>
       <h2>Add Content Category</h2>
     </div>
 
-    <!-- STATUS MESSAGE -->
+
     <?php if (!empty($success)): ?>
       <div class="alert-success"><?= htmlspecialchars($success) ?></div>
     <?php endif; ?>
@@ -90,7 +83,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="alert-error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <!-- CENTERED FORM -->
     <div class="profile-container">
 
       <form method="POST"
@@ -115,7 +107,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                  value="<?= htmlspecialchars($content_description) ?>">
         </div>
 
-        <!-- Add BUTTON -->
         <div style="text-align:center; margin-top:25px;">
           <button type="submit" class="action-btn">
             Add

@@ -2,14 +2,14 @@
 include "../connect.php";
 $page_title = "View Announcement";
 include "admin_header.php";
-/* Validate ID */
+
 if (!isset($_GET['id'])) {
     die("Announcement ID not provided.");
 }
 
 $announcement_id = $_GET['id'];
 
-/* Fetch announcement */
+
 $stmt = $conn->prepare("
     SELECT announcement_id, title, message, end_date,
            is_active, created_at, created_by
@@ -34,7 +34,7 @@ $data = $result->fetch_assoc();
             <h2><?= htmlspecialchars($data['announcement_id']) ?></h2>
         </div>
 
-        <!-- Announcement Details Card -->
+
         <div class="section-preview" style="max-width:700px; margin:auto;">
 
             <div class="form-group">
@@ -72,7 +72,7 @@ $data = $result->fetch_assoc();
                 <input type="text" value="<?= htmlspecialchars($data['created_by']) ?>" readonly>
             </div>
 
-            <!-- Edit Button -->
+
             <div style="text-align:center; margin-top:20px;">
                 <a href="admin_announcement_edit.php?id=<?= urlencode($data['announcement_id']) ?>"
                 class="btn">Edit</a>

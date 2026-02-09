@@ -4,44 +4,33 @@ include "../connect.php";
 $page_title = "Manage Posts";
 include "admin_header.php";
 
-/* =====================
-   INSIGHTS
-   ===================== */
-
-/* Total posts */
 $total_posts = $conn->query("
     SELECT COUNT(*) AS total 
     FROM posts
 ")->fetch_assoc()['total'];
 
-/* Reported posts */
 $total_reported = $conn->query("
     SELECT COUNT(*) AS total 
     FROM posts 
     WHERE report_count > 0 OR is_flagged = 1
 ")->fetch_assoc()['total'];
 
-/* Active posts */
+
 $total_active = $conn->query("
     SELECT COUNT(*) AS total 
     FROM posts 
     WHERE post_status = 'Public'
 ")->fetch_assoc()['total'];
 
-/* =====================
-   GET FILTER VALUES
-   ===================== */
+
 $search = $_GET['search'] ?? '';
 $status = $_GET['status'] ?? '';
 
-/* =====================
-   BUILD CONDITIONS
-   ===================== */
 $where  = [];
 $params = [];
 $types  = "";
 
-/* Search by title or user ID */
+
 if ($search !== '') {
     $where[] = "(p.title LIKE ? OR p.user_id LIKE ?)";
     $params[] = "%$search%";
@@ -49,15 +38,12 @@ if ($search !== '') {
     $types   .= "ss";
 }
 
-/* ONLY filter when Reported is selected */
-/* Status filter */
 if ($status !== '') {
 
     if ($status === 'Reported') {
-        // Reported posts
         $where[] = "(p.report_count > 0 OR p.is_flagged = 1)";
     } else {
-        // Public or Hidden (actual DB values)
+
         $where[] = "p.post_status = ?";
         $params[] = $status;
         $types   .= "s";
@@ -65,10 +51,6 @@ if ($status !== '') {
 
 }
 
-
-/* =====================
-   BASE QUERY
-   ===================== */
 $sql = "
     SELECT
         p.post_id,
@@ -81,16 +63,12 @@ $sql = "
     FROM posts p
 ";
 
-/* Apply filters */
 if (!empty($where)) {
     $sql .= " WHERE " . implode(" AND ", $where);
 }
 
 $sql .= " ORDER BY p.post_created_at DESC";
 
-/* =====================
-   PREPARE & EXECUTE
-   ===================== */
 $stmt = $conn->prepare($sql);
 
 if (!empty($params)) {
@@ -130,9 +108,7 @@ $result = $stmt->get_result();
 
 </div>
 
-<!-- =====================
-     SEARCH & FILTER BAR
-     ===================== -->
+
 <div class="announcement-search-wrapper">
   <form method="GET" class="announcement-search-form">
 
@@ -156,10 +132,6 @@ $result = $stmt->get_result();
   </form>
 </div>
 
-<!-- =====================
-     TABLE
-     ===================== -->
-<div class="table-wrapper">
 <table class="eco-table">
   <thead>
     <tr>
@@ -200,7 +172,6 @@ $result = $stmt->get_result();
     <?php endif; ?>
   </tbody>
 </table>
-</div>
 
 </main>
 </div>

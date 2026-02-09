@@ -11,7 +11,7 @@ $end_date = "";
 $title    = "";
 $message  = "";
 
-/* submission */
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $end_date = $_POST['end_date'];
@@ -43,9 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $announcement_id = 'a_' . str_pad($num, 3, '0', STR_PAD_LEFT);
 
-        /* ===============================
-           Insert into database
-        =============================== */
+
         $stmt = $conn->prepare("
             INSERT INTO announcements
             (announcement_id, title, message, end_date, is_active, created_at, created_by)
@@ -77,13 +75,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="main-content">
     <main class="dashboard">
 
-        <!-- Page Title -->
+
         <div class="page-title-bar">
             <a href="admin_announcement.php" class="icon-btn back-btn">↩</a>
             <h2>Add Announcement</h2>
         </div>
 
-        <!-- STATUS MESSAGE -->
         <?php if (!empty($success)): ?>
             <div class="alert-success"><?= htmlspecialchars($success) ?></div>
         <?php endif; ?>
@@ -92,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="alert-error"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
-        <!-- Add Announcement Form -->
+
         <form method="POST" class="section-preview" style="max-width:700px; margin:auto;">
 
             <div class="form-group">
@@ -112,7 +109,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <textarea name="message" rows="4" required><?= htmlspecialchars($message) ?></textarea>
             </div>
 
-            <!-- Add Button -->
             <div style="text-align:center; margin-top:20px;">
                 <button type="submit" class="btn">Add</button>
             </div>

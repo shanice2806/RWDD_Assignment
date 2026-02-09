@@ -5,7 +5,7 @@ include 'admin_header.php';
 
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-/* Stats */
+
 $totalRow = $conn->query("SELECT COUNT(*) AS total FROM announcements")->fetch_assoc();
 $total = (int)$totalRow['total'];
 
@@ -19,16 +19,22 @@ $nextExpiryRow = $conn->query("
 ")->fetch_assoc();
 $next_expiry = $nextExpiryRow['next_expiry'] ?? null;
 
-/* Table data */
-$searchEscaped = $conn->real_escape_string($search);
 
 $sql = "
     SELECT announcement_id, title, end_date, is_active, created_at, created_by
     FROM announcements
-    WHERE title LIKE '%$searchEscaped%' OR announcement_id LIKE '%$searchEscaped%'
+    WHERE title LIKE ? OR announcement_id LIKE ?
     ORDER BY created_at DESC
 ";
-$result = $conn->query($sql);
+
+$stmt = $conn->prepare($sql);
+
+$like = "%$search%";
+$stmt->bind_param("ss", $like, $like);
+$stmt->execute();
+
+$result = $stmt->get_result();
+
 
 ?>
     <div class="main-content">
@@ -37,7 +43,6 @@ $result = $conn->query($sql);
 
 <h3>📊 INSIGHTS OVERVIEW</h3>
 
-        <!-- 📊 Stats -->
         <div class="card-grid">
             <div class="card">
                 <div class="icon">📄</div>
@@ -71,12 +76,12 @@ $result = $conn->query($sql);
             </form>
         </div>
 
-        <!-- ➕ Add button -->
+
         <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
             <a href="admin_announcement_add.php" class="btn">+</a>
         </div>
 
-        <!-- 📋 Announcement Table -->
+
         <table class="eco-table">
             <thead>
                 <tr>

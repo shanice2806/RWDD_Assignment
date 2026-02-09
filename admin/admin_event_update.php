@@ -5,18 +5,13 @@ include "../connect.php";
 $page_title = "Review Event";
 include "admin_header.php";
 
-/* =====================
-   VALIDATE EVENT ID
-===================== */
+
 if (!isset($_GET['id'])) {
     die("Event ID not provided.");
 }
 
 $event_id = $_GET['id'];
 
-/* =====================
-   FETCH EVENT DETAILS
-===================== */
 $stmt = $conn->prepare("
     SELECT
         event_id,
@@ -42,22 +37,16 @@ if ($result->num_rows === 0) {
 
 $event = $result->fetch_assoc();
 
-/* =====================
-   STATUS MESSAGE
-===================== */
+
 $success = "";
 $error   = "";
 
-/* =====================
-   HANDLE STATUS UPDATE
-===================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $new_status = $_POST['event_status'];
 
     if ($new_status === 'Approved') {
 
-        // Approved → Registration Open
         $update_stmt = $conn->prepare("
             UPDATE events
             SET event_status = ?, registration_status = 'Open'
@@ -67,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } elseif ($new_status === 'Cancelled') {
 
-        // Cancelled → Registration Closed
+
         $update_stmt = $conn->prepare("
             UPDATE events
             SET event_status = ?, registration_status = 'Closed'
@@ -77,7 +66,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } else {
 
-        // Pending / Rejected → only update event status
         $update_stmt = $conn->prepare("
             UPDATE events
             SET event_status = ?
@@ -110,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h2><?= htmlspecialchars($event['event_id']) ?></h2>
 </div>
 
-<!-- STATUS MESSAGE -->
+
 <?php if (!empty($success)): ?>
     <div class="alert-success"><?= htmlspecialchars($success) ?></div>
 <?php endif; ?>
@@ -119,9 +107,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="alert-error"><?= htmlspecialchars($error) ?></div>
 <?php endif; ?>
 
-<!-- =====================
-     EVENT REVIEW CARD
-===================== -->
 <div class="section-preview" style="max-width:800px; margin:auto;">
 
 <form method="POST">
@@ -171,9 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="text" value="<?= htmlspecialchars($event['event_attendance_code']) ?>" readonly>
     </div>
 
-    <!-- =====================
-         STATUS (EDITABLE)
-    ===================== -->
+  
     <div class="form-group">
         <label>Event Status</label>
         <select name="event_status" required>
@@ -184,9 +167,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </select>
     </div>
 
-    <!-- =====================
-         ACTION BUTTONS
-    ===================== -->
+ 
     <div style="display:flex; justify-content:center; gap:20px; margin-top:30px;">
         <button type="submit" class="btn">Update</button>
     </div>

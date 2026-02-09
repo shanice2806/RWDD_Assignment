@@ -4,18 +4,14 @@ include "../connect.php";
 $page_title = "View Post";
 include "admin_header.php";
 
-/* =====================
-   VALIDATE POST ID
-===================== */
+
 if (!isset($_GET['id'])) {
     die("Post ID not provided.");
 }
 
 $post_id = $_GET['id'];
 
-/* =====================
-   HANDLE VALID ACTION
-===================== */
+
 if (isset($_GET['action']) && $_GET['action'] === 'valid') {
 
     if (session_status() === PHP_SESSION_NONE) {
@@ -31,7 +27,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'valid') {
     $conn->begin_transaction();
 
     try {
-        /* Update POSTS */
+
         $stmt1 = $conn->prepare("
             UPDATE posts
             SET report_valid_status = 'VALID',
@@ -43,7 +39,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'valid') {
         $stmt1->bind_param("ss", $admin_id, $post_id);
         $stmt1->execute();
 
-        /* Update POST_REPORTS */
         $stmt2 = $conn->prepare("
             UPDATE post_reports
             SET is_valid = 1,
@@ -54,9 +49,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'valid') {
         $stmt2->execute();
 
 
-/* =====================
-   HANDLE INVALID ACTION
-===================== */
+
 if (isset($_GET['action']) && $_GET['action'] === 'invalid') {
 
     if (session_status() === PHP_SESSION_NONE) {
@@ -72,7 +65,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'invalid') {
     $conn->begin_transaction();
 
     try {
-        /* Update POSTS (mark report as NOT valid) */
+
         $stmt1 = $conn->prepare("
             UPDATE posts
             SET report_valid_status = 'NOT_VALID',
@@ -83,7 +76,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'invalid') {
         $stmt1->bind_param("ss", $admin_id, $post_id);
         $stmt1->execute();
 
-        /* Update POST_REPORTS (mark all reports as invalid) */
+
         $stmt2 = $conn->prepare("
             UPDATE post_reports
             SET is_valid = 0,
@@ -105,12 +98,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'invalid') {
 }
 
 
-        
-        /* =====================
-   DEDUCT ECO POINTS (-15)
-===================== */
-
-/* Get post owner */
 $ownerStmt = $conn->prepare("
     SELECT user_id
     FROM posts
@@ -126,9 +113,7 @@ if ($ownerResult->num_rows === 0) {
 
 $post_owner_id = $ownerResult->fetch_assoc()['user_id'];
 
-/* =====================
-   GENERATE TRANSACTION ID
-===================== */
+
 $count_result = $conn->query("
     SELECT COUNT(*) AS total
     FROM eco_points_transactions
@@ -136,11 +121,11 @@ $count_result = $conn->query("
 $count = $count_result->fetch_assoc()['total'] + 1;
 $transaction_id = 'ept_' . str_pad($count, 3, '0', STR_PAD_LEFT);
 
-/* Eco points values */
+
 $points_change = -15;
 $description = "Points deducted due to a valid report on post {$post_id}";
 
-/* Insert eco points transaction */
+
 $insert = $conn->prepare("
     INSERT INTO eco_points_transactions
         (transaction_id, user_id, source_id, points_change, description, created_at)
@@ -162,9 +147,7 @@ if ($insert->affected_rows === 0) {
     throw new Exception("Eco points transaction insert failed.");
 }
 
-/* =====================
-   UPDATE USER ECO POINTS (-15)
-===================== */
+
 $updateUserPoints = $conn->prepare("
     UPDATE users
     SET eco_points = eco_points + ?
@@ -173,7 +156,7 @@ $updateUserPoints = $conn->prepare("
 
 $updateUserPoints->bind_param(
     "is",
-    $points_change,   // this is -15
+    $points_change,   
     $post_owner_id
 );
 
@@ -195,9 +178,7 @@ if ($updateUserPoints->affected_rows === 0) {
     }
 }
 
-/* =====================
-   FETCH POST
-===================== */
+
 $stmt = $conn->prepare("
     SELECT 
         post_id,
@@ -227,9 +208,7 @@ if ($result->num_rows === 0) {
 
 $post = $result->fetch_assoc();
 
-/* =====================
-   FETCH POST MEDIA
-===================== */
+
 $mStmt = $conn->prepare("
     SELECT media_type, file_path, video_url
     FROM post_media
@@ -240,9 +219,7 @@ $mStmt->bind_param("s", $post_id);
 $mStmt->execute();
 $mediaResult = $mStmt->get_result();
 
-/* =====================
-   FETCH REPORTS
-===================== */
+
 $reports = [];
 if ($post['report_count'] > 0) {
     $rStmt = $conn->prepare("
@@ -265,9 +242,6 @@ if ($post['report_count'] > 0) {
     <h2><?= htmlspecialchars($post['post_id']) ?></h2>
 </div>
 
-<!-- =====================
-     POST DETAILS
-===================== -->
 <div class="section-preview" style="max-width:800px; margin:auto;">
 
     <div class="form-group">
@@ -320,9 +294,7 @@ if ($post['report_count'] > 0) {
 
 </div>
 
-<!-- =====================
-     REPORT SUMMARY
-===================== -->
+
 <?php if ($post['report_count'] > 0): ?>
 <div class="section-preview" style="max-width:800px; margin:auto; margin-top:30px;">
 
