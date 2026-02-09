@@ -151,8 +151,8 @@ $event_id = $_GET['event_id'] ?? null;
                 <td><?= htmlspecialchars($row['user_id']) ?></td>
                 <td><?= htmlspecialchars($row['registration_status']) ?></td>
                 <td>
-                  <a href="view_participant.php?reg_id=<?= urlencode($row['registration_id']) ?>">View</a> /
-                  <a href="remove_registration.php?reg_id=<?= urlencode($row['registration_id']) ?>" onclick="return confirm('Remove this registration?')">Remove</a>
+                  <a href="organizer_user_view.php?id=<?= urlencode($row['user_id']) ?>" class="action-btn">View</a>
+                  <a href="remove_registration.php?reg_id=<?= urlencode($row['registration_id']) ?>" class="action-btn" onclick="return confirm('Remove this registration?')">Remove</a>
                 </td>
               </tr>
             <?php endwhile; ?>
@@ -161,8 +161,6 @@ $event_id = $_GET['event_id'] ?? null;
           <?php endif; ?>
           </tbody>
         </table>
-
-        <a href="organizer_registration_list.php" class="action-btn">← Back to Event List</a>
 
       <?php } endif; ?>
 

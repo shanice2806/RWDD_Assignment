@@ -131,8 +131,9 @@ if (isset($_POST['export'])) {
       </div>
 
       <div class="management-section">
-        <label for="event-select" style="display: inline-block; margin-right: 15px; font-size: 16px; font-weight: 500;">Select Event:</label>
-        <select id="event-select" style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; min-width: 300px; cursor: pointer;" onchange="window.location.href='organizer_comment_list.php?event_id=' + this.value">
+        <form method="GET" action="" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <label for="event-select" style="font-size: 16px; font-weight: 500;">Select Event:</label>
+          <select name="event_id" id="event-select" style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; min-width: 300px; flex: 1;">
           <option value="">-- Choose an Event --</option>
           <?php
           if ($events_result && $events_result->num_rows > 0) {
@@ -144,7 +145,9 @@ if (isset($_POST['export'])) {
               }
           }
           ?>
-        </select>
+          </select>
+          <button type="submit" class="action-btn" style="padding: 10px 20px;">View</button>
+        </form>
       </div>
 
       <div class="management-section">

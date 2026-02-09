@@ -1,6 +1,6 @@
 <?php
 // ========================================
-// STEP 1: Start session and check login
+//  Start session and check login
 // ========================================
 session_start();
 
@@ -17,7 +17,7 @@ include '../connect.php';
 $user_id = $_SESSION['user_id'];
 
 // ========================================
-// STEP 2: Handle form submission
+//  Handle form submission
 // ========================================
 $error_message = '';
 $success_message = '';
@@ -85,7 +85,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['post_announcement'])) 
     </div>            <!-- Page header -->
             <div class="page-header flex-between">
                 <h1>Post Announcement</h1>
-                <a href="organizer_announcement.php" class="action-btn">Back</a>
             </div>
             
             <!-- Form container -->
