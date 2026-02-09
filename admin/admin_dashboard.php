@@ -1,7 +1,4 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 include '../connect.php';
 $page_title = "Admin Dashboard";
 include 'admin_header.php'; 
@@ -89,6 +86,7 @@ $total_reported_content = getCount($conn, "SELECT COUNT(*) as total_reported_con
         </tr>
     </thead>
     <tbody>
+        
    <?php
 $top_users_query = "
         SELECT user_id, name, eco_points, badges
