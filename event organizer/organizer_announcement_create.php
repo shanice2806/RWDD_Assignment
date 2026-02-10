@@ -1,7 +1,4 @@
 <?php
-// ========================================
-//  Start session and check login
-// ========================================
 session_start();
 
 
@@ -14,9 +11,7 @@ include '../connect.php';
 
 $user_id = $_SESSION['user_id'];
 
-// ========================================
-//  Handle form submission
-// ========================================
+
 $error_message = '';
 $success_message = '';
 
