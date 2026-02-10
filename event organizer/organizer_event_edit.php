@@ -1,6 +1,6 @@
 <?php
 // ========================================
-// STEP 1: Start session and check if user is logged in
+//  Start session and check if user is logged in
 // ========================================
 session_start();
 
@@ -17,7 +17,7 @@ include '../connect.php';
 $user_id = $_SESSION['user_id'];
 
 // ========================================
-// STEP 2: Get event ID from URL
+// Get event ID from URL
 // ========================================
 if (!isset($_GET['id'])) {
     // No event ID provided, redirect back to event list
@@ -28,7 +28,7 @@ if (!isset($_GET['id'])) {
 $event_id = $_GET['id'];
 
 // ========================================
-// STEP 3: Check if user is allowed to edit this event
+//  Check if user is allowed to edit this event
 // ========================================
 // User can edit if they created the event OR they are an active cohost
 $check_query = "SELECT e.* FROM events e
@@ -47,7 +47,7 @@ if ($check_result->num_rows == 0) {
 $event = $check_result->fetch_assoc();
 
 // ========================================
-// STEP 4: Handle form submissions
+//  Handle form submissions
 // ========================================
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     

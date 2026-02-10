@@ -10,15 +10,12 @@ $temp_password = "";
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $email   = trim($_POST['email']);
-    $user_id = trim($_POST['user_id']); // TP number
+    $user_id = trim($_POST['user_id']); 
 
     if ($email === "" || $user_id === "") {
         $error = "Please enter your TP Number and email.";
     } else {
 
-        /* =====================
-           VERIFY USER ID + EMAIL MATCH
-        ===================== */
         $stmt = $conn->prepare("
             SELECT user_id, email
             FROM users
@@ -33,9 +30,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $error = "TP Number and email do not match.";
         } else {
 
-            /* =====================
-               GENERATE TEMP PASSWORD
-            ===================== */
             $temp_password = substr(
                 str_shuffle("ABCDEFGHJKLMNPQRSTUVWXYZ23456789"),
                 0,
@@ -45,9 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $requested_at = date("Y-m-d H:i:s");
             $expires_at   = date("Y-m-d H:i:s", strtotime("+8 hours"));
 
-            /* =====================
-               GENERATE RESET ID
-            ===================== */
+
             $idResult = $conn->query("
                 SELECT reset_id
                 FROM reset_password
@@ -63,9 +55,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             $reset_id = "rp_" . str_pad($num, 3, "0", STR_PAD_LEFT);
 
-            /* =====================
-               INSERT RESET RECORD
-            ===================== */
+
             $stmt = $conn->prepare("
                 INSERT INTO reset_password
                 (reset_id, user_id, email, temporary_password, status, requested_at, expires_at)
@@ -164,7 +154,6 @@ input {
 
   <h1>Forgot Password</h1>
 
-  <!-- SUCCESS -->
   <?php if (!empty($success)): ?>
     <div class="success">
       <p><?= htmlspecialchars($success) ?></p>
@@ -186,12 +175,10 @@ input {
     </div>
   <?php endif; ?>
 
-  <!-- ERROR -->
   <?php if (!empty($error)): ?>
     <div class="error"><?= htmlspecialchars($error) ?></div>
   <?php endif; ?>
 
-  <!-- FORM -->
   <?php if (empty($success)): ?>
     <form method="POST">
 
@@ -210,7 +197,7 @@ input {
 
 </div>
 
-<footer style="text-align:center;margin-top:150px;">
+<footer style="text-align:center;margin-top:480px;">
   <p>&copy; 2026 ReLife Hub</p>
 </footer>
 

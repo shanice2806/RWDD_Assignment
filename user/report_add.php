@@ -35,7 +35,6 @@ if (!$exists) {
   exit();
 }
 
-// generate report_id
 $getLastSql = "SELECT report_id FROM post_reports ORDER BY report_id DESC LIMIT 1";
 $lastRes = mysqli_query($conn, $getLastSql);
 

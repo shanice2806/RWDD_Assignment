@@ -25,7 +25,7 @@ $cat   = trim($_POST["content_category_id"] ?? "");
 $video_url = trim($_POST["video_url"] ?? "");
 
 if ($title === "" || $body === "" || $level === "" || $cat === "") redirectErr(1);
-
+//defaut 15 point if there is no rules 
 $earnedPoints = 15;
 $ruleSql = "SELECT points_per_kg
             FROM eco_points_rules

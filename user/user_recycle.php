@@ -19,7 +19,11 @@ if ($role === "admin") {
 
 $user_id = $_SESSION["user_id"];
 
-$userSql = "SELECT user_id, name, eco_points, profile_image, role FROM users WHERE user_id=? LIMIT 1";
+$userSql = "SELECT user_id, 
+                      name, 
+                      eco_points, 
+                      profile_image,
+                      role FROM users WHERE user_id=? LIMIT 1";
 $userStmt = mysqli_prepare($conn, $userSql);
 mysqli_stmt_bind_param($userStmt, "s", $user_id);
 mysqli_stmt_execute($userStmt);
@@ -27,24 +31,12 @@ $userRes = mysqli_stmt_get_result($userStmt);
 $user = mysqli_fetch_assoc($userRes);
 mysqli_stmt_close($userStmt);
 
-$profileImg = "../images/profile.png";
-if (!empty($user["profile_image"])) {
-  $try = "../" . ltrim($user["profile_image"], "/");
-  $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
-  if (file_exists($disk)) {
-    $profileImg = $try;
-  }
-}
-
 if (!$user) {
   session_destroy();
   header("Location: ../login/login.php");
   exit();
 }
 
-/* =========================
-   REMOVE LOG
-========================= */
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["remove_log_id"])) {
   $log_id = trim($_POST["remove_log_id"]);
 
@@ -59,9 +51,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["remove_log_id"])) {
 
 $editMode = (isset($_GET["edit"]) && $_GET["edit"] == "1");
 
-/* =========================
-   LOAD LOGS (JOIN materials to show name)
-========================= */
 $logsStmt = mysqli_prepare($conn, "
   SELECT 
     rl.log_id,
@@ -85,6 +74,7 @@ mysqli_stmt_bind_param($logsStmt, "s", $user_id);
 mysqli_stmt_execute($logsStmt);
 $logsRes = mysqli_stmt_get_result($logsStmt);
 mysqli_stmt_close($logsStmt);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -97,21 +87,77 @@ mysqli_stmt_close($logsStmt);
   <link rel="stylesheet" href="../css/user.css">
 
   <style>
-    .card { background:#fff; border-radius:12px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.08); }
-    .toolbar { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+    .card { 
+      background:#fff; 
+      border-radius:12px; 
+      padding:16px; 
+      box-shadow:0 6px 18px rgba(0,0,0,.08); 
+    }
+
+    .toolbar {
+      display:flex; 
+      justify-content:space-between; 
+      align-items:center; 
+      gap:10px; 
+      margin-bottom:12px; 
+      flex-wrap:wrap; 
+    }
+
     .toolbar h2{ margin:0; }
-    table{ width:100%; border-collapse:collapse; }
-    th, td{ padding:10px 8px; border-bottom:1px solid #eee; text-align:left; font-size:14px; vertical-align:top; }
-    .btn{ display:inline-block; padding:8px 10px; border-radius:10px; cursor:pointer; font-weight:700;}
+    
+    table{
+      width:100%;
+      border-collapse:collapse; 
+    }
+
+    th, td{ 
+      padding:10px 8px;
+      border-bottom:1px solid #eee; 
+      text-align:left; 
+      font-size:14px;
+       vertical-align:top; 
+      }
+
+    .btn{ 
+      display:inline-block; 
+      padding:8px 10px;
+      border-radius:10px;
+      cursor:pointer; 
+      font-weight:700;
+    }
+
     .btn-gray{ background:gray;}
+
     .btn-red{ background:red;}
-    .btn-outline{ background:#fff; border:1px solid #ddd; color:#111827; }
-    .msg{ margin:10px 0; padding:10px 12px; border-radius:10px; }
+
+    .btn-outline{ 
+      background:#fff; 
+      border:1px solid #ddd; 
+      color:#111827;
+     }
+
+    .msg{ 
+      margin:10px 0;
+      padding:10px 12px; 
+      border-radius:10px; 
+    }
+
     .msg-ok{ background:#e9ffef; color:#0b6b2b; }
-    .badge{ display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:800; }
+
+    .badge{ 
+      display:inline-block; 
+      padding:2px 8px;
+      border-radius:999px; 
+      font-size:12px; 
+      font-weight:800; 
+    }
+
     .b-valid{ background:#dcfce7; color:#166534; }
+
     .b-pending{ background:#fff7ed; color:#9a3412; }
+
     .b-invalid{ background:#fee2e2; color:#991b1b; }
+
     .small{ color:#6b7280; font-size:12px; }
   </style>
 </head>
@@ -138,7 +184,7 @@ mysqli_stmt_close($logsStmt);
           <span class="user-top-points">🪙 <?php echo (int)$user["eco_points"]; ?> points</span>
           <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
           <a href="add_friends.php" class="user-top-btn">👥</a>
-          <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
+          <a href="../login/logout.php" class="user-top-btn logout" title="Logout" onclick="return confirm('Logout now?');">❌</a>
         </div>
       </div>
 

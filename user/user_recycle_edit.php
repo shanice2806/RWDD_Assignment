@@ -31,13 +31,6 @@ $uRes  = mysqli_stmt_get_result($uStmt);
 $user  = mysqli_fetch_assoc($uRes) ?: ["name" => "User", "eco_points" => 0, "profile_image" => ""];
 mysqli_stmt_close($uStmt);
 
-$profileImg = "../images/profile.png";
-if (!empty($user["profile_image"])) {
-  $try = "../" . ltrim($user["profile_image"], "/");
-  $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
-  if (file_exists($disk)) $profileImg = $try;
-}
-
 $materials = [];
 $matSql = "SELECT material_id, materials_name FROM materials WHERE is_active=1 ORDER BY materials_name ASC";
 $matRes = mysqli_query($conn, $matSql);
@@ -326,7 +319,7 @@ $photoVal = $log["photo_path"] ?? "";
         <span class="user-top-points">🪙 <?php echo (int)$user["eco_points"]; ?> points</span>
         <a href="user_dashboard.php" class="user-top-btn" title="Home">🏠</a>
         <a class="user-top-btn" href="add_friends.php" title="Add Friend">👥</a>
-        <a href="../login/logout.php" class="user-top-btn logout" title="Logout">❌</a>
+        <a href="../login/logout.php" class="user-top-btn logout" title="Logout" onclick="return confirm('Logout now?');">❌</a>
       </div>
 
     </div>
@@ -399,7 +392,7 @@ $photoVal = $log["photo_path"] ?? "";
 
         <label for="photo">Change Photo (Optional)</label>
         <input id="photo" name="photo" type="file" accept=".jpg,.jpeg,.png">
-        <div class="hint">Leave empty if you don't want to change photo.</div>
+        <div class="hint">Leave empty if you don't want to change photo.(delete current photo before change)</div>
 
         <button class="btn" type="submit" name="save_log" value="1">Done</button>
 

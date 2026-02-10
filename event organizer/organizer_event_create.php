@@ -6,7 +6,7 @@ session_start();
 require_once('../connect.php');
 
 // ========================================
-// STEP 1: Check if user is allowed here
+//Check if user is allowed here
 // ========================================
 // Only organizers can access this page
 if (!isset($_SESSION["user_id"]) || !in_array(strtolower($_SESSION["role"]), ["event organizer","event_organizer","organizer"])) {
@@ -23,7 +23,7 @@ $error_message = '';
 $success_message = '';
 
 // ========================================
-// STEP 2: Check if form was submitted
+// Check if form was submitted
 // ========================================
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         
         // ========================================
-        // STEP 3: Create the Event ID
+        //  Create the Event ID
         // ========================================
         // Get the last event ID from database
         $query = "SELECT event_id FROM events ORDER BY event_id DESC LIMIT 1";
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         
         // ========================================
-        // STEP 4: Generate unique attendance code
+        //  Generate unique attendance code
         // ========================================
         // Create attendance code with 3 letters + 2 numbers (e.g., "ABC12")
         // This is generated now so it's ready when admin approves the event
@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $attendance_code = $letter1 . $letter2 . $letter3 . $number1 . $number2;
         
         // ========================================
-        // STEP 5: Save event to database
+        //  Save event to database
         // ========================================
         // Prepare SQL query (? marks will be filled later)
         // Note: Using actual column names from events table
@@ -112,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (mysqli_stmt_execute($stmt)) {
             
             // ========================================
-            // STEP 6: Handle file upload (if any)
+            //  Handle file upload (if any)
             // ========================================
             // Check if user uploaded a file
             if (isset($_FILES['event_media']) && $_FILES['event_media']['error'] == UPLOAD_ERR_OK) {
@@ -148,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         if (move_uploaded_file($file['tmp_name'], $full_path)) {
                             
                             // ========================================
-                            // STEP 7: Create Media ID
+                            //  Create Media ID
                             // ========================================
                             // Get last media ID from database
                             $media_query = "SELECT event_media_id FROM event_media ORDER BY event_media_id DESC LIMIT 1";
@@ -169,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             }
                             
                             // ========================================
-                            // STEP 8: Save file path to database
+                            // Save file path to database
                             // ========================================
                             // Note: Using actual column names from event_media table
                             $media_insert = "INSERT INTO event_media (event_media_id, event_id, event_media_file_path, event_media_uploaded_by, event_media_is_hidden) 
@@ -191,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
             
             // ========================================
-            // STEP 9: Show success message
+            // Show success message
             // ========================================
             if (empty($error_message)) {
                 if ($status == 'pending') {

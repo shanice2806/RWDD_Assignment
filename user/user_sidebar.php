@@ -1,14 +1,13 @@
 <?php
-$profileImg = "../images/profile.png";
+$profileImg = "../images/profile/default.jpeg";
 
 if (!empty($user["profile_image"])) {
+  $fileName = basename($user["profile_image"]);
+  $tryWeb  = "../images/profile/" . $fileName;
+  $tryDisk = __DIR__ . "/../images/profile/" . $fileName;
 
-  $try  = "../images/profile/" . $user["profile_image"];
-
-  $disk = __DIR__ . "/../images/profile/" . $user["profile_image"];
-
-  if (file_exists($disk)) {
-    $profileImg = $try;
+  if (file_exists($tryDisk)) {
+    $profileImg = $tryWeb;
   }
 }
 ?>
@@ -27,8 +26,7 @@ if (!empty($user["profile_image"])) {
 
 <?php if ($role === "event organizer"): ?>
 
-<a href="/RWDD_Assignment/event organizer/switch_to_organizer.php"
-   class="switch-role-btn">
+<a href="/RWDD_Assignment/event organizer/switch_to_organizer.php">
   🔄 Switch to Event Organizer
 </a>
 
@@ -53,7 +51,7 @@ if (!empty($user["profile_image"])) {
     <a href="../user/user_profile.php" class="user-menu-item">👤 Profile</a>
 
     <a href="../login/logout.php"
-       class="user-menu-item logout" style="margin-top: 60px;"
+       class="user-menu-item logout" style="margin-top: 40px;"
        onclick="return confirm('Logout now?');">
       🚪 Logout
     </a>

@@ -197,53 +197,42 @@ footer {
 
 @media (max-width: 768px) {
     
-    /* Force the main body to never overflow */
-    html, body {
-        overflow-x: hidden;
-        width: 100%;
-        margin: 0;
-        padding: 0;
-    }
-
-    /* layout */
-    .user-layout {
-        width: 100% !important;
-        flex-direction: column !important;
-    }
-
-    /*Top Bar*/
-    .user-top-bar {
-        width: 100% !important;
-        box-sizing: border-box; /* Crucial for "Perfect Fit" */
-        padding: 10px 20px !important;
+    /* 1. Reset the main box: Remove the 1200px and 850px */
+    .main-app {
+        width: 95% !important;      /* Shrinks the width to fit mobile */
+        height: auto !important;     /* Removes the 850px to stop the empty white space */
+        min-height: 90vh !important; /* Stretches the box to the bottom of the screen */
+        margin: 10px auto !important;
         display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        flex-wrap: wrap !important; /* Prevents icons from flying off */
+        flex-direction: column !important; /* Makes it Vertical */
     }
 
-    /* The Profile Box */
-    .profile-container {
-        width: 90% !important; /* Leaves 5% gap on each side */
-        max-width: 720px !important; /* Just slightly smaller than 768 */
-        margin: 20px auto !important;
-        padding: 30px !important;
-        box-sizing: border-box; /* Makes sure padding doesn't make it wider than 768 */
-        min-height: auto !important;
-        border-radius: 8px !important;
+    /* 2. Fix the Header: Stack "Messages" and "Buttons" vertically */
+    .chat-title-row {
+        flex-direction: column !important;
+        height: auto !important;
+        padding: 15px !important;
+        gap: 10px !important;
     }
 
-  
-    .profile-info p {
+    /* 3. Fix the Buttons: Keep them visible and side-by-side */
+    .header-controls {
         width: 100% !important;
-        word-wrap: break-word;
-        font-size: 17px !important;
+        display: flex !important;
+        justify-content: space-around !important;
     }
 
-    /* Buttons */
-    .action-btn {
+    /* 4. Fix the Footer: Force it to the center and bottom */
+    .user-content {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important; /* Centers everything */
+    }
+
+    footer {
         width: 100% !important;
-        max-width: 100% !important;
-        margin: 20px 0 !important;
+        text-align: center !important;
+        margin-top: auto !important; /* Pushes footer to the very bottom of the stretched box */
+        padding: 20px 0 !important;
     }
 }

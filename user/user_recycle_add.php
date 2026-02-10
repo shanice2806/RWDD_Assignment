@@ -27,13 +27,6 @@ $res  = mysqli_stmt_get_result($stmt);
 $user = mysqli_fetch_assoc($res) ?: ["name"=>"User","eco_points"=>0,"profile_image"=>""];
 mysqli_stmt_close($stmt);
 
-$profileImg = "../images/profile.png";
-if (!empty($user["profile_image"])) {
-  $try  = "../" . ltrim($user["profile_image"], "/");
-  $disk = __DIR__ . "/../" . ltrim($user["profile_image"], "/");
-  if (file_exists($disk)) $profileImg = $try;
-}
-
 $materials = [];
 $matSql = "SELECT material_id, materials_name
            FROM materials
@@ -135,7 +128,7 @@ if (!is_dir($uploadDir)) {
   $newFileName  = $log_id . "." . $ext;
   $destFullPath = $uploadDir . $newFileName;
 
-  $photo_path = "imagess/recycling_proof/" . $newFileName;
+  $photo_path = "images/recycling_proof/" . $newFileName;
 
   if (!move_uploaded_file($tmpPath, $destFullPath)) redirectErr(6);
 
@@ -319,7 +312,7 @@ $locPrev = trim($_POST["location"] ?? "");
         </span>
         <a href="user_dashboard.php" class="user-top-btn">🏠</a>
         <a href="add_friends.php" class="user-top-btn">👥</a>
-        <a href="../login/logout.php" class="user-top-btn logout">❌</a>
+        <a href="../login/logout.php" class="user-top-btn logout" title="Logout" onclick="return confirm('Logout now?');">❌</a>
       </div>
 
     </div>
