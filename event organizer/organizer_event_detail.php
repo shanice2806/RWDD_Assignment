@@ -195,18 +195,15 @@ $time_formatted = date('g:i A', strtotime($event['event_date_time']));
   <script>
   // Open poster in full screen
   function openPosterModal(imagePath) {
-    // Get the modal
     var modal = document.getElementById("posterModal");
-    // Get the image element in modal
     var modalImg = document.getElementById("modalImage");
     
     // Show modal
     modal.style.display = "block";
-    // Set image source
+  
     modalImg.src = imagePath;
   }
   
-  // Close the modal
   function closePosterModal() {
     var modal = document.getElementById("posterModal");
     modal.style.display = "none";
