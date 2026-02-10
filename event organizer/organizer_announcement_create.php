@@ -4,16 +4,14 @@
 // ========================================
 session_start();
 
-// Only event organizers can access this page
+
 if (!isset($_SESSION["user_id"]) || !in_array(strtolower($_SESSION["role"]), ["event organizer","event_organizer","organizer"])) {
     header("Location: ../login/login.php");
     exit();
 }
 
-// Connect to database
 include '../connect.php';
 
-// Get current user's ID
 $user_id = $_SESSION['user_id'];
 
 // ========================================
@@ -31,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['post_announcement'])) 
     if (empty($title) || empty($message) || empty($end_date_input)) {
         $error_message = "Please fill in all required fields.";
     } else {
-        // Generate announcement ID
         $id_query = "SELECT announcement_id FROM announcements ORDER BY announcement_id DESC LIMIT 1";
         $id_result = $conn->query($id_query);
         
@@ -43,14 +40,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['post_announcement'])) 
             $new_id = 'a_001';
         }
         
-        // Start date is current date/time
         $start_date = date('Y-m-d H:i:s');
         $created_at = date('Y-m-d H:i:s');
         
-        // Convert end_date from datetime-local format to MySQL format
         $end_date = date('Y-m-d H:i:s', strtotime($end_date_input));
         
-        // Insert announcement
         $insert_query = "INSERT INTO announcements (announcement_id, title, message, start_date, end_date, is_active, created_at, created_by) 
                         VALUES ('$new_id', '$title', '$message', '$start_date', '$end_date', 1, '$created_at', '$user_id')";
         

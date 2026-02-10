@@ -4,16 +4,14 @@
 // ========================================
 session_start();
 
-// Only event organizers can access this page
 if (!isset($_SESSION["user_id"]) || !in_array(strtolower($_SESSION["role"]), ["event organizer","event_organizer","organizer"])) {
     header("Location: ../login/login.php");
     exit();
 }
 
-// Connect to database
+
 include '../connect.php';
 
-// Get current user's ID
 $user_id = $_SESSION['user_id'];
 
 // ========================================
@@ -56,7 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_announcement'])
         // Convert end_date to MySQL format
         $end_date = date('Y-m-d H:i:s', strtotime($end_date_input));
         
-        // Update announcement
         $update_query = "UPDATE announcements SET title = '$title', message = '$message', end_date = '$end_date' 
                         WHERE announcement_id = '$announcement_id'";
         
