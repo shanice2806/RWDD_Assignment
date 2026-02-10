@@ -5,9 +5,7 @@ require_once "../connect.php";
 $page_title = "Edit Reward";
 include "admin_header.php";
 
-/* =====================
-   VALIDATE ID
-===================== */
+
 if (!isset($_GET['id'])) {
     header("Location: admin_rewards.php");
     exit();
@@ -15,9 +13,7 @@ if (!isset($_GET['id'])) {
 
 $reward_id = $_GET['id'];
 
-/* =====================
-   FETCH REWARD
-===================== */
+
 $stmt = $conn->prepare("
     SELECT 
         reward_id,
@@ -41,15 +37,11 @@ if ($result->num_rows === 0) {
 
 $reward = $result->fetch_assoc();
 
-/* =====================
-   STATUS MESSAGE
-===================== */
+
 $success = "";
 $error   = "";
 
-/* =====================
-   HANDLE FORM SUBMIT
-===================== */
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $reward_name     = trim($_POST['reward_name']);
@@ -62,16 +54,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Reward name, points required, and stock must be greater than 0.";
     } else {
 
-        /* Default: keep existing image */
+   
         $image_path = $reward['image_path'];
 
-        /* =====================
-           HANDLE IMAGE UPLOAD
-        ===================== */
+
         if (!empty($_FILES['image']['name'])) {
 
             $upload_dir  = "../images/reward/";
-            $allowed_ext = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            $allowed_ext = ['jpg', 'jpeg', 'png', 'webp'];
 
             if (!is_dir($upload_dir)) {
                 mkdir($upload_dir, 0777, true);
@@ -81,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $file_ext = strtolower(pathinfo($original_name, PATHINFO_EXTENSION));
 
             if (!in_array($file_ext, $allowed_ext)) {
-                $error = "Invalid image type. Only JPG, JPEG, PNG, GIF, WEBP allowed.";
+                $error = "Invalid image type. Only JPG, JPEG, PNG, WEBP allowed.";
             } else {
 
                 $target = $upload_dir . $original_name;
@@ -94,9 +84,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        /* =====================
-           UPDATE DATABASE
-        ===================== */
         if ($error === "") {
 
             $stmt = $conn->prepare("
@@ -124,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->execute()) {
                 $success = "Reward updated successfully.";
 
-                /* Refresh local data */
+
                 $reward['reward_name']     = $reward_name;
                 $reward['description']     = $description;
                 $reward['points_required'] = $points_required;
@@ -142,13 +129,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <main class="dashboard">
 <div class="main-content">
 
-  <!-- PAGE TITLE BAR -->
+
   <div class="page-title-bar">
     <a href="admin_rewards.php" class="icon-btn back-btn">↩</a>
     <h2><?= htmlspecialchars($reward_id) ?></h2>
   </div>
 
-  <!-- STATUS MESSAGE -->
+
     <?php if (!empty($success)): ?>
       <div class="alert-success">
         <?= htmlspecialchars($success) ?>
@@ -165,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     
 
-    <!-- FORM -->
+
     <form method="POST"
           enctype="multipart/form-data"
           class="form-panel">

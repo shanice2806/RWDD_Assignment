@@ -19,7 +19,6 @@ $user_id = $_SESSION['user_id'];
 // ========================================
 //  Get events user can archive
 // ========================================
-// Get events where user is creator OR active cohost (only approved/completed events can be archived)
 $query = "SELECT DISTINCT e.event_id, e.event_title, e.event_date_time, e.event_status, e.event_location 
           FROM events e
           LEFT JOIN co_host ch ON e.event_id = ch.event_id

@@ -1,29 +1,25 @@
 <?php
-// Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Connect to database
+
 include '../connect.php';
 
 // ========================================
 // Check if user is an organizer
 // ========================================
 if (!isset($_SESSION["user_id"]) || !in_array(strtolower($_SESSION["role"]), ["event organizer","event_organizer","organizer"])) {
-    // Not an organizer? Send to login page
     header("Location: ../login/login.php");
     exit();
 }
 
-// Get the logged in user's ID
+
 $user_id = $_SESSION['user_id'];
 
 // ========================================
 // Get filter from URL (if any)
 // ========================================
-// Example: organizer_event_view.php?filter=Approved
-// If no filter provided, default is 'all'
 if (isset($_GET['filter'])) {
     $filter = $_GET['filter'];
 } else {
@@ -36,22 +32,21 @@ if (isset($_GET['filter'])) {
 // Get current user's ID
 $user_id = $_SESSION['user_id'];
 
-// Start with base query - get events created by this organizer OR where they are an active cohost
 $query = "SELECT DISTINCT e.event_id, e.event_title, e.event_date_time, e.event_status, e.event_location 
           FROM events e
           LEFT JOIN co_host ch ON e.event_id = ch.event_id
           WHERE (e.event_created_by = '$user_id' OR (ch.user_id = '$user_id' AND ch.cohost_status = 'active'))";
 
-// If user selected a specific status filter (not "all")
+
 if ($filter != 'all') {
-    // Add filter to query (case-insensitive comparison)
+
     $query = $query . " AND LOWER(e.event_status) = LOWER('$filter')";
 }
 
-// Add sorting - newest events first
+
 $query = $query . " ORDER BY event_date_time DESC";
 
-// Execute the query
+
 $result = mysqli_query($conn, $query);
 
 ?>
@@ -94,33 +89,28 @@ $result = mysqli_query($conn, $query);
         <?php
         // Check if there are any events
         if ($result && mysqli_num_rows($result) > 0) {
-            // Loop through each event
             while ($event = mysqli_fetch_assoc($result)) {
                 $event_id = $event['event_id'];
                 
-                // Get event poster from event_media table
+
                 $media_query = "SELECT event_media_file_path FROM event_media WHERE event_id = '$event_id' LIMIT 1";
                 $media_result = mysqli_query($conn, $media_query);
                 
                 // Set default poster path
                 $poster_path = '../images/default-poster.jpg';
                 
-                // Check if event has a poster
+                // Check event has a poster or not
                 if ($media_result && mysqli_num_rows($media_result) > 0) {
                     $media = mysqli_fetch_assoc($media_result);
                     
-                    // Get path from database (e.g., "/uploads/events/evt_001_poster.jpg")
+                  
                     $db_path = $media['event_media_file_path'];
                     
-                    // Remove the first "/" if it exists
                     $db_path = ltrim($db_path, '/');
-                    
-                    // Add ../ to make it work from this folder
                     $poster_path = '../' . $db_path;
                 }
                 
-                // Format date to look nice
-                // Example: "Feb 07, 2026 10:00 AM"
+              
                 $date_formatted = date('M d, Y g:i A', strtotime($event['event_date_time']));
                 
                 // Decide which color badge to show based on status

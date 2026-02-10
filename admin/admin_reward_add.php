@@ -5,15 +5,11 @@ require_once "../connect.php";
 $page_title = "Add Reward";
 include "admin_header.php";
 
-/* =====================
-   STATUS MESSAGE
-===================== */
+
 $success = "";
 $error   = "";
 
-/* =====================
-   HANDLE Add REWARD
-===================== */
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $reward_name     = trim($_POST['reward_name'] ?? '');

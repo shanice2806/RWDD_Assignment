@@ -4,14 +4,14 @@ include "../connect.php";
 $page_title = "View Recycling Log";
 include "admin_header.php";
 
-/* Validate log ID */
+
 if (!isset($_GET['id'])) {
     die("Log ID not provided.");
 }
 
 $log_id = $_GET['id'];
 
-/* Fetch recycling log */
+
 $stmt = $conn->prepare("
     SELECT 
         rl.log_id,
@@ -127,9 +127,7 @@ $log = $result->fetch_assoc();
         <input type="text" value="<?= htmlspecialchars($log['flag_reason'] ?? '-') ?>" readonly>
     </div>
 
-    <!-- =====================
-         UPDATE BUTTON
-         ===================== -->
+
     <div style="text-align:center; margin-top:25px;">
         <a href="admin_recycling_log_update.php?id=<?= urlencode($log['log_id']) ?>" class="btn">
             Update

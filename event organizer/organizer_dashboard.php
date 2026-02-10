@@ -1,10 +1,6 @@
 <?php
-// Turn on error messages (for debugging)
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 
-// Start session if not already started
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -12,10 +8,9 @@ if (session_status() === PHP_SESSION_NONE) {
 // ========================================
 // Check if user is an organizer
 // ========================================
-// Only organizers can see this page
+
 if (!isset($_SESSION["user_id"]) || !in_array(strtolower($_SESSION["role"]), ["event organizer","event_organizer","organizer"])) {
-    // Not an organizer? Redirect to login
-    header("Location: ../login/login.php");
+  header("Location: ../login/login.php");
     exit();
 }
 
@@ -26,10 +21,8 @@ include '../connect.php';
 // Get statistics for dashboard
 // ========================================
 
-// Get current user's ID
 $user_id = $_SESSION['user_id'];
 
-// Count total events created by this organizer OR where they are an active cohost
 $query1 = "SELECT COUNT(DISTINCT e.event_id) AS total 
            FROM events e
            LEFT JOIN co_host ch ON e.event_id = ch.event_id
@@ -37,7 +30,7 @@ $query1 = "SELECT COUNT(DISTINCT e.event_id) AS total
 $result1 = $conn->query($query1);
 $total_events = $result1->fetch_assoc()['total'];
 
-// Count pending events created by this organizer OR where they are an active cohost
+
 $query2 = "SELECT COUNT(DISTINCT e.event_id) AS total 
            FROM events e
            LEFT JOIN co_host ch ON e.event_id = ch.event_id
@@ -46,7 +39,7 @@ $query2 = "SELECT COUNT(DISTINCT e.event_id) AS total
 $result2 = $conn->query($query2);
 $total_pending = $result2->fetch_assoc()['total'];
 
-// Count total registrations for events created by this organizer OR where they are an active cohost
+
 $query3 = "SELECT COUNT(DISTINCT r.registration_id) AS total 
            FROM registrations r 
            INNER JOIN events e ON r.event_id = e.event_id 
@@ -62,26 +55,25 @@ $query4 = "SELECT event_id, event_title FROM events WHERE event_status='Approved
 $result4 = $conn->query($query4);
 $impact_event = $result4->fetch_assoc();
 
-// Set default values
 $impact_attendance = 0;
 $impact_recyclables = 0;
 
-// If there's an event, get its impact data
+
 if ($impact_event) {
     $event_id = $impact_event['event_id'];
 
-    // Count attendance for this event
+    // Count attendance 
     $query5 = "SELECT COUNT(*) AS total_attendance FROM attendance WHERE event_id = '$event_id'";
     $result5 = $conn->query($query5);
     $impact_attendance = $result5->fetch_assoc()['total_attendance'];
 
-    // Sum recyclables weight for this event
+    // Sum recyclables weight 
     $query6 = "SELECT COALESCE(SUM(weight_kg),0) AS total_recyclables FROM recycling_log WHERE event_id = '$event_id' AND status='VALID'";
     $result6 = $conn->query($query6);
     $impact_recyclables = $result6->fetch_assoc()['total_recyclables'];
 }
 
-// Get recent notifications for this user (limit 5)
+
 $notifications = [];
 $notif_query = "SELECT n.notification_id, n.event_id, n.message, n.created_at, e.event_title
                 FROM notifications n

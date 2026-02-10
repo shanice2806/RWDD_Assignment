@@ -53,7 +53,6 @@ $event = mysqli_fetch_assoc($result);
 $media_query = "SELECT * FROM event_media WHERE event_id = '$event_id' AND event_media_is_hidden = 0";
 $media_result = mysqli_query($conn, $media_query);
 
-// Format date and time nicely
 $date_formatted = date('F d, Y', strtotime($event['event_date_time']));
 $time_formatted = date('g:i A', strtotime($event['event_date_time']));
 

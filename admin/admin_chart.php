@@ -1,9 +1,6 @@
 <?php
 include "../connect.php";
 
-/* =========================================
-   1. MONTHLY RECYCLING LOG (VALID ONLY)
-========================================= */
 $recyclingData = [];
 
 $recyclingSql = "
@@ -24,9 +21,7 @@ while ($row = $res->fetch_assoc()) {
 }
 
 
-/* =========================================
-   2. MONTHLY EVENT ATTENDANCE
-========================================= */
+
 $eventData = [];
 
 $eventSql = "
@@ -47,9 +42,7 @@ while ($row = $res->fetch_assoc()) {
 }
 
 
-/* =========================================
-   3. LOGS BY MATERIAL
-========================================= */
+
 $materialData = [];
 
 $materialSql = "
@@ -70,9 +63,7 @@ while ($row = $res->fetch_assoc()) {
 }
 
 
-/* =========================================
-   FINAL JSON OUTPUT
-========================================= */
+
 header('Content-Type: application/json');
 echo json_encode([
   'recycling_data' => $recyclingData,

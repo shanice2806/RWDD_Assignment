@@ -2,15 +2,13 @@
 // Start session - keeps user logged in
 session_start();
 
-// Connect to database
 require_once('../connect.php');
 
 // ========================================
 //Check if user is allowed here
 // ========================================
-// Only organizers can access this page
+
 if (!isset($_SESSION["user_id"]) || !in_array(strtolower($_SESSION["role"]), ["event organizer","event_organizer","organizer"])) {
-    // Not an organizer? Send them to login page
     header("Location: ../login/login.php");
     exit();
 }

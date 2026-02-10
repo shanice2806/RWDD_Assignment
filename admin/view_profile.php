@@ -5,9 +5,6 @@ require_once "../connect.php";
 $page_title = "My Profile";
 include "admin_header.php";
 
-/* =====================
-   AUTH CHECK
-===================== */
 if (!isset($_SESSION["user_id"])) {
     header("Location: ../login/login.php");
     exit();
@@ -15,9 +12,6 @@ if (!isset($_SESSION["user_id"])) {
 
 $user_id = $_SESSION["user_id"];
 
-/* =====================
-   FETCH USER
-===================== */
 $userStmt = $conn->prepare("
     SELECT user_id, name, email, role,
            created_at, account_status, last_login, profile_image
@@ -33,14 +27,14 @@ $user = $userStmt->get_result()->fetch_assoc();
 <main class="dashboard">
   <div class="main-content">
 
-    <!-- PAGE TITLE -->
+
     <div class="page-title-bar">
       <h2>My Profile</h2>
     </div>
 
     <div class="profile-container">
 
-      <!-- AVATAR -->
+
       <div class="profile-avatar-large">
         <?php if (!empty($user['profile_image'])): ?>
           <img src="../images/profile/<?= htmlspecialchars($user['profile_image']) ?>" alt="Profile">
@@ -49,14 +43,14 @@ $user = $userStmt->get_result()->fetch_assoc();
         <?php endif; ?>
       </div>
 
-      <!-- ACTION -->
+
       <div style="text-align:center; margin-bottom:20px;">
         <a href="edit_profile.php?id=<?= urlencode($user['user_id']) ?>" class="btn">
           Edit Profile
         </a>
       </div>
 
-      <!-- PROFILE FORM -->
+
       <form class="profile-form">
 
         <div class="form-group">

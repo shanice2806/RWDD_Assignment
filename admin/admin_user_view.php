@@ -27,9 +27,7 @@ if ($result->num_rows === 0) {
 
 $user = $result->fetch_assoc();
 
-/* =====================
-   PROFILE IMAGE LOGIC
-===================== */
+
 $profileImage = !empty($user['profile_image'])
     ? $user['profile_image']
     : 'default.jpeg';
@@ -37,16 +35,16 @@ $profileImage = !empty($user['profile_image'])
 
 <main class="dashboard">
 
-    <!-- PAGE TITLE BAR -->
+
     <div class="page-title-bar">
         <a href="admin_manage_user.php" class="icon-btn back-btn">↩</a>
         <h2><?= htmlspecialchars($user['user_id']) ?></h2>
     </div>
 
-    <!-- PROFILE CARD -->
+
     <div class="section-preview" style="max-width:700px; margin:auto;">
 
-        <!-- PROFILE IMAGE -->
+   
         <div style="text-align:center; margin-bottom:20px;">
             <img src="../images/profile/<?= htmlspecialchars($profileImage) ?>"
                  alt="Profile Photo"
@@ -58,14 +56,14 @@ $profileImage = !empty($user['profile_image'])
                  ">
         </div>
 
-        <!-- Edit BUTTON -->
+
         <div style="text-align:center; margin-bottom:20px;">
             <a href="admin_user_edit.php?id=<?= urlencode($user['user_id']) ?>" class="btn">
                 Edit Profile
             </a>
         </div>
 
-        <!-- USER DETAILS -->
+
         <div class="form-group">
             <label>Name</label>
             <input type="text" value="<?= htmlspecialchars($user['name']) ?>" readonly>
@@ -111,7 +109,7 @@ $profileImage = !empty($user['profile_image'])
             <input type="text" value="<?= htmlspecialchars($user['account_status']) ?>" readonly>
         </div>
 
-        <!-- View ECO POINT TRANSACTIONS -->
+
         <div style="text-align:center; margin-bottom:20px;">
             <a href="admin_points_transaction.php?id=<?= urlencode($user['user_id']) ?>"
                class="btn"

@@ -3,9 +3,7 @@ include "../connect.php";
 $page_title = "Rewards";
 include "admin_header.php";
 
-/* =====================
-   GET PARAMETERS
-===================== */
+
 $table = $_GET['table'] ?? 'catalog';
 $search = trim($_GET['search'] ?? '');
 
@@ -16,9 +14,7 @@ $reward_filter = $_GET['reward_id'] ?? '';
 
 $search_esc = $conn->real_escape_string($search);
 
-/* =====================
-   ECO REWARD INSIGHTS
-===================== */
+
 $low_stock_items = $conn->query("
     SELECT COUNT(*) AS total
     FROM reward_catalog
@@ -51,10 +47,6 @@ $most_redeemed_id   = $most_redeemed['reward_id'] ?? '';
 <div class="main-content">
 
 <h2>Rewards</h2>
-
-<!-- =====================
-     QUICK VIEW
-===================== -->
 <h2>Quick View</h2>
 
 <div class="card-grid">
@@ -92,9 +84,7 @@ $most_redeemed_id   = $most_redeemed['reward_id'] ?? '';
 
 </div>
 
-<!-- =====================
-     CHOOSE TABLE
-===================== -->
+
 <div class="announcement-search-wrapper">
 <form method="GET" class="announcement-search-form choose-table-form">
   <label class="choose-table-label">Choose Table</label>
@@ -105,9 +95,7 @@ $most_redeemed_id   = $most_redeemed['reward_id'] ?? '';
 </form>
 </div>
 
-<!-- =====================
-     SEARCH + FILTER + ADD
-===================== -->
+
 <div class="announcement-search-wrapper">
 <form method="GET" class="announcement-search-form">
 
@@ -161,18 +149,44 @@ $most_redeemed_id   = $most_redeemed['reward_id'] ?? '';
 </form>
 </div>
 
-<!-- =====================
-     REWARD CATALOG
-===================== -->
+
 <?php if ($table === 'catalog'): ?>
 
 <?php
 $sql = "SELECT * FROM reward_catalog WHERE 1";
-if ($search !== '') $sql .= " AND reward_name LIKE '%$search_esc%'";
-if ($status_filter !== '') $sql .= " AND is_active = '$status_filter'";
-if ($stock_filter === 'low') $sql .= " AND stock <= 10";
+$params = [];
+$types  = "";
+
+
+if ($search !== '') {
+    $sql .= " AND reward_name LIKE ?";
+    $params[] = "%$search%";
+    $types   .= "s";
+}
+
+
+if ($status_filter !== '') {
+    $sql .= " AND is_active = ?";
+    $params[] = $status_filter;
+    $types   .= "s";
+}
+
+
+if ($stock_filter === 'low') {
+    $sql .= " AND stock <= 10";
+}
+
 $sql .= " ORDER BY created_at DESC";
-$result = $conn->query($sql);
+
+$stmt = $conn->prepare($sql);
+
+if (!empty($params)) {
+    $stmt->bind_param($types, ...$params);
+}
+
+$stmt->execute();
+$result = $stmt->get_result();
+
 ?>
 
 <h3>Reward Catalog</h3>
@@ -195,7 +209,7 @@ $result = $conn->query($sql);
   <td><?= $row['is_active'] ? 'Active' : 'Inactive' ?></td>
 <td>
   <?php
-    // Use reward image if exists, otherwise use default image
+
     $rewardImage = !empty($row['image_path'])
         ? "../images/reward/" . $row['image_path']
         : "../images/reward/default.jpeg";
@@ -219,29 +233,57 @@ $result = $conn->query($sql);
 
 <?php endif; ?>
 
-<!-- =====================
-     REWARD REDEMPTIONS
-===================== -->
 <?php if ($table === 'redemptions'): ?>
 
 <?php
 $sql = "SELECT * FROM reward_redemptions WHERE 1";
-if ($search !== '') $sql .= " AND user_id LIKE '%$search_esc%'";
-if ($status_filter !== '') $sql .= " AND status = '$status_filter'";
-if ($reward_filter !== '') $sql .= " AND reward_id = '$reward_filter'";
-if ($date_filter === 'this_month') {
-  $sql .= " AND MONTH(redemption_date_time)=MONTH(CURRENT_DATE())
-            AND YEAR(redemption_date_time)=YEAR(CURRENT_DATE())";
-} elseif ($date_filter === 'last_month') {
-  $sql .= " AND MONTH(redemption_date_time)=MONTH(CURRENT_DATE()-INTERVAL 1 MONTH)
-            AND YEAR(redemption_date_time)=YEAR(CURRENT_DATE()-INTERVAL 1 MONTH)";
-} elseif ($date_filter === '7_days') {
-  $sql .= " AND redemption_date_time >= NOW() - INTERVAL 7 DAY";
-} elseif ($date_filter === '30_days') {
-  $sql .= " AND redemption_date_time >= NOW() - INTERVAL 30 DAY";
+$params = [];
+$types  = "";
+
+
+if ($search !== '') {
+    $sql .= " AND user_id LIKE ?";
+    $params[] = "%$search%";
+    $types   .= "s";
 }
+
+
+if ($status_filter !== '') {
+    $sql .= " AND status = ?";
+    $params[] = $status_filter;
+    $types   .= "s";
+}
+
+
+if ($reward_filter !== '') {
+    $sql .= " AND reward_id = ?";
+    $params[] = $reward_filter;
+    $types   .= "s";
+}
+
+
+if ($date_filter === 'this_month') {
+    $sql .= " AND MONTH(redemption_date_time)=MONTH(CURRENT_DATE())
+              AND YEAR(redemption_date_time)=YEAR(CURRENT_DATE())";
+} elseif ($date_filter === 'last_month') {
+    $sql .= " AND MONTH(redemption_date_time)=MONTH(CURRENT_DATE()-INTERVAL 1 MONTH)
+              AND YEAR(redemption_date_time)=YEAR(CURRENT_DATE()-INTERVAL 1 MONTH)";
+} elseif ($date_filter === '7_days') {
+    $sql .= " AND redemption_date_time >= NOW() - INTERVAL 7 DAY";
+} elseif ($date_filter === '30_days') {
+    $sql .= " AND redemption_date_time >= NOW() - INTERVAL 30 DAY";
+}
+
 $sql .= " ORDER BY redemption_date_time DESC";
-$result = $conn->query($sql);
+
+$stmt = $conn->prepare($sql);
+
+if (!empty($params)) {
+    $stmt->bind_param($types, ...$params);
+}
+
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
 <h3>Reward Redemptions</h3>
@@ -249,8 +291,13 @@ $result = $conn->query($sql);
 <table class="eco-table">
 <thead>
 <tr>
-  <th>ID</th><th>User ID</th><th>Reward ID</th>
-  <th>Date</th><th>Status</th><th>Points</th><th>Action</th>
+  <th>ID</th>
+  <th>User ID</th>
+  <th>Reward ID</th>
+  <th>Date</th>
+  <th>Status</th>
+  <th>Points</th>
+  <th>Action</th>
 </tr>
 </thead>
 <tbody>

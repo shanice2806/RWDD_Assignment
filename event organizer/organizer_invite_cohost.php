@@ -38,11 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['invite_cohost'])) {
         $user_result = $conn->query($check_user);
         
         if ($user_result && $user_result->num_rows > 0) {
-            // Check if user is trying to invite themselves
             if ($cohost_id === $organizer_id) {
                 $error_message = "You cannot invite yourself as a co-host.";
             } else {
-                // Check if already a co-host for this event
+              
                 $check_cohost = "SELECT * FROM co_host 
                                 WHERE event_id = '$event_id' 
                                 AND user_id = '$cohost_id' 
@@ -52,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['invite_cohost'])) {
                 if ($cohost_result && $cohost_result->num_rows > 0) {
                     $error_message = "This organizer is already a co-host for this event.";
                 } else {
-                    // Generate sequential cohost ID
+                 
                     $last_id_query = "SELECT cohost_id FROM co_host ORDER BY cohost_id DESC LIMIT 1";
                     $last_id_result = $conn->query($last_id_query);
                     
@@ -64,18 +63,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['invite_cohost'])) {
                         $new_cohost_id = 'ch_001';
                     }
                     
-                    // Insert into co_host table
+                 
                     $insert_query = "INSERT INTO co_host 
                                    (cohost_id, event_id, user_id, cohost_role, cohost_status, cohost_date_added) 
                                    VALUES ('$new_cohost_id', '$event_id', '$cohost_id', '$cohost_role', 'active', NOW())";
                     
                     if ($conn->query($insert_query)) {
-                        // Get event title for notification
+                      
                         $event_query = "SELECT event_title FROM events WHERE event_id = '$event_id'";
                         $event_result = $conn->query($event_query);
                         $event_title = $event_result->fetch_assoc()['event_title'];
                         
-                        // Generate sequential notification ID
+                   
                         $last_notif_query = "SELECT notification_id FROM notifications ORDER BY notification_id DESC LIMIT 1";
                         $last_notif_result = $conn->query($last_notif_query);
                         
@@ -87,17 +86,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['invite_cohost'])) {
                             $notification_id = 'n_001';
                         }
                         
-                        // Create notification message
+                     
                         $message = "You have been invited and assigned as the co-host of event: $event_title! ";
                         $message .= "Role: $cohost_role. ";
                         if (!empty($role_description)) {
                             $message .= "Description: $role_description";
                         }
                         
-                        // Escape message for SQL
+                      
                         $message = $conn->real_escape_string($message);
                         
-                        // Insert notification - audience_type is the specific user_id
+                      
                         $notif_query = "INSERT INTO notifications 
                                        (notification_id, event_id, message, audience_type, created_at, created_by, is_active) 
                                        VALUES ('$notification_id', '$event_id', '$message', '$cohost_id', NOW(), '$organizer_id', 1)";

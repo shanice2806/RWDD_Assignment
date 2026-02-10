@@ -5,18 +5,16 @@ require_once "../connect.php";
 $page_title = "Add Badge";
 include "admin_header.php";
 
-/* STATUS MESSAGE */
+
 $success = "";
 $error   = "";
 
-/* Form defaults */
+
 $badge_name = "";
 $description = "";
 $required_points = "";
 
-/* =====================
-   HANDLE ADD BADGE
-===================== */
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $badge_name      = trim($_POST['badge_name']);
@@ -76,7 +74,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     if ($stmt->execute()) {
                         $success = "Badge added successfully.";
 
-                        /* clear form values */
+     
                         $badge_name = "";
                         $description = "";
                         $required_points = "";
@@ -93,7 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <main class="dashboard">
 <div class="main-content">
 
-  <!-- PAGE TITLE BAR -->
+
   <div class="page-title-bar">
     <a href="admin_system_settings.php?view=badges"
        class="icon-btn back-btn">↩</a>
@@ -101,7 +99,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   </div>
 
 
-    <!-- STATUS MESSAGE -->
     <?php if (!empty($success)): ?>
       <div class="alert-success"><?= htmlspecialchars($success) ?></div>
     <?php endif; ?>
@@ -113,7 +110,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
   <div class="profile-container">
 
-    <!-- FORM -->
+
     <div class="form-panel">
     <form method="POST" enctype="multipart/form-data" id="badgeForm">
 
@@ -198,7 +195,7 @@ function previewImage(event) {
     plus.style.display = "none";
 }
 
-/* Clear image preview after success */
+
 <?php if (!empty($success)): ?>
 document.getElementById("badgeIcon").value = "";
 document.getElementById("previewImg").style.display = "none";
