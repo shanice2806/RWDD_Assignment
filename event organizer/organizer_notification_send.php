@@ -1,6 +1,6 @@
 <?php
 // ========================================
-// STEP 1: Start session and check login
+//  Start session and check login
 // ========================================
 session_start();
 
@@ -17,7 +17,7 @@ include '../connect.php';
 $user_id = $_SESSION['user_id'];
 
 // ========================================
-// STEP 2: Get events for dropdown
+//  Get events for dropdown
 // ========================================
 // Get events created by user OR where user is active cohost
 $events_query = "SELECT DISTINCT e.event_id, e.event_title 
@@ -29,7 +29,7 @@ $events_query = "SELECT DISTINCT e.event_id, e.event_title
 $events_result = $conn->query($events_query);
 
 // ========================================
-// STEP 3: Handle form submission
+// Handle form submission
 // ========================================
 $success_message = '';
 $error_message = '';

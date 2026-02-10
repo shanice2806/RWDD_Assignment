@@ -1,7 +1,5 @@
 <?php
-// ========================================
-// STEP 1: Start session and check login
-// ========================================
+
 session_start();
 
 // Only event organizers can access this page
@@ -17,7 +15,7 @@ include '../connect.php';
 $user_id = $_SESSION['user_id'];
 
 // ========================================
-// STEP 2: Get announcement ID
+//  Get announcement ID
 // ========================================
 if (!isset($_GET['id'])) {
     header("Location: organizer_announcement.php");
@@ -27,7 +25,7 @@ if (!isset($_GET['id'])) {
 $announcement_id = $_GET['id'];
 
 // ========================================
-// STEP 3: Get announcement and verify ownership
+//  Get announcement and verify ownership
 // ========================================
 $query = "SELECT * FROM announcements WHERE announcement_id = '$announcement_id' AND created_by = '$user_id'";
 $result = $conn->query($query);
@@ -40,7 +38,7 @@ if ($result->num_rows == 0) {
 $announcement = $result->fetch_assoc();
 
 // ========================================
-// STEP 4: Handle delete confirmation
+//  Handle delete confirmation
 // ========================================
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_delete'])) {
     $delete_query = "DELETE FROM announcements WHERE announcement_id = '$announcement_id'";

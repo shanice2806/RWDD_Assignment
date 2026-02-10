@@ -1,6 +1,6 @@
 <?php
 // ========================================
-// STEP 1: Start session and check login
+//  Start session and check login
 // ========================================
 session_start();
 
@@ -17,7 +17,7 @@ include '../connect.php';
 $user_id = $_SESSION['user_id'];
 
 // ========================================
-// STEP 2: Handle search
+//  Handle search
 // ========================================
 $search = '';
 if (isset($_GET['search'])) {
@@ -25,7 +25,7 @@ if (isset($_GET['search'])) {
 }
 
 // ========================================
-// STEP 3: Get announcements created by this organizer
+//  Get announcements created by this organizer
 // ========================================
 $query = "SELECT * FROM announcements WHERE created_by = '$user_id'";
 

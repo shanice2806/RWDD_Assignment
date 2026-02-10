@@ -1,6 +1,6 @@
 <?php
 // ========================================
-// STEP 1: Start session and check login
+// Start session and check login
 // ========================================
 session_start();
 
@@ -17,7 +17,7 @@ include '../connect.php';
 $user_id = $_SESSION['user_id'];
 
 // ========================================
-// STEP 2: Get events user can archive
+//  Get events user can archive
 // ========================================
 // Get events where user is creator OR active cohost (only approved/completed events can be archived)
 $query = "SELECT DISTINCT e.event_id, e.event_title, e.event_date_time, e.event_status, e.event_location 
