@@ -4,9 +4,7 @@ include "../connect.php";
 $page_title = "Edit User";
 include "admin_header.php";
 
-/* =========================
-   VALIDATE USER ID
-   ========================= */
+
 if (!isset($_GET['id'])) {
     header("Location: admin_manage_user.php");
     exit;
@@ -14,9 +12,6 @@ if (!isset($_GET['id'])) {
 
 $user_id = $_GET['id'];
 
-/* =========================
-   FETCH USER
-   ========================= */
 $stmt = $conn->prepare("
     SELECT user_id, name, email, role, eco_points, badges,
            created_at, account_status, last_login, profile_image
@@ -33,15 +28,11 @@ if ($result->num_rows === 0) {
 
 $user = $result->fetch_assoc();
 
-/* =========================
-   STATUS MESSAGE
-   ========================= */
+
 $success = "";
 $error   = "";
 
-/* =========================
-   HANDLE UPDATE (ONLY ROLE & STATUS)
-   ========================= */
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $role           = $_POST['role'];
@@ -69,13 +60,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="main-content">
 <main class="dashboard">
 
-    <!-- PAGE TITLE BAR -->
+
     <div class="page-title-bar">
         <a href="admin_manage_user.php?id=<?= urlencode($user_id) ?>" class="icon-btn back-btn">↩</a>
         <h2><?= htmlspecialchars($user_id) ?></h2>
     </div>
 
-    <!-- STATUS MESSAGE -->
+
     <?php if (!empty($success)): ?>
         <div class="alert-success"><?= htmlspecialchars($success) ?></div>
     <?php endif; ?>
@@ -84,10 +75,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="alert-error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <!-- EDIT FORM -->
+
     <form method="POST" class="section-preview" style="max-width:700px; margin:auto;">
 
-        <!-- Profile Image -->
+
         <div style="text-align:center; margin-bottom:20px;">
             <?php
             $profileImage = !empty($user['profile_image'])
@@ -99,7 +90,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
 
-        <!-- READ ONLY FIELDS -->
         <div class="form-group">
             <label>User ID</label>
             <input type="text" value="<?= htmlspecialchars($user['user_id']) ?>" readonly>

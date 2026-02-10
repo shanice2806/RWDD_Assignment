@@ -5,9 +5,6 @@ require_once "../connect.php";
 $page_title = "Edit Eco Point Rule";
 include "admin_header.php";
 
-/* =====================
-   VALIDATE ID
-===================== */
 if (!isset($_GET['id'])) {
     header("Location: admin_system_settings.php?view=eco_rules");
     exit();
@@ -15,9 +12,7 @@ if (!isset($_GET['id'])) {
 
 $rule_id = $_GET['id'];
 
-/* =====================
-   FETCH ECO RULE
-===================== */
+
 $stmt = $conn->prepare("
     SELECT rule_id,
            rule_key,
@@ -40,15 +35,11 @@ if ($result->num_rows === 0) {
 
 $rule = $result->fetch_assoc();
 
-/* =====================
-   STATUS MESSAGE
-===================== */
+
 $success = "";
 $error   = "";
 
-/* =====================
-   HANDLE FORM SUBMIT
-===================== */
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $rule_key      = trim($_POST['rule_key']);
@@ -85,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->execute()) {
             $success = "Eco point rule updated successfully.";
 
-            /* refresh local data */
+
             $rule['rule_key'] = $rule_key;
             $rule['rule_type'] = $rule_type;
             $rule['description'] = $description;
@@ -106,13 +97,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <main class="dashboard">
 <div class="main-content">
 
-  <!-- PAGE TITLE BAR -->
+
   <div class="page-title-bar">
     <a href="admin_system_settings.php?view=eco_rules" class="icon-btn back-btn">↩</a>
     <h2><?= htmlspecialchars($rule_id) ?></h2>
   </div>
 
-  <!-- STATUS MESSAGE -->
+
   <?php if (!empty($success)): ?>
     <div class="alert-success"><?= htmlspecialchars($success) ?></div>
   <?php endif; ?>
@@ -125,19 +116,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <form method="POST" style="background:#e5e5e5; padding:30px; border-radius:8px;">
 
-      <!-- RULE ID -->
+
       <div class="form-group">
         <label>Rule ID</label>
         <input type="text" value="<?= htmlspecialchars($rule['rule_id']) ?>" readonly>
       </div>
 
-      <!-- RULE KEY -->
+
       <div class="form-group">
         <label>Rule Key</label>
         <input type="text" name="rule_key" value="<?= htmlspecialchars($rule['rule_key']) ?>" required>
       </div>
 
-      <!-- RULE TYPE -->
+
       <div class="form-group">
         <label>Rule Type</label>
         <select name="rule_type" id="ruleType" required>
@@ -147,25 +138,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </select>
       </div>
 
-      <!-- MATERIAL ID (RECYCLE ONLY) -->
+
       <div class="form-group" id="materialGroup">
         <label>Material ID</label>
         <input type="text" name="material_id" value="<?= htmlspecialchars($rule['material_id'] ?? '') ?>">
       </div>
 
-      <!-- DESCRIPTION -->
+
       <div class="form-group">
         <label>Description</label>
         <input type="text" name="description" value="<?= htmlspecialchars($rule['description']) ?>">
       </div>
 
-      <!-- POINTS PER KG -->
       <div class="form-group">
         <label>Points Per KG</label>
         <input type="number" name="points_per_kg" min="1" value="<?= $rule['points_per_kg'] ?>" required>
       </div>
 
-      <!-- STATUS -->
+
       <div class="form-group">
         <label>Status</label>
         <select name="is_active">

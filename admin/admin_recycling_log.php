@@ -142,7 +142,7 @@ $result = $stmt->get_result();
 <div class="announcement-search-wrapper">
   <form method="GET" class="announcement-search-form">
 
-    <!-- Search -->
+
     <input
       type="text"
       name="search"
@@ -151,7 +151,7 @@ $result = $stmt->get_result();
       class="announcement-search-input"
     >
 
-    <!-- Status Filter -->
+
     <select name="status" class="announcement-search-input">
       <option value="">All Status</option>
       <option value="Pending"  <?= $status === 'Pending'  ? 'selected' : '' ?>>Pending</option>
@@ -159,7 +159,7 @@ $result = $stmt->get_result();
       <option value="Invalid" <?= $status === 'Invalid' ? 'selected' : '' ?>>Invalid</option>
     </select>
 
-    <!-- Material Filter -->
+
     <select name="material" class="announcement-search-input">
       <option value="">All Materials</option>
       <?php
@@ -178,9 +178,6 @@ $result = $stmt->get_result();
   </form>
 </div>
 
-<!-- =====================
-     TABLE
-     ===================== -->
 <div class="table-wrapper">
 <table class="eco-table">
   <thead>

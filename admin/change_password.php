@@ -3,9 +3,7 @@ session_start();
 $page_title = "Change Password";
 require_once "../connect.php";
 
-/* =====================
-   CHECK LOGIN
-   ===================== */
+
 if (!isset($_SESSION["user_id"])) {
     header("Location: ../login/login.php");
     exit();
@@ -16,22 +14,20 @@ $user_id = $_SESSION["user_id"];
 $error = "";
 $success = "";
 
-/* =====================
-   WHEN FORM IS SUBMITTED
-   ===================== */
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $current_password = trim($_POST["current_password"]);
     $new_password     = trim($_POST["new_password"]);
     $confirm_password = trim($_POST["confirm_password"]);
 
-    /* 1️⃣ Check empty fields */
+
     if ($current_password == "" || $new_password == "" || $confirm_password == "") {
         $error = "All fields are required.";
 
     } else {
 
-        /* 2️⃣ Get password from database */
+
         $stmt = $conn->prepare("SELECT password FROM users WHERE user_id = ?");
         $stmt->bind_param("s", $user_id);
         $stmt->execute();
@@ -45,21 +41,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             $db_password = trim($row["password"]);
 
-            /* 3️⃣ Check current password */
+
             if ($current_password !== $db_password) {
                 $error = "Current password is incorrect.";
 
-            /* 4️⃣ New password must be different */
+  
             } elseif ($new_password === $current_password) {
                 $error = "New password cannot be the same as current password.";
 
-            /* 5️⃣ New password confirmation */
             } elseif ($new_password !== $confirm_password) {
                 $error = "New password and re-enter password do not match.";
 
             } else {
 
-                /* 6️⃣ Update password */
                 $update = $conn->prepare("
                     UPDATE users
                     SET password = ?

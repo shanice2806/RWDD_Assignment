@@ -4,18 +4,14 @@ include "../connect.php";
 $page_title = "View Event";
 include "admin_header.php";
 
-/* =====================
-   VALIDATE EVENT ID
-===================== */
+
 if (!isset($_GET['id'])) {
     die("Event ID not provided.");
 }
 
 $event_id = $_GET['id'];
 
-/* =====================
-   FETCH EVENT DETAILS
-===================== */
+
 $stmt = $conn->prepare("
     SELECT
         event_id,
@@ -41,9 +37,7 @@ if ($result->num_rows === 0) {
 
 $event = $result->fetch_assoc();
 
-/* =====================
-   FETCH EVENT MEDIA
-===================== */
+
 $media_stmt = $conn->prepare("
     SELECT event_media_file_path
     FROM event_media
@@ -54,9 +48,7 @@ $media_stmt->bind_param("s", $event_id);
 $media_stmt->execute();
 $media_result = $media_stmt->get_result();
 
-/* =====================
-   FETCH TOTAL ATTENDANCE
-===================== */
+
 $att_stmt = $conn->prepare("
     SELECT COUNT(*) AS total_attendance
     FROM attendance
@@ -77,9 +69,7 @@ $total_attendance = $attendance['total_attendance'] ?? 0;
     <h2><?= htmlspecialchars($event['event_id']) ?></h2>
 </div>
 
-<!-- =====================
-     EVENT DETAILS
-===================== -->
+
 <div class="section-preview" style="max-width:800px; margin:auto;">
 
     <div class="form-group">

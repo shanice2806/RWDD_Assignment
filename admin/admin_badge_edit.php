@@ -5,9 +5,7 @@ require_once "../connect.php";
 $page_title = "Edit Badge";
 include "admin_header.php";
 
-/* =====================
-   VALIDATE ID
-===================== */
+
 if (!isset($_GET['id'])) {
     header("Location: admin_system_settings.php?view=badges");
     exit();
@@ -15,9 +13,7 @@ if (!isset($_GET['id'])) {
 
 $badge_id = $_GET['id'];
 
-/* =====================
-   FETCH BADGE
-===================== */
+
 $stmt = $conn->prepare("
     SELECT badge_id,
            badge_name,
@@ -39,13 +35,10 @@ if ($result->num_rows === 0) {
 
 $badge = $result->fetch_assoc();
 
-/* STATUS MESSAGE */
+
 $success = "";
 $error   = "";
 
-/* =====================
-   HANDLE FORM SUBMIT
-===================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $badge_name      = trim($_POST['badge_name']);
@@ -57,12 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Badge name and points are required.";
     } else {
 
-        /* Default: keep existing icon */
         $icon_path = $badge['icon_path'];
 
-        /* =====================
-           HANDLE ICON UPLOAD
-        ===================== */
+
         if (!empty($_FILES['icon']['name'])) {
 
             $upload_dir  = "../images/badges/";
@@ -88,9 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        /* =====================
-           UPDATE DATABASE
-        ===================== */
+
         if ($error === "") {
 
             $stmt = $conn->prepare("
@@ -116,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->execute()) {
                 $success = "Badge updated successfully.";
 
-                /* refresh local data */
+
                 $badge['badge_name'] = $badge_name;
                 $badge['description'] = $description;
                 $badge['required_points'] = $required_points;
@@ -133,14 +121,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <main class="dashboard">
 <div class="main-content">
 
-  <!-- PAGE TITLE BAR -->
+
   <div class="page-title-bar">
     <a href="admin_system_settings.php?view=badges"
        class="icon-btn back-btn">↩</a>
     <h2><?= htmlspecialchars($badge_id) ?></h2>
   </div>
 
-   <!-- STATUS MESSAGE -->
+
     <?php if (!empty($success)): ?>
       <div class="alert-success">
         <?= htmlspecialchars($success) ?>
@@ -156,7 +144,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
    
 
-    <!-- FORM -->
     <form method="POST"
           enctype="multipart/form-data"
           class="form-panel">

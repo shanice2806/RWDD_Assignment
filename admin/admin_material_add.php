@@ -5,19 +5,15 @@ require_once "../connect.php";
 $page_title = "Add Material";
 include "admin_header.php";
 
-/* =====================
-   STATUS MESSAGE
-===================== */
+
 $success = "";
 $error   = "";
 
-/* Form defaults (for clearing) */
+
 $materials_name = "";
 $material_description = "";
 
-/* =====================
-   HANDLE FORM SUBMIT
-===================== */
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $materials_name = trim($_POST['materials_name']);
@@ -27,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Material name is required.";
     } else {
 
-        /* Generate next material_id */
+
         $result = $conn->query("
             SELECT material_id
             FROM materials
@@ -44,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $material_id = 'mat_' . str_pad($new_num, 3, '0', STR_PAD_LEFT);
 
-        /* Insert material */
+
         $stmt = $conn->prepare("
             INSERT INTO materials
             (material_id, materials_name, material_description, is_active)
@@ -61,7 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->execute()) {
             $success = "Material added successfully.";
 
-            /* Clear fields after success */
             $materials_name = "";
             $material_description = "";
         } else {
@@ -79,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <h2>Add Material</h2>
     </div>
 
-    <!-- STATUS MESSAGE -->
+
     <?php if (!empty($success)): ?>
       <div class="alert-success"><?= htmlspecialchars($success) ?></div>
     <?php endif; ?>
@@ -88,7 +83,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="alert-error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <!-- CENTERED FORM -->
     <div class="profile-container">
 
       <form method="POST"
@@ -113,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                  value="<?= htmlspecialchars($material_description) ?>">
         </div>
 
-        <!-- Add BUTTON -->
+
         <div style="text-align:center; margin-top:25px;">
           <button type="submit" class="action-btn">
             Add

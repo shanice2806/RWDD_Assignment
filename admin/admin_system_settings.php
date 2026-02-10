@@ -5,21 +5,16 @@ require_once "../connect.php";
 $page_title = "System Settings";
 include "admin_header.php";
 
-/* =====================
-   GET FILTER VALUES
-===================== */
 $view   = $_GET['view'] ?? 'categories';
 $search = trim($_GET['search'] ?? '');
 $status = $_GET['status'] ?? 'all';
 
-/* =====================
-   BUILD QUERY CONDITIONS
-===================== */
+
 $where  = [];
 $params = [];
 $types  = "";
 
-/* Search */
+
 if ($search !== '') {
     if ($view === 'eco_rules') {
         $where[] = "rule_key LIKE ?";
@@ -30,7 +25,7 @@ if ($search !== '') {
     $types   .= "s";
 }
 
-/* Status */
+
 if ($status === 'active') {
     $where[] = "is_active = 1";
 } elseif ($status === 'inactive') {
@@ -39,9 +34,7 @@ if ($status === 'active') {
 
 $where_sql = $where ? "WHERE " . implode(" AND ", $where) : "";
 
-/* =====================
-   FETCH DATA BY VIEW
-===================== */
+
 switch ($view) {
 
     case 'materials':
@@ -111,9 +104,7 @@ $data = $stmt->get_result();
 
 <h2>System Settings</h2>
 
-<!-- =====================
-     CHOOSE TABLE
-===================== -->
+
 <div class="announcement-search-wrapper">
 <form method="GET" class="announcement-search-form choose-table-form">
 
@@ -130,15 +121,14 @@ $data = $stmt->get_result();
 </form>
 </div>
 
-<!-- =====================
-     SEARCH & FILTER BAR
-===================== -->
+
+
 <div class="announcement-search-wrapper">
 <form method="GET" class="announcement-search-form">
 
   <input type="hidden" name="view" value="<?= $view ?>">
 
-  <!-- Search -->
+
   <input
     type="text"
     name="search"
@@ -147,17 +137,16 @@ $data = $stmt->get_result();
     class="announcement-search-input"
   >
 
-  <!-- Status -->
   <select name="status" class="announcement-search-input">
     <option value="all" <?= $status === 'all' ? 'selected' : '' ?>>All Status</option>
     <option value="active" <?= $status === 'active' ? 'selected' : '' ?>>Active</option>
     <option value="inactive" <?= $status === 'inactive' ? 'selected' : '' ?>>Inactive</option>
   </select>
 
-  <!-- Search Button -->
+
   <button type="submit" class="announcement-search-btn">🔍</button>
 
-  <!-- ADD BUTTON (DYNAMIC) -->
+
   <?php if ($view === 'materials'): ?>
     <a href="admin_material_add.php" class="announcement-search-btn">＋</a>
 
@@ -175,9 +164,7 @@ $data = $stmt->get_result();
 </div>
 
 
-<!-- =====================
-     TABLE
-===================== -->
+
 <table class="eco-table">
 <thead>
 <tr>

@@ -4,7 +4,7 @@ $page_title = "Manage User";
 include "admin_header.php";
 
 
-/* Search logic */
+
 $search = $_GET['search'] ?? '';
 
 $sql = "SELECT user_id, name, email, role, account_status, eco_points, badges, created_at
@@ -20,10 +20,10 @@ $result = $stmt->get_result();
 
 <div class="main-content">
 
-  <!-- Page Title -->
+
   <h2>Users</h2>
 
-  <!-- Search Bar -->
+
   <div class="announcement-search-wrapper">
     <form method="GET" class="announcement-search-form">
       <input
@@ -37,7 +37,7 @@ $result = $stmt->get_result();
     </form>
   </div>
 
-  <!-- User Table -->
+
   <table class="eco-table">
     <thead>
       <tr>

@@ -5,9 +5,6 @@ require_once "../connect.php";
 $page_title = "Reward Details";
 include "admin_header.php";
 
-/* =====================
-   VALIDATE ID
-===================== */
 if (!isset($_GET['id'])) {
     header("Location: admin_rewards.php?table=redemptions");
     exit();
@@ -15,9 +12,7 @@ if (!isset($_GET['id'])) {
 
 $redemption_id = $_GET['id'];
 
-/* =====================
-   FETCH REDEMPTION + REWARD + USER
-===================== */
+
 $stmt = $conn->prepare("
     SELECT 
         rr.redemption_id,
@@ -57,16 +52,13 @@ $data = $result->fetch_assoc();
 <main class="dashboard">
 <div class="main-content">
 
-<!-- PAGE TITLE BAR -->
+
 <div class="page-title-bar">
   <a href="admin_rewards.php?table=redemptions"
      class="icon-btn back-btn">↩</a>
   <h2><?= htmlspecialchars($data['redemption_id']); ?></h2>
 </div>
 
-<!-- =====================
-     REDEMPTION INFORMATION
-===================== -->
 <div class="profile-container" style="max-width: 1100px;">
 
   <div style="background:#e5e5e5; padding:25px; border-radius:8px; margin-bottom:30px;">
@@ -82,13 +74,13 @@ $data = $result->fetch_assoc();
       <input type="text" value="<?= htmlspecialchars($data['user_id']) ?>" readonly>
     </div>
 
-    <!-- ✅ NEW: USER NAME -->
+
     <div class="form-group">
       <label>User Name</label>
       <input type="text" value="<?= htmlspecialchars($data['user_name']) ?>" readonly>
     </div>
 
-    <!-- ✅ NEW: USER EMAIL -->
+
     <div class="form-group">
       <label>User Email</label>
       <input type="text" value="<?= htmlspecialchars($data['user_email']) ?>" readonly>
@@ -115,9 +107,8 @@ $data = $result->fetch_assoc();
     </div>
   </div>
 
-  <!-- =====================
-       REWARD DETAILS
-  ===================== -->
+
+  
   <div style="background:#e5e5e5; padding:25px; border-radius:8px;">
     <h3 style="margin-bottom:15px;">Reward Details</h3>
 
@@ -145,7 +136,7 @@ $data = $result->fetch_assoc();
   <label>Reward Image</label>
   <div style="margin-top:10px;">
     <?php
-        // If image_path is empty, show placeholder
+        
         $rewardImage = !empty($data['image_path'])
             ? $data['image_path']
             : 'default.jpeg';

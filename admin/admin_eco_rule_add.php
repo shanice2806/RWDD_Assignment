@@ -5,22 +5,18 @@ require_once "../connect.php";
 $page_title = "Add Eco Rule";
 include "admin_header.php";
 
-/* =====================
-   STATUS MESSAGE
-===================== */
+
 $success = "";
 $error   = "";
 
-/* Form defaults (for clearing) */
+
 $rule_key      = "";
 $rule_type     = "";
 $description   = "";
 $points_per_kg = "";
 $material_id   = "";
 
-/* =====================
-   HANDLE FORM SUBMIT
-===================== */
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $rule_key      = trim($_POST['rule_key']);
@@ -29,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $points_per_kg = (int) $_POST['points_per_kg'];
     $material_id   = $_POST['material_id'] ?: NULL;
 
-    /* Safety: material_id only for RECYCLE */
+
     if ($rule_type !== 'RECYCLE') {
         $material_id = NULL;
     }
@@ -38,9 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Rule key, rule type and points per kg are required.";
     } else {
 
-        /* =====================
-           GENERATE RULE ID
-        ===================== */
+
         $result = $conn->query("
             SELECT rule_id
             FROM eco_points_rules
@@ -57,9 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $rule_id = 'epr_' . str_pad($new_num, 3, '0', STR_PAD_LEFT);
 
-        /* =====================
-           INSERT ECO RULE
-        ===================== */
+
         $stmt = $conn->prepare("
             INSERT INTO eco_points_rules
                 (rule_id, rule_key, rule_type, description, points_per_kg, material_id, is_active)
@@ -80,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->execute()) {
             $success = "Eco point rule added successfully.";
 
-            /* Clear fields after success */
+
             $rule_key      = "";
             $rule_type     = "";
             $description   = "";
@@ -96,14 +88,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="main-content">
 <main class="dashboard">
 
-  <!-- PAGE TITLE BAR -->
+
   <div class="page-title-bar">
     <a href="admin_system_settings.php?view=eco_rules"
        class="icon-btn back-btn">↩</a>
     <h2>Add Eco Rule</h2>
   </div>
 
-  <!-- STATUS MESSAGE -->
+
   <?php if (!empty($success)): ?>
     <div class="alert-success"><?= htmlspecialchars($success) ?></div>
   <?php endif; ?>
@@ -112,13 +104,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="alert-error"><?= htmlspecialchars($error) ?></div>
   <?php endif; ?>
 
-  <!-- FORM -->
+
   <div class="profile-container">
     <div class="form-panel">
 
     <form method="POST">
 
-      <!-- RULE KEY -->
+
       <div class="form-group">
         <label>Rule Key</label>
         <input type="text"
@@ -128,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                required>
       </div>
 
-      <!-- RULE TYPE -->
+
       <div class="form-group">
         <label>Rule Type</label>
         <select name="rule_type" id="ruleType" required>
@@ -139,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </select>
       </div>
 
-      <!-- DESCRIPTION -->
+
       <div class="form-group">
         <label>Description</label>
         <input type="text"
@@ -148,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                value="<?= htmlspecialchars($description) ?>">
       </div>
 
-      <!-- POINTS PER KG -->
+
       <div class="form-group">
         <label>Points Per KG</label>
         <input type="number"
@@ -158,7 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                required>
       </div>
 
-      <!-- MATERIAL ID (RECYCLE ONLY) -->
+
       <div class="form-group" id="materialGroup" style="display:none;">
         <label>Material ID</label>
         <input type="text"
@@ -167,7 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                value="<?= htmlspecialchars($material_id) ?>">
       </div>
 
-      <!-- BUTTON -->
+
       <div style="text-align:center; margin-top:25px;">
         <button type="submit" class="action-btn">
           Add

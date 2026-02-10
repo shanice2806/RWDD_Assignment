@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($status === 'VALID' && $points > 0) {
 
-            // Prevent duplicate transaction
+
             $check = $conn->prepare("
                 SELECT 1 FROM eco_points_transactions WHERE source_id = ?
             ");

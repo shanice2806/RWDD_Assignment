@@ -5,9 +5,7 @@ require_once "../connect.php";
 $page_title = "Change Profile Photo";
 include "admin_header.php";
 
-/* =====================
-   AUTH CHECK
-===================== */
+
 if (!isset($_SESSION["user_id"])) {
     header("Location: ../login/login.php");
     exit();
@@ -17,9 +15,7 @@ $user_id = $_SESSION["user_id"];
 $success = "";
 $error   = "";
 
-/* =====================
-   HANDLE UPLOAD
-===================== */
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if (!isset($_FILES['profile_image']) || $_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
@@ -35,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $upload_dir .= DIRECTORY_SEPARATOR;
             $tmp_name  = $_FILES['profile_image']['tmp_name'];
 
-            /* Use ORIGINAL file name */
+
             $file_name = basename($_FILES['profile_image']['name']);
             $extension = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
 
@@ -55,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $error = "Failed to upload image.";
                 } else {
 
-                    /* Update DB */
+
                     $stmt = $conn->prepare("
                         UPDATE users
                         SET profile_image = ?

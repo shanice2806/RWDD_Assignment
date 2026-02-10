@@ -5,9 +5,7 @@ require_once "../connect.php";
 $page_title = "Edit Materials";
 include "admin_header.php";
 
-/* =====================
-   VALIDATE ID
-   ===================== */
+
 if (!isset($_GET['id'])) {
     header("Location: admin_system_settings.php?view=materials");
     exit();
@@ -15,9 +13,7 @@ if (!isset($_GET['id'])) {
 
 $material_id = $_GET['id'];
 
-/* =====================
-   FETCH MATERIAL
-   ===================== */
+
 $stmt = $conn->prepare("
     SELECT material_id,
            materials_name,
@@ -37,15 +33,11 @@ if ($result->num_rows === 0) {
 
 $material = $result->fetch_assoc();
 
-/* =====================
-   STATUS MESSAGE
-   ===================== */
+
 $success = "";
 $error   = "";
 
-/* =====================
-   HANDLE FORM SUBMIT
-   ===================== */
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $materials_name = trim($_POST['materials_name']);
@@ -73,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->execute()) {
             $success = "Material updated successfully.";
 
-            /* refresh local data */
+
             $material['materials_name'] = $materials_name;
             $material['material_description'] = $material_description;
             $material['is_active'] = $status;
@@ -91,14 +83,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <main class="dashboard">
   <div class="main-content">
 
-    <!-- PAGE TITLE BAR -->
     <div class="page-title-bar">
       <a href="admin_system_settings.php?view=materials"
          class="icon-btn back-btn">↩</a>
       <h2><?= htmlspecialchars($material['material_id']) ?></h2>
     </div>
 
-    <!-- STATUS MESSAGE -->
+
     <?php if (!empty($success)): ?>
       <div class="alert-success"><?= htmlspecialchars($success) ?></div>
     <?php endif; ?>
@@ -107,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="alert-error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <!-- CENTERED FORM -->
+
     <div class="profile-container">
 
       <form method="POST"
@@ -117,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               border-radius:8px;
             ">
 
-        <!-- Material ID -->
+
         <div class="form-group">
           <label>Material ID</label>
           <input type="text"
@@ -125,7 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                  readonly>
         </div>
 
-        <!-- Material Name -->
+
         <div class="form-group">
           <label>Material Name</label>
           <input type="text"
@@ -134,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                  required>
         </div>
 
-        <!-- Material Description -->
+
         <div class="form-group">
           <label>Material Description</label>
           <input type="text"
@@ -142,7 +133,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                  value="<?= htmlspecialchars($material['material_description']) ?>">
         </div>
 
-        <!-- Status -->
         <div class="form-group">
           <label>Status</label>
           <select name="is_active">
@@ -155,7 +145,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </select>
         </div>
 
-        <!-- Edit BUTTON -->
         <div style="text-align:center; margin-top:25px;">
           <button type="submit" class="action-btn">
             Edit
