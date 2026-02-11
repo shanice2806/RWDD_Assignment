@@ -53,7 +53,6 @@ $event = mysqli_fetch_assoc($result);
 $media_query = "SELECT * FROM event_media WHERE event_id = '$event_id' AND event_media_is_hidden = 0";
 $media_result = mysqli_query($conn, $media_query);
 
-// Format date and time nicely
 $date_formatted = date('F d, Y', strtotime($event['event_date_time']));
 $time_formatted = date('g:i A', strtotime($event['event_date_time']));
 
@@ -195,18 +194,15 @@ $time_formatted = date('g:i A', strtotime($event['event_date_time']));
   <script>
   // Open poster in full screen
   function openPosterModal(imagePath) {
-    // Get the modal
     var modal = document.getElementById("posterModal");
-    // Get the image element in modal
     var modalImg = document.getElementById("modalImage");
     
     // Show modal
     modal.style.display = "block";
-    // Set image source
+  
     modalImg.src = imagePath;
   }
   
-  // Close the modal
   function closePosterModal() {
     var modal = document.getElementById("posterModal");
     modal.style.display = "none";

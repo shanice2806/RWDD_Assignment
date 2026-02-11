@@ -4,22 +4,19 @@
 // ========================================
 session_start();
 
-// Only event organizers can access this page
+
 if (!isset($_SESSION["user_id"]) || !in_array(strtolower($_SESSION["role"]), ["event organizer","event_organizer","organizer"])) {
     header("Location: ../login/login.php");
     exit();
 }
 
-// Connect to database
 include '../connect.php';
 
-// Get current user's ID
 $user_id = $_SESSION['user_id'];
 
 // ========================================
 //  Get events for dropdown
 // ========================================
-// Get events created by user OR where user is active cohost
 $events_query = "SELECT DISTINCT e.event_id, e.event_title 
                 FROM events e
                 LEFT JOIN co_host ch ON e.event_id = ch.event_id

@@ -2,23 +2,21 @@
 // Start session - keeps user logged in
 session_start();
 
-// Connect to database
 require_once('../connect.php');
 
 // ========================================
 //Check if user is allowed here
 // ========================================
-// Only organizers can access this page
+
 if (!isset($_SESSION["user_id"]) || !in_array(strtolower($_SESSION["role"]), ["event organizer","event_organizer","organizer"])) {
-    // Not an organizer? Send them to login page
     header("Location: ../login/login.php");
     exit();
 }
 
-// Get the logged in user's ID
+
 $user_id = $_SESSION['user_id'];
 
-// store messages to show the user
+
 $error_message = '';
 $success_message = '';
 
@@ -27,20 +25,18 @@ $success_message = '';
 // ========================================
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
-    // Get all the data user typed in the form
+
     $title = trim($_POST['title']);           // Event title
     $event_type = $_POST['event_type'];       // Event type (Workshop, Campaign, etc.)
     $date = $_POST['date'];                   // Event date
     $time = $_POST['time'];                   // Event time
     $location = trim($_POST['location']);     // Event location
     $description = trim($_POST['description']); // Event description
-    $status = $_POST['status'] ?? 'draft';    // Is it draft or pending approval?
-    
-    // Combine date and time into one datetime value
-    // Example: "2026-01-23" + "14:30" = "2026-01-23 14:30:00"
+    $status = $_POST['status'] ?? 'draft';    
+
     $event_date_time = $date . ' ' . $time . ':00';
     
-    // Check if all fields are filled
+  
     if (empty($title) || empty($event_type) || empty($date) || empty($time) || empty($location) || empty($description)) {
         $error_message = "All fields are required.";
     } else {
@@ -48,130 +44,109 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // ========================================
         //  Create the Event ID
         // ========================================
-        // Get the last event ID from database
+     
         $query = "SELECT event_id FROM events ORDER BY event_id DESC LIMIT 1";
         $result = mysqli_query($conn, $query);
         
-        // Check if there are any events in database
         if (mysqli_num_rows($result) > 0) {
-            // Get the last event ID (e.g., "evt_005")
+          
             $row = mysqli_fetch_assoc($result);
             $last_id = $row['event_id'];
             
-            // Extract the number part (e.g., "005" becomes 5)
+           
             $number = intval(substr($last_id, 4));
             
-            // Add 1 to make new ID (e.g., 5 + 1 = 6)
+           
             $number = $number + 1;
             
-            // Create new ID with leading zeros (e.g., "evt_006")
+           
             $event_id = 'evt_' . str_pad($number, 3, '0', STR_PAD_LEFT);
         } else {
-            // No events yet? Start with evt_001
+            
             $event_id = 'evt_001';
         }
         
         // ========================================
         //  Generate unique attendance code
         // ========================================
-        // Create attendance code with 3 letters + 2 numbers (e.g., "ABC12")
-        // This is generated now so it's ready when admin approves the event
+    
         
-        // All possible letters (A to Z)
+      
         $letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        
-        // Generate 3 random letters
+  
         $letter1 = $letters[rand(0, 25)];  // Pick random letter
         $letter2 = $letters[rand(0, 25)];  // Pick random letter
         $letter3 = $letters[rand(0, 25)];  // Pick random letter
         
-        // Generate 2 random numbers (0 to 9)
+     
         $number1 = rand(0, 9);
         $number2 = rand(0, 9);
         
-        // Combine them: 3 letters + 2 numbers
+      
         $attendance_code = $letter1 . $letter2 . $letter3 . $number1 . $number2;
-        
-        // ========================================
-        //  Save event to database
-        // ========================================
-        // Prepare SQL query (? marks will be filled later)
-        // Note: Using actual column names from events table
-        // registration_status = 'Closed' because users can't register until admin approves
+
         $insert_query = "INSERT INTO events (event_id, event_title, event_type, event_description, event_date_time, event_location, event_created_by, event_status, event_attendance_code, registration_status) 
                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Closed')";
         
-        // Create prepared statement (for security)
+    
         $stmt = mysqli_prepare($conn, $insert_query);
         
-        // Fill in the ? marks with actual data
-        // s = string type parameter
+ 
         mysqli_stmt_bind_param($stmt, "sssssssss", $event_id, $title, $event_type, $description, $event_date_time, $location, $user_id, $status, $attendance_code);
         
         // Execute the query
         if (mysqli_stmt_execute($stmt)) {
             
-            // ========================================
-            //  Handle file upload (if any)
-            // ========================================
-            // Check if user uploaded a file
+    
             if (isset($_FILES['event_media']) && $_FILES['event_media']['error'] == UPLOAD_ERR_OK) {
-                
-                // Get file information
+        
                 $file = $_FILES['event_media'];
                 
-                // Where to save the file
+             
                 $upload_folder = '../images/events/';
                 
-                // Create folder if it doesn't exist
+             
                 if (!file_exists($upload_folder)) {
                     mkdir($upload_folder, 0777, true);
                 }
                 
-                // Get file extension (jpg, png, etc.)
+           
                 $file_extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-                
-                // Only allow these file types
                 $allowed_types = array('jpg', 'jpeg', 'png', 'gif');
                 
-                // Check if file type is allowed
+               
                 if (in_array($file_extension, $allowed_types)) {
-                    
-                    // Check if file is not too big (max 5MB)
                     if ($file['size'] <= 5 * 1024 * 1024) {
                         
-                        // Create new filename: evt_001_poster.jpg
                         $new_filename = $event_id . '_poster.' . $file_extension;
                         $full_path = $upload_folder . $new_filename;
                         
-                        // Move file from temporary location to permanent location
+                        
                         if (move_uploaded_file($file['tmp_name'], $full_path)) {
                             
                             // ========================================
                             //  Create Media ID
                             // ========================================
-                            // Get last media ID from database
+                        
                             $media_query = "SELECT event_media_id FROM event_media ORDER BY event_media_id DESC LIMIT 1";
                             $media_result = mysqli_query($conn, $media_query);
                             
-                            // Check if there's any media
+                        
                             if (mysqli_num_rows($media_result) > 0) {
-                                // Get last media ID
                                 $media_row = mysqli_fetch_assoc($media_result);
                                 $last_media_id = $media_row['event_media_id'];
                                 
-                                // Extract number and add 1
+                              
                                 $media_number = intval(substr($last_media_id, 4)) + 1;
                                 $event_media_id = 'emd_' . str_pad($media_number, 3, '0', STR_PAD_LEFT);
                             } else {
-                                // No media yet? Start with emd_001
+                              
                                 $event_media_id = 'emd_001';
                             }
                             
                             // ========================================
                             // Save file path to database
                             // ========================================
-                            // Note: Using actual column names from event_media table
                             $media_insert = "INSERT INTO event_media (event_media_id, event_id, event_media_file_path, event_media_uploaded_by, event_media_is_hidden) 
                                            VALUES (?, ?, ?, ?, 0)";
                             
@@ -200,7 +175,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $success_message = "Event saved as draft successfully!";
                 }
                 
-                // Redirect to event management page after 2 seconds
                 header("refresh:2;url=organizer_event_management.php");
             }
             

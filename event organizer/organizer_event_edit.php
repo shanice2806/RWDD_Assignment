@@ -1,26 +1,20 @@
 <?php
-// ========================================
-//  Start session and check if user is logged in
-// ========================================
+
 session_start();
 
-// Only event organizers can access this page
 if (!isset($_SESSION["user_id"]) || !in_array(strtolower($_SESSION["role"]), ["event organizer","event_organizer","organizer"])) {
     header("Location: ../login/login.php");
     exit();
 }
 
-// Connect to database
+
 include '../connect.php';
 
-// Get current user's ID
+
 $user_id = $_SESSION['user_id'];
 
-// ========================================
-// Get event ID from URL
-// ========================================
+
 if (!isset($_GET['id'])) {
-    // No event ID provided, redirect back to event list
     header("Location: organizer_event_view.php");
     exit();
 }
@@ -30,7 +24,6 @@ $event_id = $_GET['id'];
 // ========================================
 //  Check if user is allowed to edit this event
 // ========================================
-// User can edit if they created the event OR they are an active cohost
 $check_query = "SELECT e.* FROM events e
                 LEFT JOIN co_host ch ON e.event_id = ch.event_id
                 WHERE e.event_id = '$event_id' 
@@ -38,12 +31,10 @@ $check_query = "SELECT e.* FROM events e
 $check_result = $conn->query($check_query);
 
 if ($check_result->num_rows == 0) {
-    // User doesn't have permission to edit this event
     echo "<script>alert('You do not have permission to edit this event.'); window.location.href='organizer_event_view.php';</script>";
     exit();
 }
 
-// Get event data
 $event = $check_result->fetch_assoc();
 
 // ========================================
@@ -51,9 +42,7 @@ $event = $check_result->fetch_assoc();
 // ========================================
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
-    // Check which section is being updated
     if (isset($_POST['update_description'])) {
-        // Update description
         $description = $_POST['event_description'];
         $update_query = "UPDATE events SET event_description = '$description' WHERE event_id = '$event_id'";
         $conn->query($update_query);
@@ -61,7 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     
     else if (isset($_POST['update_datetime'])) {
-        // Update date and time
         $datetime = $_POST['event_date_time'];
         $update_query = "UPDATE events SET event_date_time = '$datetime' WHERE event_id = '$event_id'";
         $conn->query($update_query);
@@ -69,7 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     
     else if (isset($_POST['update_location'])) {
-        // Update location
         $location = $_POST['event_location'];
         $update_query = "UPDATE events SET event_location = '$location' WHERE event_id = '$event_id'";
         $conn->query($update_query);
@@ -77,7 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     
     else if (isset($_POST['update_type'])) {
-        // Update event type
         $event_type = $_POST['event_type'];
         $update_query = "UPDATE events SET event_type = '$event_type' WHERE event_id = '$event_id'";
         $conn->query($update_query);
@@ -85,29 +71,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     
     else if (isset($_POST['update_poster'])) {
-        // Update poster - handle file upload
         if (isset($_FILES['event_poster']) && $_FILES['event_poster']['error'] == 0) {
-            // Check file type
             $allowed = ['jpg', 'jpeg', 'png', 'gif'];
             $filename = $_FILES['event_poster']['name'];
             $filetype = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
             
             if (in_array($filetype, $allowed)) {
-                // Check file size (max 5MB)
                 if ($_FILES['event_poster']['size'] <= 5242880) {
-                    // Create upload folder if it doesn't exist
                     $upload_dir = "../images/events/";
                     if (!file_exists($upload_dir)) {
                         mkdir($upload_dir, 0777, true);
                     }
                     
-                    // Create filename: evt_001_poster.jpg
+                 
                     $new_filename = $event_id . '_poster.' . $filetype;
                     $upload_path = $upload_dir . $new_filename;
                     
-                    // Move uploaded file
                     if (move_uploaded_file($_FILES['event_poster']['tmp_name'], $upload_path)) {
-                        // Check if poster already exists
                         $check_query = "SELECT event_media_id FROM event_media WHERE event_id = '$event_id' LIMIT 1";
                         $check_result = $conn->query($check_query);
                         
@@ -124,8 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                             WHERE event_media_id = '$media_id'";
                             $conn->query($update_query);
                         } else {
-                            // Insert new poster
-                            // Generate new media ID
+
                             $media_query = "SELECT event_media_id FROM event_media ORDER BY event_media_id DESC LIMIT 1";
                             $media_result = $conn->query($media_query);
                             
