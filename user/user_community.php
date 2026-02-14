@@ -163,6 +163,7 @@ mysqli_stmt_execute($pStmt);
 $pRes = mysqli_stmt_get_result($pStmt);
 $post = mysqli_fetch_assoc($pRes);
 mysqli_stmt_close($pStmt);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
