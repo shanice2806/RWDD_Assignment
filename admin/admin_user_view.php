@@ -10,7 +10,7 @@ if (!isset($_GET['id'])) {
 
 $user_id = $_GET['id'];
 
-/* Fetch user */
+
 $stmt = $conn->prepare("
     SELECT user_id, name, email, role, eco_points, badges,
            created_at, account_status, last_login, profile_image
