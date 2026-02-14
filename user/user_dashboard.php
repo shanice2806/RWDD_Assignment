@@ -157,10 +157,9 @@ $fallbackSql = "
 
 $announcements = [];
 $annSql = "
-SELECT announcement_id, title, message, start_date, end_date, created_at
+SELECT announcement_id, title, message, end_date, created_at
 FROM announcements
 WHERE is_active = 1
-AND (start_date IS NULL OR start_date <= CURDATE())
 AND (end_date IS NULL OR end_date >= CURDATE())
 ORDER BY created_at DESC
 LIMIT 5

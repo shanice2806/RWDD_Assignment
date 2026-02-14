@@ -324,7 +324,7 @@ $locPrev = trim($_POST["location"] ?? "");
         <?php
           $err = (int)$_GET["err"];
           $msg = "❌ Something went wrong.";
-          if ($err === 1) $msg = "❌ Please fill in Material, Weight and Location.";
+          if ($err === 1) $msg = "❌  Please fill in Material, Weight and Location.";
           if ($err === 2) $msg = "❌ Please upload a photo.";
           if ($err === 3) $msg = "❌ Photo must be less than 5MB.";
           if ($err === 4) $msg = "❌ Only JPG / JPEG / PNG allowed.";
