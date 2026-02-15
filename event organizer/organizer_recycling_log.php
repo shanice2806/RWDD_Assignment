@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_log'])) {
     } elseif (empty($user_id_input)) {
         $error_message = "Please enter the User ID.";
     } else {
-        // Check if user exists
+        
         $user_check = "SELECT user_id FROM users WHERE user_id = '$user_id_input'";
         $user_result = $conn->query($user_check);
         

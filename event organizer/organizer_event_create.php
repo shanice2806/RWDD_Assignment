@@ -40,10 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($title) || empty($event_type) || empty($date) || empty($time) || empty($location) || empty($description)) {
         $error_message = "All fields are required.";
     } else {
-        
-        // ========================================
-        //  Create the Event ID
-        // ========================================
      
         $query = "SELECT event_id FROM events ORDER BY event_id DESC LIMIT 1";
         $result = mysqli_query($conn, $query);
@@ -52,47 +48,35 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           
             $row = mysqli_fetch_assoc($result);
             $last_id = $row['event_id'];
-            
-           
             $number = intval(substr($last_id, 4));
-            
-           
             $number = $number + 1;
             
-           
             $event_id = 'evt_' . str_pad($number, 3, '0', STR_PAD_LEFT);
         } else {
             
             $event_id = 'evt_001';
-        }
-        
-        // ========================================
-        //  Generate unique attendance code
-        // ========================================
-    
-        
+        }        
       
         $letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   
-        $letter1 = $letters[rand(0, 25)];  // Pick random letter
-        $letter2 = $letters[rand(0, 25)];  // Pick random letter
-        $letter3 = $letters[rand(0, 25)];  // Pick random letter
+        $letter1 = $letters[rand(0, 25)];  
+        $letter2 = $letters[rand(0, 25)];  
+        $letter3 = $letters[rand(0, 25)];  
         
-     
         $number1 = rand(0, 9);
         $number2 = rand(0, 9);
-        
-      
         $attendance_code = $letter1 . $letter2 . $letter3 . $number1 . $number2;
 
-        $insert_query = "INSERT INTO events (event_id, event_title, event_type, event_description, event_date_time, event_location, event_created_by, event_status, event_attendance_code, registration_status) 
+        $insert_query = "INSERT INTO events (event_id, event_title, event_type, event_description, event_date_time, event_location, event_created_by, 
+        event_status, event_attendance_code, registration_status) 
                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Closed')";
         
     
         $stmt = mysqli_prepare($conn, $insert_query);
         
  
-        mysqli_stmt_bind_param($stmt, "sssssssss", $event_id, $title, $event_type, $description, $event_date_time, $location, $user_id, $status, $attendance_code);
+        mysqli_stmt_bind_param($stmt, "sssssssss", $event_id, $title, $event_type, $description, $event_date_time, $location, $user_id, $status,
+         $attendance_code);
         
         // Execute the query
         if (mysqli_stmt_execute($stmt)) {
@@ -101,42 +85,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (isset($_FILES['event_media']) && $_FILES['event_media']['error'] == UPLOAD_ERR_OK) {
         
                 $file = $_FILES['event_media'];
-                
-             
                 $upload_folder = '../images/events/';
-                
-             
                 if (!file_exists($upload_folder)) {
                     mkdir($upload_folder, 0777, true);
                 }
                 
-           
                 $file_extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
                 $allowed_types = array('jpg', 'jpeg', 'png', 'gif');
-                
-               
+
                 if (in_array($file_extension, $allowed_types)) {
                     if ($file['size'] <= 5 * 1024 * 1024) {
                         
                         $new_filename = $event_id . '_poster.' . $file_extension;
                         $full_path = $upload_folder . $new_filename;
-                        
-                        
                         if (move_uploaded_file($file['tmp_name'], $full_path)) {
-                            
-                            // ========================================
-                            //  Create Media ID
-                            // ========================================
-                        
                             $media_query = "SELECT event_media_id FROM event_media ORDER BY event_media_id DESC LIMIT 1";
                             $media_result = mysqli_query($conn, $media_query);
-                            
-                        
+                                                   
                             if (mysqli_num_rows($media_result) > 0) {
                                 $media_row = mysqli_fetch_assoc($media_result);
-                                $last_media_id = $media_row['event_media_id'];
-                                
-                              
+                                $last_media_id = $media_row['event_media_id'];   
                                 $media_number = intval(substr($last_media_id, 4)) + 1;
                                 $event_media_id = 'emd_' . str_pad($media_number, 3, '0', STR_PAD_LEFT);
                             } else {
@@ -144,9 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 $event_media_id = 'emd_001';
                             }
                             
-                            // ========================================
-                            // Save file path to database
-                            // ========================================
+
                             $media_insert = "INSERT INTO event_media (event_media_id, event_id, event_media_file_path, event_media_uploaded_by, event_media_is_hidden) 
                                            VALUES (?, ?, ?, ?, 0)";
                             
@@ -165,9 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 }
             }
             
-            // ========================================
-            // Show success message
-            // ========================================
+            
             if (empty($error_message)) {
                 if ($status == 'pending') {
                     $success_message = "Event submitted for approval successfully!";

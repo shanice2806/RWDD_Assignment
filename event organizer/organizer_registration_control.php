@@ -32,7 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_status'])) {
     $new_status = $_POST['registration_status'];
     
     // Update registration status
-    $query = "UPDATE events SET registration_status = '$new_status' WHERE event_id = '$event_id' AND (event_created_by = '$user_id' OR event_id IN (SELECT event_id FROM co_host WHERE user_id = '$user_id' AND cohost_status = 'active'))";
+    $query = "UPDATE events SET registration_status = '$new_status' WHERE event_id = '$event_id' AND
+     (event_created_by = '$user_id' OR event_id IN (SELECT event_id FROM co_host WHERE user_id = '$user_id' AND cohost_status = 'active'))";
     
     if ($conn->query($query)) {
         $success_message = "Registration status updated to $new_status!";
@@ -47,7 +48,8 @@ $current_status = "Open";
 
 if (isset($_POST['event_id'])) {
     $event_id = $_POST['event_id'];
-    $event_query = "SELECT event_id, event_title, registration_status FROM events WHERE event_id = '$event_id' AND (event_created_by = '$user_id' OR event_id IN (SELECT event_id FROM co_host WHERE user_id = '$user_id' AND cohost_status = 'active'))";
+    $event_query = "SELECT event_id, event_title, registration_status FROM events WHERE event_id = '$event_id' AND (event_created_by = '$user_id' 
+    OR event_id IN (SELECT event_id FROM co_host WHERE user_id = '$user_id' AND cohost_status = 'active'))";
     $event_result = $conn->query($event_query);
     
     if ($event_result->num_rows > 0) {

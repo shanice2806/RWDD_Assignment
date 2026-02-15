@@ -40,7 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_attendance'])) {
             if ($check_result->num_rows == 0) {
                 // Insert new attendance record
                 $current_time = date('Y-m-d H:i:s');
-                $insert_query = "INSERT INTO attendance (event_id, user_id, attendance_check_in_time, attendance_method) VALUES ('$event_id', '$user_id_participant', '$current_time', 'Manual')";
+                $insert_query = "INSERT INTO attendance (event_id, user_id, attendance_check_in_time, attendance_method) VALUES 
+                ('$event_id', '$user_id_participant', '$current_time', 'Manual')";
                 $conn->query($insert_query);
             }
         }
@@ -56,7 +57,8 @@ $participants = [];
 if (isset($_POST['event_id']) || isset($_GET['event_id'])) {
     $event_id = isset($_POST['event_id']) ? $_POST['event_id'] : $_GET['event_id'];
     
-    $event_query = "SELECT event_id, event_title FROM events WHERE event_id = '$event_id' AND (event_created_by = '$user_id' OR event_id IN (SELECT event_id FROM co_host WHERE user_id = '$user_id' AND cohost_status = 'active'))";
+    $event_query = "SELECT event_id, event_title FROM events WHERE event_id = '$event_id' AND (event_created_by = '$user_id' 
+    OR event_id IN (SELECT event_id FROM co_host WHERE user_id = '$user_id' AND cohost_status = 'active'))";
     $event_result = $conn->query($event_query);
     
     if ($event_result->num_rows > 0) {
