@@ -82,7 +82,7 @@ include '../connect.php';
           <span class="section-icon">✅</span>
           <div>
             <h2 class="section-title">Attendance Management</h2>
-            <p class="section-description">Track participant attendance via QR code or manual entry</p>
+            <p class="section-description">Track participant attendance via code or manual entry</p>
           </div>
         </div>
         <div class="action-grid">
@@ -93,8 +93,8 @@ include '../connect.php';
         <div class="submenu">
           <div class="submenu-title">💡 Quick Tips</div>
           <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #555; line-height: 1.6;">
-            <li>Generate QR codes for quick check-in at event start</li>
-            <li>Manually mark attendance if participants forgot QR code</li>
+            <li>Generate codes for quick check-in at event start</li>
+            <li>Manually mark attendance if participants forgot code</li>
             <li>Export attendance records for reports and analysis</li>
           </ul>
         </div>
